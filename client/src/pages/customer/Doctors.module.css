@@ -1,0 +1,299 @@
+.container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    /* ✅ Gradient nhẹ */
+    padding: 3rem 0;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 3rem;
+    color: #1a202c;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.header p {
+    font-size: 1.1rem;
+    color: #4a5568;
+}
+
+/* Search & Filter */
+.searchSection {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.searchRow {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.searchInput {
+    flex: 1;
+    padding: 0.875rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.3s;
+    background: #f8fafc;
+}
+
+.searchInput:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.searchInput::placeholder {
+    color: #a0aec0;
+}
+
+.filterSelect {
+    flex: 1;
+    padding: 0.875rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: #f8fafc;
+}
+
+.filterSelect:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+}
+
+.filterInfo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #4a5568;
+    font-size: 0.95rem;
+    padding: 0.5rem 1rem;
+    background: #edf2f7;
+    border-radius: 8px;
+}
+
+.filterInfo span {
+    font-weight: 600;
+    color: #667eea;
+}
+
+/* Doctor Grid */
+.doctorGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* Doctor Card */
+.doctorCard {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s;
+}
+
+.doctorCard:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+}
+
+.cardHeader {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    position: relative;
+}
+
+.avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    font-size: 3rem;
+    font-weight: 700;
+    color: #667eea;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.specialty {
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    color: white;
+    font-size: 0.9rem;
+    display: inline-block;
+}
+
+.cardBody {
+    padding: 1.5rem;
+    background: white;
+}
+
+.doctorName {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1a202c;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.specialtyName {
+    color: #718096;
+    font-size: 0.95rem;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.infoRow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background: #f8fafc;
+    border-radius: 8px;
+}
+
+.infoIcon {
+    font-size: 1.25rem;
+}
+
+.infoText {
+    flex: 1;
+    color: #4a5568;
+    font-size: 0.95rem;
+}
+
+.price {
+    color: #10b981;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.cardFooter {
+    padding: 1rem 1.5rem;
+    background: #f8fafc;
+    display: flex;
+    gap: 0.75rem;
+}
+
+.btnDetail {
+    flex: 1;
+    padding: 0.75rem;
+    background: white;
+    color: #667eea;
+    border: 2px solid #667eea;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btnDetail:hover {
+    background: #667eea;
+    color: white;
+}
+
+.btnBook {
+    flex: 1;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btnBook:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Loading & Empty */
+.loading,
+.empty {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: 16px;
+    margin: 2rem auto;
+    max-width: 600px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 1rem;
+    border: 4px solid #e2e8f0;
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.emptyIcon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.empty h3 {
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+}
+
+.empty p {
+    color: #718096;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .searchRow {
+        flex-direction: column;
+    }
+
+    .doctorGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .header h1 {
+        font-size: 2rem;
+    }
+}

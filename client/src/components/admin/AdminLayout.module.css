@@ -1,0 +1,103 @@
+.layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+    width: 280px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 2rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logo {
+    font-size: 2.5rem;
+}
+
+.brandName {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.brandSubtext {
+    font-size: 0.85rem;
+    opacity: 0.9;
+}
+
+.nav {
+    flex: 1;
+    padding: 1.5rem 0;
+}
+
+.navItem {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    color: white;
+    text-decoration: none;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+}
+
+.navItem:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.navItem.active {
+    background: rgba(255, 255, 255, 0.15);
+    border-left-color: white;
+}
+
+.logoutBtn {
+    margin: 1.5rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.logoutBtn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* ===== MAIN ===== */
+.main {
+    flex: 1;
+    margin-left: 280px;
+    background: #f3f4f6;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        z-index: 1000;
+    }
+
+    .main {
+        margin-left: 0;
+    }
+}

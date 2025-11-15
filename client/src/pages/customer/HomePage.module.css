@@ -1,0 +1,447 @@
+.homePage {
+    background: #fff;
+}
+
+/* Hero Section */
+.hero {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 80px 20px;
+    min-height: 600px;
+    display: flex;
+    align-items: center;
+}
+
+.heroContent {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+}
+
+.heroText {
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.heroTitle {
+    font-size: 48px;
+    font-weight: 700;
+    margin: 0 0 20px 0;
+    line-height: 1.2;
+}
+
+.highlight {
+    background: linear-gradient(to right, #fff, #f0f0f0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.heroSubtitle {
+    font-size: 18px;
+    margin: 0 0 40px 0;
+    opacity: 0.95;
+    line-height: 1.6;
+}
+
+.heroButtons {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.btnPrimary,
+.btnSecondary {
+    padding: 16px 32px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btnPrimary {
+    background: white;
+    color: #667eea;
+}
+
+.btnPrimary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.btnSecondary {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    backdrop-filter: blur(10px);
+}
+
+.btnSecondary:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.heroImage {
+    animation: fadeInRight 0.8s ease-out;
+}
+
+.heroImage img {
+    width: 100%;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+/* Stats Section */
+.stats {
+    padding: 60px 20px;
+    background: #f9fafb;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.statGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+}
+
+.statCard {
+    background: white;
+    padding: 40px;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s;
+}
+
+.statCard:hover {
+    transform: translateY(-5px);
+}
+
+.statIcon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.statValue {
+    font-size: 36px;
+    font-weight: 700;
+    color: #667eea;
+    margin-bottom: 8px;
+}
+
+.statLabel {
+    font-size: 14px;
+    color: #666;
+}
+
+/* Features Section */
+.features {
+    padding: 80px 20px;
+    background: white;
+}
+
+.sectionTitle {
+    text-align: center;
+    font-size: 36px;
+    margin: 0 0 16px 0;
+    color: #1a1a1a;
+}
+
+.sectionSubtitle {
+    text-align: center;
+    font-size: 16px;
+    color: #666;
+    margin: 0 0 50px 0;
+}
+
+.featureGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+.featureCard {
+    padding: 40px;
+    border-radius: 16px;
+    border: 1px solid #e0e0e0;
+    transition: all 0.3s;
+}
+
+.featureCard:hover {
+    border-color: #667eea;
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+}
+
+.featureIcon {
+    font-size: 56px;
+    margin-bottom: 20px;
+}
+
+.featureTitle {
+    font-size: 20px;
+    margin: 0 0 12px 0;
+    color: #1a1a1a;
+}
+
+.featureDesc {
+    font-size: 15px;
+    color: #666;
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* Specialties Section */
+.specialties {
+    padding: 80px 20px;
+    background: #f9fafb;
+}
+
+.specialtyGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.specialtyCard {
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 2px solid transparent;
+}
+
+.specialtyCard:hover {
+    border-color: #667eea;
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(102, 126, 234, 0.2);
+}
+
+.specialtyIcon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.specialtyName {
+    font-size: 20px;
+    margin: 0 0 12px 0;
+    color: #1a1a1a;
+}
+
+.specialtyDesc {
+    font-size: 14px;
+    color: #666;
+    margin: 0 0 20px 0;
+    line-height: 1.6;
+}
+
+.specialtyBtn {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.specialtyBtn:hover {
+    background: #5568d3;
+}
+
+.sectionFooter {
+    text-align: center;
+}
+
+.btnViewAll {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 14px 32px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btnViewAll:hover {
+    background: #5568d3;
+    transform: translateY(-2px);
+}
+
+/* How it works Section */
+.howItWorks {
+    padding: 80px 20px;
+    background: white;
+}
+
+.stepGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    position: relative;
+}
+
+.stepCard {
+    text-align: center;
+    position: relative;
+}
+
+.stepNumber {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-size: 36px;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px auto;
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+.stepTitle {
+    font-size: 20px;
+    margin: 0 0 12px 0;
+    color: #1a1a1a;
+}
+
+.stepDesc {
+    font-size: 15px;
+    color: #666;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.stepArrow {
+    position: absolute;
+    right: -15px;
+    top: 35px;
+    font-size: 30px;
+    color: #667eea;
+    display: none;
+}
+
+/* CTA Section */
+.cta {
+    padding: 80px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.ctaContent {
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.ctaTitle {
+    font-size: 36px;
+    margin: 0 0 16px 0;
+}
+
+.ctaSubtitle {
+    font-size: 18px;
+    margin: 0 0 40px 0;
+    opacity: 0.95;
+}
+
+.ctaButton {
+    background: white;
+    color: #667eea;
+    border: none;
+    padding: 16px 48px;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.ctaButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .heroContent {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .heroTitle {
+        font-size: 32px;
+    }
+
+    .heroSubtitle {
+        font-size: 16px;
+    }
+
+    .heroButtons {
+        flex-direction: column;
+    }
+
+    .btnPrimary,
+    .btnSecondary {
+        width: 100%;
+    }
+
+    .sectionTitle {
+        font-size: 28px;
+    }
+
+    .statGrid,
+    .featureGrid,
+    .specialtyGrid,
+    .stepGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .stepArrow {
+        display: none !important;
+    }
+}
+
+@media (min-width: 1024px) {
+    .stepArrow {
+        display: block;
+    }
+}

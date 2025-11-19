@@ -22,9 +22,12 @@ import DoctorSchedule from './pages/doctor/Schedule';
 // Admin Pages
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminAppointments from './pages/admin/Appointments';
-import AdminDoctors from './pages/admin/Doctors';
-import AdminPatients from './pages/admin/Patients';
+import AdminDoctorsManagement from './pages/admin/AdminDoctors';
+import AdminPatientsManagement from './pages/admin/AdminPatients';
+import AdminSpecialties from './pages/admin/AdminSpecialties';
+import AdminRooms from './pages/admin/AdminRooms';
 import AdminServices from './pages/admin/Services';
+import AdminReports from './pages/admin/AdminReports';
 
 export default function App() {
     return (
@@ -54,9 +57,12 @@ export default function App() {
                 <Route path="/admin" element={<AdminLayout />}>
                     <Route index element={<AdminDashboard />} />
                     <Route path="appointments" element={<AdminAppointments />} />
-                    <Route path="doctors" element={<AdminDoctors />} />
-                    <Route path="patients" element={<AdminPatients />} />
+                    <Route path="doctors" element={<AdminDoctorsManagement />} />
+                    <Route path="patients" element={<AdminPatientsManagement />} />
+                    <Route path="specialties" element={<AdminSpecialties />} />
+                    <Route path="rooms" element={<AdminRooms />} />
                     <Route path="services" element={<AdminServices />} />
+                    <Route path="reports" element={<AdminReports />} />
                 </Route>
 
                 {/* Auth Routes */}

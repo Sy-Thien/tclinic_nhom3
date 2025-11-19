@@ -114,6 +114,29 @@ export default function AdminLayout() {
                     </NavLink>
 
                     <NavLink
+                        to="/admin/specialties"
+                        className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}
+                    >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z" strokeWidth="2" />
+                            <path d="M2 17l10 5 10-5" strokeWidth="2" />
+                            <path d="M2 12l10 5 10-5" strokeWidth="2" />
+                        </svg>
+                        Chuyên khoa
+                    </NavLink>
+
+                    <NavLink
+                        to="/admin/rooms"
+                        className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}
+                    >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" strokeWidth="2" />
+                            <polyline points="9 22 9 12 15 12 15 22" strokeWidth="2" />
+                        </svg>
+                        Phòng khám
+                    </NavLink>
+
+                    <NavLink
                         to="/admin/services"
                         className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}
                     >
@@ -123,6 +146,18 @@ export default function AdminLayout() {
                             <line x1="9" y1="15" x2="15" y2="15" strokeWidth="2" />
                         </svg>
                         Dịch vụ
+                    </NavLink>
+
+                    <NavLink
+                        to="/admin/reports"
+                        className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}
+                    >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <rect x="3" y="3" width="18" height="18" rx="2" strokeWidth="2" />
+                            <line x1="3" y1="9" x2="21" y2="9" strokeWidth="2" />
+                            <line x1="9" y1="21" x2="9" y2="9" strokeWidth="2" />
+                        </svg>
+                        Báo cáo
                     </NavLink>
                 </nav>
 

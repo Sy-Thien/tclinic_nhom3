@@ -1,0 +1,498 @@
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import styles from './AdminPatients.module.css';
+
+export default function AdminPatients() {
+    const [patients, setPatients] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterStatus, setFilterStatus] = useState('all');
+
+    // Modals
+    const [showDetailModal, setShowDetailModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [selectedPatient, setSelectedPatient] = useState(null);
+    const [patientHistory, setPatientHistory] = useState([]);
+
+    // Form data for edit
+    const [formData, setFormData] = useState({
+        full_name: '',
+        email: '',
+        phone: '',
+        gender: 'male',
+        birthday: '',
+        address: ''
+    });
+
+    // Lấy danh sách bệnh nhân
+    const fetchPatients = async () => {
+        try {
+            setLoading(true);
+            const token = localStorage.getItem('token');
+            const params = new URLSearchParams();
+
+            if (searchTerm) params.append('search', searchTerm);
+            if (filterStatus !== 'all') params.append('status', filterStatus);
+
+            const response = await axios.get(`http://localhost:5000/api/admin/patients?${params}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            setPatients(response.data);
+        } catch (error) {
+            console.error('Error fetching patients:', error);
+            alert('Lỗi khi tải danh sách bệnh nhân');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchPatients();
+    }, [searchTerm, filterStatus]);
+
+    // Lấy lịch sử khám của bệnh nhân
+    const fetchPatientHistory = async (patientId) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get(
+                `http://localhost:5000/api/admin/patients/${patientId}/history`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setPatientHistory(response.data);
+        } catch (error) {
+            console.error('Error fetching patient history:', error);
+            alert('Lỗi khi tải lịch sử khám');
+        }
+    };
+
+    // Xem chi tiết bệnh nhân
+    const handleViewDetail = async (patient) => {
+        setSelectedPatient(patient);
+        await fetchPatientHistory(patient.id);
+        setShowDetailModal(true);
+    };
+
+    // Mở modal chỉnh sửa
+    const handleEdit = (patient) => {
+        setSelectedPatient(patient);
+        setFormData({
+            full_name: patient.full_name || '',
+            email: patient.email || '',
+            phone: patient.phone || '',
+            gender: patient.gender || 'male',
+            birthday: patient.birthday || '',
+            address: patient.address || ''
+        });
+        setShowEditModal(true);
+    };
+
+    // Cập nhật bệnh nhân
+    const handleUpdatePatient = async (e) => {
+        e.preventDefault();
+        try {
+            const token = localStorage.getItem('token');
+            await axios.put(
+                `http://localhost:5000/api/admin/patients/${selectedPatient.id}`,
+                formData,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            alert('Cập nhật thông tin bệnh nhân thành công');
+            setShowEditModal(false);
+            fetchPatients();
+        } catch (error) {
+            console.error('Error updating patient:', error);
+            alert(error.response?.data?.message || 'Lỗi khi cập nhật bệnh nhân');
+        }
+    };
+
+    // Xóa bệnh nhân
+    const handleDelete = (patient) => {
+        setSelectedPatient(patient);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDelete = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            await axios.delete(
+                `http://localhost:5000/api/admin/patients/${selectedPatient.id}`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            alert('Xóa bệnh nhân thành công');
+            setShowDeleteModal(false);
+            fetchPatients();
+        } catch (error) {
+            console.error('Error deleting patient:', error);
+            alert(error.response?.data?.message || 'Lỗi khi xóa bệnh nhân');
+        }
+    };
+
+    // Toggle trạng thái
+    const handleToggleStatus = async (patient) => {
+        try {
+            const token = localStorage.getItem('token');
+            await axios.put(
+                `http://localhost:5000/api/admin/patients/${patient.id}/toggle-status`,
+                {},
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            alert(`${patient.is_active ? 'Vô hiệu hóa' : 'Kích hoạt'} tài khoản thành công`);
+            fetchPatients();
+        } catch (error) {
+            console.error('Error toggling status:', error);
+            alert('Lỗi khi thay đổi trạng thái bệnh nhân');
+        }
+    };
+
+    // Format ngày
+    const formatDate = (dateString) => {
+        if (!dateString) return 'N/A';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('vi-VN');
+    };
+
+    // Format giờ
+    const formatTime = (timeString) => {
+        if (!timeString) return 'N/A';
+        return timeString.substring(0, 5);
+    };
+
+    // Render status badge
+    const renderStatusBadge = (status) => {
+        const statusMap = {
+            pending: { text: 'Chờ xác nhận', class: styles.statusPending },
+            confirmed: { text: 'Đã xác nhận', class: styles.statusConfirmed },
+            completed: { text: 'Hoàn thành', class: styles.statusCompleted },
+            cancelled: { text: 'Đã hủy', class: styles.statusCancelled }
+        };
+
+        const statusInfo = statusMap[status] || { text: status, class: '' };
+        return <span className={`${styles.statusBadge} ${statusInfo.class}`}>{statusInfo.text}</span>;
+    };
+
+    if (loading) {
+        return <div className={styles.loading}>Đang tải dữ liệu...</div>;
+    }
+
+    return (
+        <div className={styles.container}>
+            <div className={styles.header}>
+                <h1>Quản lý bệnh nhân</h1>
+                <p>Xem thông tin, lịch sử khám và cập nhật hồ sơ bệnh nhân</p>
+            </div>
+
+            {/* Filters */}
+            <div className={styles.filters}>
+                <input
+                    type="text"
+                    placeholder="🔍 Tìm theo tên, số điện thoại, email..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className={styles.searchInput}
+                />
+
+                <select
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                    className={styles.filterSelect}
+                >
+                    <option value="all">Tất cả trạng thái</option>
+                    <option value="active">Đang hoạt động</option>
+                    <option value="inactive">Đã khóa</option>
+                </select>
+            </div>
+
+            {/* Table */}
+            <div className={styles.tableContainer}>
+                <table className={styles.table}>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Họ và tên</th>
+                            <th>Số điện thoại</th>
+                            <th>Email</th>
+                            <th>Giới tính</th>
+                            <th>Ngày sinh</th>
+                            <th>Trạng thái</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {patients.length === 0 ? (
+                            <tr>
+                                <td colSpan="8" className={styles.noData}>
+                                    Không có dữ liệu
+                                </td>
+                            </tr>
+                        ) : (
+                            patients.map((patient) => (
+                                <tr key={patient.id}>
+                                    <td>{patient.id}</td>
+                                    <td>{patient.full_name}</td>
+                                    <td>{patient.phone}</td>
+                                    <td>{patient.email || 'N/A'}</td>
+                                    <td>
+                                        {patient.gender === 'male'
+                                            ? 'Nam'
+                                            : patient.gender === 'female'
+                                                ? 'Nữ'
+                                                : 'Khác'}
+                                    </td>
+                                    <td>{patient.birthday || 'N/A'}</td>
+                                    <td>
+                                        <span
+                                            className={`${styles.statusBadge} ${patient.is_active ? styles.statusActive : styles.statusInactive
+                                                }`}
+                                        >
+                                            {patient.is_active ? 'Hoạt động' : 'Đã khóa'}
+                                        </span>
+                                    </td>
+                                    <td className={styles.actions}>
+                                        <button
+                                            onClick={() => handleViewDetail(patient)}
+                                            className={styles.btnView}
+                                            title="Xem chi tiết"
+                                        >
+                                            👁️
+                                        </button>
+                                        <button
+                                            onClick={() => handleEdit(patient)}
+                                            className={styles.btnEdit}
+                                            title="Chỉnh sửa"
+                                        >
+                                            ✏️
+                                        </button>
+                                        <button
+                                            onClick={() => handleToggleStatus(patient)}
+                                            className={styles.btnToggle}
+                                            title={patient.is_active ? 'Khóa tài khoản' : 'Kích hoạt'}
+                                        >
+                                            {patient.is_active ? '🔒' : '🔓'}
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(patient)}
+                                            className={styles.btnDelete}
+                                            title="Xóa"
+                                        >
+                                            🗑️
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* Detail Modal */}
+            {showDetailModal && selectedPatient && (
+                <div className={styles.modalOverlay} onClick={() => setShowDetailModal(false)}>
+                    <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+                        <div className={styles.modalHeader}>
+                            <h2>Thông tin bệnh nhân</h2>
+                            <button onClick={() => setShowDetailModal(false)} className={styles.closeBtn}>
+                                ✕
+                            </button>
+                        </div>
+
+                        <div className={styles.patientInfo}>
+                            <h3>Thông tin cá nhân</h3>
+                            <div className={styles.infoGrid}>
+                                <div className={styles.infoItem}>
+                                    <strong>Họ và tên:</strong>
+                                    <span>{selectedPatient.full_name}</span>
+                                </div>
+                                <div className={styles.infoItem}>
+                                    <strong>Số điện thoại:</strong>
+                                    <span>{selectedPatient.phone}</span>
+                                </div>
+                                <div className={styles.infoItem}>
+                                    <strong>Email:</strong>
+                                    <span>{selectedPatient.email || 'N/A'}</span>
+                                </div>
+                                <div className={styles.infoItem}>
+                                    <strong>Giới tính:</strong>
+                                    <span>
+                                        {selectedPatient.gender === 'male'
+                                            ? 'Nam'
+                                            : selectedPatient.gender === 'female'
+                                                ? 'Nữ'
+                                                : 'Khác'}
+                                    </span>
+                                </div>
+                                <div className={styles.infoItem}>
+                                    <strong>Ngày sinh:</strong>
+                                    <span>{selectedPatient.birthday || 'N/A'}</span>
+                                </div>
+                                <div className={styles.infoItem}>
+                                    <strong>Địa chỉ:</strong>
+                                    <span>{selectedPatient.address || 'N/A'}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className={styles.patientHistory}>
+                            <h3>Lịch sử khám ({patientHistory.length})</h3>
+                            {patientHistory.length === 0 ? (
+                                <p className={styles.noHistory}>Chưa có lịch sử khám</p>
+                            ) : (
+                                <div className={styles.historyTable}>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Mã</th>
+                                                <th>Ngày</th>
+                                                <th>Giờ</th>
+                                                <th>Chuyên khoa</th>
+                                                <th>Bác sĩ</th>
+                                                <th>Triệu chứng</th>
+                                                <th>Trạng thái</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {patientHistory.map((booking) => (
+                                                <tr key={booking.id}>
+                                                    <td>{booking.booking_code}</td>
+                                                    <td>{formatDate(booking.appointment_date)}</td>
+                                                    <td>{formatTime(booking.appointment_time)}</td>
+                                                    <td>{booking.specialty?.name || 'N/A'}</td>
+                                                    <td>{booking.doctor?.full_name || 'Chưa có'}</td>
+                                                    <td className={styles.symptoms}>
+                                                        {booking.symptoms || 'N/A'}
+                                                    </td>
+                                                    <td>{renderStatusBadge(booking.status)}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Modal */}
+            {showEditModal && (
+                <div className={styles.modalOverlay} onClick={() => setShowEditModal(false)}>
+                    <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+                        <div className={styles.modalHeader}>
+                            <h2>Chỉnh sửa thông tin bệnh nhân</h2>
+                            <button onClick={() => setShowEditModal(false)} className={styles.closeBtn}>
+                                ✕
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleUpdatePatient} className={styles.form}>
+                            <div className={styles.formGroup}>
+                                <label>Họ và tên *</label>
+                                <input
+                                    type="text"
+                                    value={formData.full_name}
+                                    onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                                    required
+                                />
+                            </div>
+
+                            <div className={styles.formRow}>
+                                <div className={styles.formGroup}>
+                                    <label>Email</label>
+                                    <input
+                                        type="email"
+                                        value={formData.email}
+                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className={styles.formGroup}>
+                                    <label>Số điện thoại *</label>
+                                    <input
+                                        type="text"
+                                        value={formData.phone}
+                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div className={styles.formRow}>
+                                <div className={styles.formGroup}>
+                                    <label>Giới tính</label>
+                                    <select
+                                        value={formData.gender}
+                                        onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                                    >
+                                        <option value="male">Nam</option>
+                                        <option value="female">Nữ</option>
+                                        <option value="other">Khác</option>
+                                    </select>
+                                </div>
+
+                                <div className={styles.formGroup}>
+                                    <label>Ngày sinh</label>
+                                    <input
+                                        type="date"
+                                        value={formData.birthday}
+                                        onChange={(e) => setFormData({ ...formData, birthday: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label>Địa chỉ</label>
+                                <textarea
+                                    value={formData.address}
+                                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                    rows="3"
+                                />
+                            </div>
+
+                            <div className={styles.formActions}>
+                                <button type="button" onClick={() => setShowEditModal(false)} className={styles.btnCancel}>
+                                    Hủy
+                                </button>
+                                <button type="submit" className={styles.btnSubmit}>
+                                    Cập nhật
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Modal */}
+            {showDeleteModal && selectedPatient && (
+                <div className={styles.modalOverlay} onClick={() => setShowDeleteModal(false)}>
+                    <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+                        <div className={styles.modalHeader}>
+                            <h2>Xác nhận xóa</h2>
+                            <button onClick={() => setShowDeleteModal(false)} className={styles.closeBtn}>
+                                ✕
+                            </button>
+                        </div>
+
+                        <div className={styles.deleteConfirm}>
+                            <p>Bạn có chắc chắn muốn xóa bệnh nhân:</p>
+                            <p className={styles.patientName}>{selectedPatient.full_name}</p>
+                            <p className={styles.warning}>⚠️ Không thể khôi phục sau khi xóa!</p>
+                        </div>
+
+                        <div className={styles.formActions}>
+                            <button onClick={() => setShowDeleteModal(false)} className={styles.btnCancel}>
+                                Hủy
+                            </button>
+                            <button onClick={confirmDelete} className={styles.btnDelete}>
+                                Xóa
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}

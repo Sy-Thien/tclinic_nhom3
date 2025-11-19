@@ -6,6 +6,7 @@ import styles from './Appointments.module.css';
 export default function Appointments() {
     const [appointments, setAppointments] = useState([]);
     const [doctors, setDoctors] = useState([]);
+    const [specialties, setSpecialties] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState({
         status: '',
@@ -16,12 +17,28 @@ export default function Appointments() {
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [showAssignModal, setShowAssignModal] = useState(false);
+    const [showCreateModal, setShowCreateModal] = useState(false);
     const [selectedDoctor, setSelectedDoctor] = useState('');
     const [cancelReason, setCancelReason] = useState('');
+    const [formData, setFormData] = useState({
+        patient_name: '',
+        patient_email: '',
+        patient_phone: '',
+        patient_gender: 'male',
+        patient_dob: '',
+        patient_address: '',
+        specialty_id: '',
+        doctor_id: '',
+        appointment_date: '',
+        appointment_time: '',
+        symptoms: '',
+        note: ''
+    });
     const navigate = useNavigate();
 
     useEffect(() => {
         fetchDoctors();
+        fetchSpecialties();
         fetchAppointments();
     }, [filter]);
 
@@ -32,13 +49,15 @@ export default function Appointments() {
             if (filter.date) params.append('date', filter.date);
             if (filter.doctor_id) params.append('doctor_id', filter.doctor_id);
 
-            const response = await api.get(`/api/admin/appointments?${params}`);
-            setAppointments(response.data.data || []);
+            const response = await api.get(`/api/admin/bookings?${params}`);
+            setAppointments(response.data.bookings || []);
         } catch (error) {
             console.error('Error:', error);
             if (error.response?.status === 403) {
                 alert('Bạn không có quyền truy cập!');
                 navigate('/login');
+            } else {
+                alert('Lỗi khi tải danh sách lịch khám');
             }
         } finally {
             setLoading(false);
@@ -47,19 +66,59 @@ export default function Appointments() {
 
     const fetchDoctors = async () => {
         try {
-            const response = await api.get('/api/public/doctors');
+            const response = await api.get('/api/admin/doctors');
             setDoctors(response.data || []);
         } catch (error) {
             console.error('Error fetching doctors:', error);
         }
     };
 
+    const fetchSpecialties = async () => {
+        try {
+            const response = await api.get('/api/public/specialties');
+            setSpecialties(response.data || []);
+        } catch (error) {
+            console.error('Error fetching specialties:', error);
+        }
+    };
+
+    const handleCreateAppointment = async (e) => {
+        e.preventDefault();
+        try {
+            await api.post('/api/admin/bookings', formData);
+            alert('✅ Thêm lịch khám thành công!');
+            setShowCreateModal(false);
+            setFormData({
+                patient_name: '',
+                patient_email: '',
+                patient_phone: '',
+                patient_gender: 'male',
+                patient_dob: '',
+                patient_address: '',
+                specialty_id: '',
+                doctor_id: '',
+                appointment_date: '',
+                appointment_time: '',
+                symptoms: '',
+                note: ''
+            });
+            fetchAppointments();
+        } catch (error) {
+            console.error('Error:', error);
+            alert(error.response?.data?.message || '❌ Lỗi khi thêm lịch khám!');
+        }
+    };
+
     const handleConfirm = async () => {
         try {
-            await api.put(`/api/admin/appointments/${selectedAppointment.id}/confirm`, {
-                doctor_id: selectedDoctor || null
-            });
-            alert('✅ Xác nhận lịch hẹn thành công!');
+            const updateData = {
+                status: 'confirmed'
+            };
+            if (selectedDoctor) {
+                updateData.doctor_id = selectedDoctor;
+            }
+            await api.put(`/api/admin/bookings/${selectedAppointment.id}`, updateData);
+            alert('✅ Xác nhận lịch khám thành công!');
             setShowConfirmModal(false);
             setSelectedDoctor('');
             fetchAppointments();
@@ -71,10 +130,10 @@ export default function Appointments() {
 
     const handleCancel = async () => {
         try {
-            await api.put(`/api/admin/appointments/${selectedAppointment.id}/cancel`, {
-                reason: cancelReason
+            await api.put(`/api/admin/bookings/${selectedAppointment.id}/cancel`, {
+                cancel_reason: cancelReason
             });
-            alert('✅ Hủy lịch hẹn thành công!');
+            alert('✅ Hủy lịch khám thành công!');
             setShowCancelModal(false);
             setCancelReason('');
             fetchAppointments();
@@ -86,7 +145,7 @@ export default function Appointments() {
 
     const handleAssignDoctor = async () => {
         try {
-            await api.put(`/api/admin/appointments/${selectedAppointment.id}/assign-doctor`, {
+            await api.put(`/api/admin/bookings/${selectedAppointment.id}/assign-doctor`, {
                 doctor_id: selectedDoctor
             });
             alert('✅ Gán bác sĩ thành công!');
@@ -103,7 +162,7 @@ export default function Appointments() {
         if (!window.confirm(`Chuyển trạng thái sang "${newStatus}"?`)) return;
 
         try {
-            await api.put(`/api/admin/appointments/${id}/status`, { status: newStatus });
+            await api.put(`/api/admin/bookings/${id}`, { status: newStatus });
             alert('✅ Cập nhật thành công!');
             fetchAppointments();
         } catch (error) {
@@ -143,9 +202,15 @@ export default function Appointments() {
         <div className={styles.container}>
             <div className={styles.header}>
                 <div>
-                    <h1>📅 Quản Lý Lịch Hẹn</h1>
-                    <p>Tổng số: {appointments.length} lịch hẹn</p>
+                    <h1>📅 Quản Lý Lịch Khám</h1>
+                    <p>Tổng số: {appointments.length} lịch khám</p>
                 </div>
+                <button
+                    className={styles.btnAdd}
+                    onClick={() => setShowCreateModal(true)}
+                >
+                    ➕ Thêm lịch khám
+                </button>
             </div>
 
             {/* FILTERS */}
@@ -233,13 +298,12 @@ export default function Appointments() {
                                     <td>{app.patient_phone}</td>
                                     <td>
                                         <div className={styles.serviceInfo}>
-                                            <div>{app.service_name}</div>
-                                            <div className={styles.specialty}>{app.specialty_name}</div>
+                                            <div className={styles.specialty}>{app.specialty?.name || 'Chưa có'}</div>
                                         </div>
                                     </td>
                                     <td>
-                                        {app.doctor_name ? (
-                                            app.doctor_name
+                                        {app.doctor ? (
+                                            app.doctor.full_name
                                         ) : (
                                             <button
                                                 className={styles.btnAssign}
@@ -252,8 +316,8 @@ export default function Appointments() {
                                             </button>
                                         )}
                                     </td>
-                                    <td>{new Date(app.date).toLocaleDateString('vi-VN')}</td>
-                                    <td>{app.appointment_time}</td>
+                                    <td>{new Date(app.appointment_date).toLocaleDateString('vi-VN')}</td>
+                                    <td>{app.appointment_time || 'Chưa có'}</td>
                                     <td>{getStatusBadge(app.status)}</td>
                                     <td>
                                         <div className={styles.actions}>
@@ -385,7 +449,7 @@ export default function Appointments() {
                                     <option value="">-- Chọn bác sĩ --</option>
                                     {doctors.map(doc => (
                                         <option key={doc.id} value={doc.id}>
-                                            {doc.full_name} - {doc.specialty_name}
+                                            {doc.full_name} - {doc.specialty?.name}
                                         </option>
                                     ))}
                                 </select>
@@ -403,6 +467,147 @@ export default function Appointments() {
                                 Gán bác sĩ
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* CREATE APPOINTMENT MODAL */}
+            {showCreateModal && (
+                <div className={styles.modal}>
+                    <div className={styles.modalContent} style={{ maxWidth: '700px' }}>
+                        <h2>➕ Thêm lịch khám mới</h2>
+                        <form onSubmit={handleCreateAppointment}>
+                            <div className={styles.modalBody}>
+                                <div className={styles.formGrid}>
+                                    <div className={styles.formGroup}>
+                                        <label>Họ tên bệnh nhân <span className={styles.required}>*</span></label>
+                                        <input
+                                            type="text"
+                                            value={formData.patient_name}
+                                            onChange={(e) => setFormData({ ...formData, patient_name: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+                                    <div className={styles.formGroup}>
+                                        <label>Số điện thoại <span className={styles.required}>*</span></label>
+                                        <input
+                                            type="tel"
+                                            value={formData.patient_phone}
+                                            onChange={(e) => setFormData({ ...formData, patient_phone: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+                                    <div className={styles.formGroup}>
+                                        <label>Email</label>
+                                        <input
+                                            type="email"
+                                            value={formData.patient_email}
+                                            onChange={(e) => setFormData({ ...formData, patient_email: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className={styles.formGroup}>
+                                        <label>Giới tính</label>
+                                        <select
+                                            value={formData.patient_gender}
+                                            onChange={(e) => setFormData({ ...formData, patient_gender: e.target.value })}
+                                        >
+                                            <option value="male">Nam</option>
+                                            <option value="female">Nữ</option>
+                                            <option value="other">Khác</option>
+                                        </select>
+                                    </div>
+                                    <div className={styles.formGroup}>
+                                        <label>Ngày sinh</label>
+                                        <input
+                                            type="date"
+                                            value={formData.patient_dob}
+                                            onChange={(e) => setFormData({ ...formData, patient_dob: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className={styles.formGroup}>
+                                        <label>Chuyên khoa <span className={styles.required}>*</span></label>
+                                        <select
+                                            value={formData.specialty_id}
+                                            onChange={(e) => setFormData({ ...formData, specialty_id: e.target.value })}
+                                            required
+                                        >
+                                            <option value="">-- Chọn chuyên khoa --</option>
+                                            {specialties.map(sp => (
+                                                <option key={sp.id} value={sp.id}>{sp.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className={styles.formGroup}>
+                                        <label>Bác sĩ (tùy chọn)</label>
+                                        <select
+                                            value={formData.doctor_id}
+                                            onChange={(e) => setFormData({ ...formData, doctor_id: e.target.value })}
+                                        >
+                                            <option value="">-- Chọn bác sĩ --</option>
+                                            {doctors.map(doc => (
+                                                <option key={doc.id} value={doc.id}>{doc.full_name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className={styles.formGroup}>
+                                        <label>Ngày khám <span className={styles.required}>*</span></label>
+                                        <input
+                                            type="date"
+                                            value={formData.appointment_date}
+                                            onChange={(e) => setFormData({ ...formData, appointment_date: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+                                    <div className={styles.formGroup}>
+                                        <label>Giờ khám <span className={styles.required}>*</span></label>
+                                        <input
+                                            type="time"
+                                            value={formData.appointment_time}
+                                            onChange={(e) => setFormData({ ...formData, appointment_time: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+                                    <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
+                                        <label>Địa chỉ</label>
+                                        <input
+                                            type="text"
+                                            value={formData.patient_address}
+                                            onChange={(e) => setFormData({ ...formData, patient_address: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
+                                        <label>Triệu chứng</label>
+                                        <textarea
+                                            rows={3}
+                                            value={formData.symptoms}
+                                            onChange={(e) => setFormData({ ...formData, symptoms: e.target.value })}
+                                            placeholder="Mô tả triệu chứng..."
+                                        />
+                                    </div>
+                                    <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
+                                        <label>Ghi chú</label>
+                                        <textarea
+                                            rows={2}
+                                            value={formData.note}
+                                            onChange={(e) => setFormData({ ...formData, note: e.target.value })}
+                                            placeholder="Ghi chú thêm..."
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className={styles.modalFooter}>
+                                <button
+                                    type="button"
+                                    className={styles.btnModalCancel}
+                                    onClick={() => setShowCreateModal(false)}
+                                >
+                                    Hủy
+                                </button>
+                                <button type="submit" className={styles.btnModalConfirm}>
+                                    Thêm lịch khám
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

@@ -7,6 +7,14 @@ const Appointment = sequelize.define('Appointment', {
         primaryKey: true,
         autoIncrement: true
     },
+    booking_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'tn_booking',
+            key: 'id'
+        }
+    },
     doctor_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -23,7 +31,7 @@ const Appointment = sequelize.define('Appointment', {
             key: 'id'
         }
     },
-    referral_order: {
+    numerical_order: {
         type: DataTypes.INTEGER,
         allowNull: true
     },
@@ -35,21 +43,19 @@ const Appointment = sequelize.define('Appointment', {
         type: DataTypes.STRING(20),
         allowNull: true
     },
-    date: {
-        type: DataTypes.STRING(10),
-        allowNull: true
-    },
     status: {
-        type: DataTypes.STRING(25),
+        type: DataTypes.STRING(15),
         allowNull: true,
-        defaultValue: 'pending'
+        defaultValue: 'waiting'
     },
     create_at: {
         type: DataTypes.DATE,
+        allowNull: true,
         defaultValue: DataTypes.NOW
     },
     update_at: {
         type: DataTypes.DATE,
+        allowNull: true,
         defaultValue: DataTypes.NOW
     }
 }, {

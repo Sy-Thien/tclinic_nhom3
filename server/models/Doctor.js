@@ -16,55 +16,60 @@ const Doctor = sequelize.define('Doctor', {
         type: DataTypes.STRING(255),
         allowNull: false
     },
-    name: {
-        type: DataTypes.STRING(50),
+    full_name: {
+        type: DataTypes.STRING(255),
         allowNull: false
     },
     phone: {
         type: DataTypes.STRING(15),
+        allowNull: false
+    },
+    gender: {
+        type: DataTypes.ENUM('male', 'female', 'other'),
         allowNull: true
     },
-    description: {
+    specialty_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+            model: 'tn_specialties',
+            key: 'id'
+        }
+    },
+    experience: {
         type: DataTypes.STRING(255),
         allowNull: true
     },
-    price: {
-        type: DataTypes.INTEGER,
+    education: {
+        type: DataTypes.STRING(255),
         allowNull: true
     },
-    active: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: true
+    description: {
+        type: DataTypes.TEXT,
+        allowNull: true
     },
     avatar: {
         type: DataTypes.STRING(255),
         allowNull: true
     },
-    specialty_id: {
-        type: DataTypes.INTEGER,
-        allowNull: true
-    },
-    clinic_id: {
-        type: DataTypes.INTEGER,
-        allowNull: true
-    },
-    role: {
-        type: DataTypes.STRING(10),
-        defaultValue: 'doctor'
+    is_active: {
+        type: DataTypes.BOOLEAN,
+        allowNull: true,
+        defaultValue: true
     },
     recovery_token: {
         type: DataTypes.STRING(255),
         allowNull: true
     },
-    create_at: {
+    created_at: {
         type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-        field: 'create_at'
+        allowNull: true,
+        defaultValue: DataTypes.NOW
     },
-    update_at: {
+    updated_at: {
         type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-        field: 'update_at'
+        allowNull: true,
+        defaultValue: DataTypes.NOW
     }
 }, {
     tableName: 'tn_doctors',

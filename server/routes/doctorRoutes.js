@@ -38,7 +38,7 @@ router.get('/appointments', verifyToken, checkDoctorRole, async (req, res) => {
                 {
                     model: Patient,
                     as: 'patient',
-                    attributes: ['id', 'name', 'email', 'phone', 'birthday', 'gender', 'address']
+                    attributes: ['id', 'full_name', 'email', 'phone', 'birthday', 'gender', 'address']
                 },
                 {
                     model: Service,
@@ -55,7 +55,7 @@ router.get('/appointments', verifyToken, checkDoctorRole, async (req, res) => {
             ],
             order: [
                 ['appointment_date', 'ASC'],
-                ['appointment_hour', 'ASC']
+                ['appointment_time', 'ASC']
             ]
         });
 

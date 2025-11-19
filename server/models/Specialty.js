@@ -8,22 +8,26 @@ const Specialty = sequelize.define('Specialty', {
         autoIncrement: true
     },
     name: {
-        type: DataTypes.STRING(100),
+        type: DataTypes.STRING(50),
         allowNull: false
     },
     description: {
-        type: DataTypes.TEXT,
+        type: DataTypes.STRING(255),
         allowNull: true
     },
-    create_at: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-        field: 'create_at'
+    image: {
+        type: DataTypes.STRING(255),
+        allowNull: true
     },
-    update_at: {
+    created_at: {
         type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-        field: 'update_at'
+        allowNull: true,
+        defaultValue: DataTypes.NOW
+    },
+    updated_at: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        defaultValue: DataTypes.NOW
     }
 }, {
     tableName: 'tn_specialties',

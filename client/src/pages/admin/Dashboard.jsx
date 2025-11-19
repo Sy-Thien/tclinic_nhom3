@@ -5,11 +5,17 @@ import styles from './Dashboard.module.css';
 
 export default function Dashboard() {
     const [stats, setStats] = useState({
-        todayTotal: 0,
+        todayBookings: 0,
         todayCompleted: 0,
-        totalAppointments: 0,
+        pendingBookings: 0,
+        confirmedBookings: 0,
+        totalBookings: 0,
         totalPatients: 0,
-        pendingAppointments: 0
+        totalDoctors: 0,
+        activeDoctors: 0,
+        totalSpecialties: 0,
+        upcomingBookings: 0,
+        statusCounts: {}
     });
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
@@ -20,8 +26,8 @@ export default function Dashboard() {
 
     const fetchStats = async () => {
         try {
-            const response = await api.get('/api/admin/appointments/stats');
-            setStats(response.data.data);
+            const response = await api.get('/api/admin/dashboard/stats');
+            setStats(response.data);
         } catch (error) {
             console.error('Error:', error);
             if (error.response?.status === 401 || error.response?.status === 403) {
@@ -55,28 +61,52 @@ export default function Dashboard() {
                 <div className={styles.statCard} style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
                     <div className={styles.statIcon}>📅</div>
                     <div className={styles.statContent}>
-                        <div className={styles.statValue}>{stats.todayTotal}</div>
-                        <div className={styles.statLabel}>Lịch hẹn hôm nay</div>
+                        <div className={styles.statValue}>{stats.todayBookings}</div>
+                        <div className={styles.statLabel}>Lịch khám hôm nay</div>
                     </div>
                 </div>
 
-                <div className={styles.statCard} style={{ background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }}>
+                <div className={styles.statCard} style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}>
                     <div className={styles.statIcon}>✅</div>
                     <div className={styles.statContent}>
                         <div className={styles.statValue}>{stats.todayCompleted}</div>
-                        <div className={styles.statLabel}>Đã hoàn thành hôm nay</div>
+                        <div className={styles.statLabel}>Hoàn thành hôm nay</div>
                     </div>
                 </div>
 
-                <div className={styles.statCard} style={{ background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' }}>
+                <div className={styles.statCard} style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' }}>
                     <div className={styles.statIcon}>⏳</div>
                     <div className={styles.statContent}>
-                        <div className={styles.statValue}>{stats.pendingAppointments}</div>
+                        <div className={styles.statValue}>{stats.pendingBookings}</div>
                         <div className={styles.statLabel}>Chờ xác nhận</div>
                     </div>
                 </div>
 
-                <div className={styles.statCard} style={{ background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)' }}>
+                <div className={styles.statCard} style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' }}>
+                    <div className={styles.statIcon}>✔️</div>
+                    <div className={styles.statContent}>
+                        <div className={styles.statValue}>{stats.confirmedBookings}</div>
+                        <div className={styles.statLabel}>Đã xác nhận</div>
+                    </div>
+                </div>
+
+                <div className={styles.statCard} style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)' }}>
+                    <div className={styles.statIcon}>📆</div>
+                    <div className={styles.statContent}>
+                        <div className={styles.statValue}>{stats.upcomingBookings}</div>
+                        <div className={styles.statLabel}>Lịch 7 ngày tới</div>
+                    </div>
+                </div>
+
+                <div className={styles.statCard} style={{ background: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)' }}>
+                    <div className={styles.statIcon}>📋</div>
+                    <div className={styles.statContent}>
+                        <div className={styles.statValue}>{stats.totalBookings}</div>
+                        <div className={styles.statLabel}>Tổng lịch khám</div>
+                    </div>
+                </div>
+
+                <div className={styles.statCard} style={{ background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)' }}>
                     <div className={styles.statIcon}>👥</div>
                     <div className={styles.statContent}>
                         <div className={styles.statValue}>{stats.totalPatients}</div>
@@ -84,11 +114,11 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                <div className={styles.statCard} style={{ background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)' }}>
-                    <div className={styles.statIcon}>📋</div>
+                <div className={styles.statCard} style={{ background: 'linear-gradient(135deg, #14b8a6 0%, #0d9488 100%)' }}>
+                    <div className={styles.statIcon}>👨‍⚕️</div>
                     <div className={styles.statContent}>
-                        <div className={styles.statValue}>{stats.totalAppointments}</div>
-                        <div className={styles.statLabel}>Tổng lịch hẹn</div>
+                        <div className={styles.statValue}>{stats.activeDoctors}/{stats.totalDoctors}</div>
+                        <div className={styles.statLabel}>Bác sĩ hoạt động</div>
                     </div>
                 </div>
             </div>

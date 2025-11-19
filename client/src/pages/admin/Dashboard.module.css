@@ -10,48 +10,47 @@
 }
 
 .header h1 {
-    font-size: 28px;
+    font-size: 32px;
     font-weight: 700;
     color: #111827;
-    margin: 0 0 8px 0;
+    margin: 0 0 12px 0;
 }
 
 .date {
-    font-size: 14px;
+    font-size: 16px;
     color: #6b7280;
     margin: 0;
+    font-weight: 500;
 }
 
 /* Stats Grid */
 .statsGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
-    margin-bottom: 32px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    margin-bottom: 40px;
 }
 
 .statCard {
     background: white;
-    border-radius: 12px;
-    padding: 24px;
+    border-radius: 16px;
+    padding: 28px;
     display: flex;
-    gap: 16px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s, box-shadow 0.2s;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    color: white;
 }
 
 .statCard:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
 .statIcon {
-    width: 56px;
-    height: 56px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    font-size: 48px;
+    line-height: 1;
     flex-shrink: 0;
 }
 
@@ -80,24 +79,21 @@
     min-width: 0;
 }
 
-.statContent h3 {
-    font-size: 14px;
-    font-weight: 500;
-    color: #6b7280;
-    margin: 0 0 8px 0;
-}
-
-.statNumber {
-    font-size: 28px;
+.statValue {
+    font-size: 42px;
     font-weight: 700;
-    color: #111827;
-    margin: 0 0 4px 0;
-    word-break: break-all;
+    color: white;
+    margin: 0 0 6px 0;
+    line-height: 1.1;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .statLabel {
-    font-size: 12px;
-    color: #9ca3af;
+    font-size: 15px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.95);
+    line-height: 1.4;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
 }
 
 /* Doctor Status */
@@ -168,48 +164,52 @@
 /* Quick Actions */
 .quickActions {
     background: white;
-    border-radius: 12px;
-    padding: 24px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .quickActions h2 {
-    font-size: 18px;
-    font-weight: 600;
+    font-size: 24px;
+    font-weight: 700;
     color: #111827;
-    margin: 0 0 20px 0;
+    margin: 0 0 24px 0;
 }
 
-.actionButtons {
+.actionGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
 }
 
 .actionBtn {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 14px 20px;
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    color: #374151;
+    gap: 16px;
+    padding: 20px 24px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .actionBtn:hover {
-    background: #f3f4f6;
-    border-color: #d1d5db;
-    transform: translateY(-1px);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
-.actionBtn svg {
-    color: #6b7280;
-    flex-shrink: 0;
+.actionIcon {
+    font-size: 32px;
+    line-height: 1;
+}
+
+.actionText {
+    flex: 1;
+    text-align: left;
 }
 
 /* Loading */

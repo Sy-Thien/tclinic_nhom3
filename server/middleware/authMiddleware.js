@@ -29,4 +29,31 @@ const verifyToken = (req, res, next) => {
     }
 };
 
-module.exports = { verifyToken };
+// Middleware kiểm tra role admin
+const isAdmin = (req, res, next) => {
+    if (req.user && req.user.role === 'admin') {
+        next();
+    } else {
+        return res.status(403).json({ message: 'Bạn không có quyền truy cập' });
+    }
+};
+
+// Middleware kiểm tra role doctor
+const isDoctor = (req, res, next) => {
+    if (req.user && req.user.role === 'doctor') {
+        next();
+    } else {
+        return res.status(403).json({ message: 'Chỉ bác sĩ mới có quyền truy cập' });
+    }
+};
+
+// Middleware kiểm tra role patient
+const isPatient = (req, res, next) => {
+    if (req.user && req.user.role === 'patient') {
+        next();
+    } else {
+        return res.status(403).json({ message: 'Chỉ bệnh nhân mới có quyền truy cập' });
+    }
+};
+
+module.exports = { verifyToken, isAdmin, isDoctor, isPatient };

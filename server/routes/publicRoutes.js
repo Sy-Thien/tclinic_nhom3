@@ -89,7 +89,7 @@ router.post('/booking', async (req, res) => {
             address,
             service_id,
             appointment_date,
-            appointment_hour,
+            appointment_time,
             symptoms
         } = req.body;
 
@@ -110,7 +110,7 @@ router.post('/booking', async (req, res) => {
         }
 
         // Validation
-        if (!name || !phone || !service_id || !appointment_date || !appointment_hour) {
+        if (!name || !phone || !service_id || !appointment_date || !appointment_time) {
             console.log('❌ Validation failed');
             return res.status(400).json({
                 message: 'Vui lòng điền đầy đủ thông tin bắt buộc'
@@ -143,7 +143,7 @@ router.post('/booking', async (req, res) => {
         const existingBooking = await Booking.findOne({
             where: {
                 appointment_date: appointment_date,
-                appointment_hour: appointment_hour,
+                appointment_time: appointment_time,
                 service_id: service_id,
                 status: { [Op.ne]: 'cancelled' }
             }
@@ -163,7 +163,7 @@ router.post('/booking', async (req, res) => {
             patient_id: patient_id,
             service_id: service_id,
             appointment_date: appointment_date,
-            appointment_hour: appointment_hour,
+            appointment_time: appointment_time,
             status: 'pending'
         });
 
@@ -174,7 +174,7 @@ router.post('/booking', async (req, res) => {
             booking: {
                 id: booking.id,
                 appointment_date: booking.appointment_date,
-                appointment_hour: booking.appointment_hour,
+                appointment_time: booking.appointment_time,
                 service: service.name,
                 specialty: service.specialty?.name,
                 price: service.price,

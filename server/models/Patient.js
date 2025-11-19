@@ -9,24 +9,24 @@ const Patient = sequelize.define('Patient', {
     },
     email: {
         type: DataTypes.STRING(255),
-        allowNull: false,
+        allowNull: true,
         unique: true
+    },
+    password: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+    },
+    full_name: {
+        type: DataTypes.STRING(255),
+        allowNull: false
     },
     phone: {
         type: DataTypes.STRING(15),
         allowNull: false
     },
-    password: {
-        type: DataTypes.STRING(255),
-        allowNull: false
-    },
-    name: {
-        type: DataTypes.STRING(50),
-        allowNull: false
-    },
     gender: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0
+        type: DataTypes.ENUM('male', 'female', 'other'),
+        allowNull: true
     },
     birthday: {
         type: DataTypes.STRING(10),
@@ -40,15 +40,20 @@ const Patient = sequelize.define('Patient', {
         type: DataTypes.STRING(255),
         allowNull: true
     },
-    create_at: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-        field: 'create_at'
+    is_active: {
+        type: DataTypes.BOOLEAN,
+        allowNull: true,
+        defaultValue: true
     },
-    update_at: {
+    created_at: {
         type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-        field: 'update_at'
+        allowNull: true,
+        defaultValue: DataTypes.NOW
+    },
+    updated_at: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        defaultValue: DataTypes.NOW
     }
 }, {
     tableName: 'tn_patients',

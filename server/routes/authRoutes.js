@@ -45,11 +45,11 @@ router.post('/register', async (req, res) => {
 
         // Tạo patient
         const patient = await Patient.create({
-            name,
+            full_name: name,
             email,
             phone,
             password: hashedPassword,
-            gender: 0
+            gender: 'other'
         });
 
         console.log('✅ Patient created:', patient.id);
@@ -70,7 +70,7 @@ router.post('/register', async (req, res) => {
             token,
             user: {
                 id: patient.id,
-                name: patient.name,
+                name: patient.full_name,
                 email: patient.email,
                 phone: patient.phone,
                 role: 'patient'
@@ -162,9 +162,9 @@ router.post('/login', async (req, res) => {
             token,
             user: {
                 id: user.id,
-                name: user.name || user.username,
+                name: user.full_name || user.username,
                 email: user.email,
-                phone: user.phone,
+                phone: user.phone || null,
                 role: userType
             }
         });

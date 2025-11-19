@@ -1,36 +1,35 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const Service = sequelize.define('Service', {
+const Review = sequelize.define('Review', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
     },
-    name: {
-        type: DataTypes.STRING(255),
-        allowNull: false
-    },
-    description: {
-        type: DataTypes.TEXT,
-        allowNull: true
-    },
-    price: {
-        type: DataTypes.DECIMAL(10, 0),
-        allowNull: true,
-        defaultValue: 0
-    },
-    duration: {
+    patient_id: {
         type: DataTypes.INTEGER,
-        allowNull: true
-    },
-    specialty_id: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
+        allowNull: false,
         references: {
-            model: 'tn_specialties',
+            model: 'tn_patients',
             key: 'id'
         }
+    },
+    doctor_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'tn_doctors',
+            key: 'id'
+        }
+    },
+    rating: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
+    comment: {
+        type: DataTypes.TEXT,
+        allowNull: true
     },
     created_at: {
         type: DataTypes.DATE,
@@ -43,8 +42,8 @@ const Service = sequelize.define('Service', {
         defaultValue: DataTypes.NOW
     }
 }, {
-    tableName: 'tn_services',
+    tableName: 'tn_reviews',
     timestamps: false
 });
 
-module.exports = Service;
+module.exports = Review;

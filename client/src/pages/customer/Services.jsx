@@ -8,6 +8,7 @@ export default function Services() {
     const [services, setServices] = useState([]);
     const [filteredServices, setFilteredServices] = useState([]);
     const [selectedSpecialty, setSelectedSpecialty] = useState('all');
+    const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
@@ -25,14 +26,27 @@ export default function Services() {
 
     useEffect(() => {
         if (selectedSpecialty === 'all') {
-            setFilteredServices(services);
+            let filtered = services;
+            if (searchTerm) {
+                filtered = filtered.filter(service =>
+                    service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    service.description?.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+            }
+            setFilteredServices(filtered);
         } else {
-            const filtered = services.filter(
+            let filtered = services.filter(
                 service => service.specialty_id === parseInt(selectedSpecialty)
             );
+            if (searchTerm) {
+                filtered = filtered.filter(service =>
+                    service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    service.description?.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+            }
             setFilteredServices(filtered);
         }
-    }, [selectedSpecialty, services]);
+    }, [selectedSpecialty, services, searchTerm]);
 
     const fetchData = async () => {
         try {
@@ -120,12 +134,22 @@ export default function Services() {
                     <h2 className={styles.sectionTitle}>
                         💊 Dịch vụ toàn diện
                     </h2>
+                </div>
+
+                <div className={styles.filterBar}>
+                    <input
+                        type="text"
+                        placeholder="🔍 Tìm kiếm dịch vụ..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className={styles.searchInput}
+                    />
                     <select
                         className={styles.filterSelect}
                         value={selectedSpecialty}
                         onChange={(e) => setSelectedSpecialty(e.target.value)}
                     >
-                        <option value="all">Tất cả dịch vụ</option>
+                        <option value="all">Tất cả chuyên khoa</option>
                         {specialties.map(specialty => (
                             <option key={specialty.id} value={specialty.id}>
                                 {specialty.name}

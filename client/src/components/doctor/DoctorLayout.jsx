@@ -112,6 +112,28 @@ export default function DoctorLayout() {
                         </svg>
                         Lịch Làm Việc
                     </NavLink>
+
+                    <NavLink
+                        to="/doctor/workflow"
+                        className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}
+                    >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        Hướng Dẫn
+                    </NavLink>
+
+                    <NavLink
+                        to="/doctor/profile"
+                        className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}
+                    >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            <circle cx="12" cy="7" r="4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        Thông Tin Cá Nhân
+                    </NavLink>
                 </nav>
 
                 <button className={styles.logoutBtn} onClick={handleLogout}>

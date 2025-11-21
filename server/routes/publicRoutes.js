@@ -41,23 +41,28 @@ router.get('/specialties', async (req, res) => {
     }
 });
 
-// ✅ GET - Danh sách dịch vụ theo chuyên khoa
-router.get('/services/:specialtyId', async (req, res) => {
+// ✅ GET - Danh sách dịch vụ (tất cả hoặc theo chuyên khoa)
+router.get('/services/:specialtyId?', async (req, res) => {
     try {
         const { specialtyId } = req.params;
-        console.log(`📋 GET /api/public/services/${specialtyId}`);
+        console.log(`📋 GET /api/public/services${specialtyId ? '/' + specialtyId : ''}`);
 
         if (!Service) {
             return res.status(500).json({ message: 'Models not loaded' });
         }
 
+        let whereClause = {};
+        if (specialtyId && specialtyId !== 'undefined') {
+            whereClause.specialty_id = specialtyId;
+        }
+
         const services = await Service.findAll({
-            where: { specialty_id: specialtyId },
+            where: whereClause,
             attributes: ['id', 'name', 'description', 'price', 'duration'],
             order: [['name', 'ASC']]
         });
 
-        console.log(`✅ Found ${services.length} services for specialty ${specialtyId}`);
+        console.log(`✅ Found ${services.length} services`);
         res.json(services);
     } catch (error) {
         console.error('❌ Error fetching services:', error);
@@ -204,7 +209,7 @@ router.get('/doctors', async (req, res) => {
             return res.status(500).json({ message: 'Models not loaded' });
         }
 
-        let whereClause = { active: true };
+        let whereClause = { is_active: true };
 
         // Lọc theo chuyên khoa
         if (specialty_id) {
@@ -213,7 +218,7 @@ router.get('/doctors', async (req, res) => {
 
         // Tìm kiếm theo tên
         if (search) {
-            whereClause.name = { [Op.like]: `%${search}%` };
+            whereClause.full_name = { [Op.like]: `%${search}%` };
         }
 
         const doctors = await Doctor.findAll({
@@ -225,12 +230,18 @@ router.get('/doctors', async (req, res) => {
                     attributes: ['id', 'name']
                 }
             ],
-            attributes: ['id', 'name', 'email', 'phone', 'description', 'price', 'avatar', 'specialty_id'],
-            order: [['name', 'ASC']]
+            attributes: ['id', 'full_name', 'email', 'phone', 'description', 'avatar', 'experience', 'specialty_id'],
+            order: [['full_name', 'ASC']]
         });
 
-        console.log(`✅ Found ${doctors.length} doctors`);
-        res.json(doctors);
+        // ✅ Thêm rating mặc định (0 sao nếu không có review)
+        const doctorsWithRating = doctors.map(doc => ({
+            ...doc.toJSON(),
+            rating: doc.rating || 0
+        }));
+
+        console.log(`✅ Found ${doctorsWithRating.length} doctors`);
+        res.json(doctorsWithRating);
     } catch (error) {
         console.error('❌ Error fetching doctors:', error);
         res.status(500).json({
@@ -258,15 +269,21 @@ router.get('/doctors/:id', async (req, res) => {
                     attributes: ['id', 'name', 'description']
                 }
             ],
-            attributes: ['id', 'name', 'email', 'phone', 'description', 'price', 'avatar', 'specialty_id']
+            attributes: ['id', 'full_name', 'email', 'phone', 'description', 'avatar', 'experience', 'education', 'specialty_id']
         });
 
         if (!doctor) {
             return res.status(404).json({ message: 'Không tìm thấy bác sĩ' });
         }
 
-        console.log(`✅ Found doctor:`, doctor.name);
-        res.json(doctor);
+        // ✅ Thêm rating mặc định
+        const doctorWithRating = {
+            ...doctor.toJSON(),
+            rating: doctor.rating || 0
+        };
+
+        console.log(`✅ Found doctor:`, doctor.full_name);
+        res.json(doctorWithRating);
     } catch (error) {
         console.error('❌ Error fetching doctor:', error);
         res.status(500).json({

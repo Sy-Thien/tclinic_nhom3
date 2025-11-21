@@ -7,6 +7,8 @@ export default function MyAppointments() {
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all');
+    const [selectedDetail, setSelectedDetail] = useState(null);
+    const [showDetailModal, setShowDetailModal] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -21,7 +23,9 @@ export default function MyAppointments() {
     const fetchAppointments = async () => {
         try {
             const response = await api.get('/api/customer/appointments');
-            setAppointments(response.data.data || []);
+            // Backend returns { bookings }, not { data: [...] }
+            const appointmentData = response.data.bookings || response.data.data || [];
+            setAppointments(appointmentData);
         } catch (error) {
             console.error('Error:', error);
             if (error.response?.status === 401) {
@@ -47,6 +51,34 @@ export default function MyAppointments() {
         } catch (error) {
             console.error('Error:', error);
             alert(error.response?.data?.message || '❌ Không thể hủy lịch hẹn!');
+        }
+    };
+
+    const handleReschedule = (appointmentId) => {
+        navigate(`/booking?reschedule=${appointmentId}`);
+    };
+
+    const handleViewDetail = (appointment) => {
+        setSelectedDetail(appointment);
+        setShowDetailModal(true);
+    };
+
+    const handleSetReminder = (appointmentDate, appointmentTime) => {
+        const appointmentDateTime = new Date(`${appointmentDate}T${appointmentTime}`);
+        const reminderDate = new Date(appointmentDateTime.getTime() - 24 * 60 * 60 * 1000);
+
+        if (Notification.permission === 'granted') {
+            const timeout = reminderDate.getTime() - Date.now();
+            if (timeout > 0) {
+                setTimeout(() => {
+                    new Notification('📅 Nhắc lịch khám', {
+                        body: `Bạn có lịch khám ngày mai lúc ${appointmentTime}`,
+                    });
+                }, timeout);
+                alert('✅ Đã bật thông báo nhắc lịch trước 24 giờ');
+            }
+        } else {
+            Notification.requestPermission();
         }
     };
 
@@ -184,23 +216,160 @@ export default function MyAppointments() {
                             </div>
 
                             <div className={styles.cardFooter}>
-                                {appointment.status === 'pending' || appointment.status === 'confirmed' ? (
-                                    <button
-                                        className={styles.btnCancel}
-                                        onClick={() => handleCancelAppointment(appointment.id)}
-                                    >
-                                        🚫 Hủy lịch
-                                    </button>
-                                ) : null}
+                                {appointment.status === 'pending' && (
+                                    <>
+                                        <button
+                                            className={styles.btnReschedule}
+                                            onClick={() => handleReschedule(appointment.id)}
+                                        >
+                                            📅 Đổi lịch
+                                        </button>
+                                        <button
+                                            className={styles.btnReminder}
+                                            onClick={() => handleSetReminder(appointment.date, appointment.appointment_time)}
+                                        >
+                                            🔔 Nhắc lịch
+                                        </button>
+                                        <button
+                                            className={styles.btnCancel}
+                                            onClick={() => handleCancelAppointment(appointment.id)}
+                                        >
+                                            🚫 Hủy
+                                        </button>
+                                    </>
+                                )}
+
+                                {appointment.status === 'confirmed' && (
+                                    <>
+                                        <button
+                                            className={styles.btnReminder}
+                                            onClick={() => handleSetReminder(appointment.date, appointment.appointment_time)}
+                                        >
+                                            🔔 Nhắc lịch
+                                        </button>
+                                        <button
+                                            className={styles.btnCancel}
+                                            onClick={() => handleCancelAppointment(appointment.id)}
+                                        >
+                                            🚫 Hủy
+                                        </button>
+                                    </>
+                                )}
 
                                 {appointment.status === 'completed' && (
-                                    <button className={styles.btnViewDetail}>
-                                        📄 Xem kết quả
+                                    <button
+                                        className={styles.btnViewDetail}
+                                        onClick={() => handleViewDetail(appointment)}
+                                    >
+                                        📄 Xem kết quả khám
                                     </button>
                                 )}
+
+                                <button
+                                    className={styles.btnInfo}
+                                    onClick={() => handleViewDetail(appointment)}
+                                >
+                                    ℹ️ Chi tiết
+                                </button>
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {/* DETAIL MODAL */}
+            {showDetailModal && selectedDetail && (
+                <div className={styles.modal}>
+                    <div className={styles.modalContent}>
+                        <div className={styles.modalHeader}>
+                            <h2>📋 Chi tiết lịch hẹn</h2>
+                            <button
+                                className={styles.btnClose}
+                                onClick={() => setShowDetailModal(false)}
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <div className={styles.modalBody}>
+                            <div className={styles.detailSection}>
+                                <h3>Thông tin chung</h3>
+                                <div className={styles.detailRow}>
+                                    <span>Mã lịch:</span>
+                                    <span className={styles.code}>{selectedDetail.booking_code}</span>
+                                </div>
+                                <div className={styles.detailRow}>
+                                    <span>Trạng thái:</span>
+                                    <span>{getStatusBadge(selectedDetail.status)}</span>
+                                </div>
+                                <div className={styles.detailRow}>
+                                    <span>Chuyên khoa:</span>
+                                    <span>{selectedDetail.specialty_name}</span>
+                                </div>
+                                <div className={styles.detailRow}>
+                                    <span>Ngày khám:</span>
+                                    <span>{new Date(selectedDetail.date).toLocaleDateString('vi-VN')}</span>
+                                </div>
+                                <div className={styles.detailRow}>
+                                    <span>Giờ khám:</span>
+                                    <span>{selectedDetail.appointment_time || 'Chưa xác định'}</span>
+                                </div>
+                                {selectedDetail.doctor_name && (
+                                    <div className={styles.detailRow}>
+                                        <span>Bác sĩ:</span>
+                                        <span>{selectedDetail.doctor_name}</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {selectedDetail.status === 'completed' && (
+                                <>
+                                    {selectedDetail.diagnosis && (
+                                        <div className={styles.detailSection}>
+                                            <h3>📋 Chẩn đoán</h3>
+                                            <p className={styles.detailText}>{selectedDetail.diagnosis}</p>
+                                        </div>
+                                    )}
+
+                                    {selectedDetail.prescription && (
+                                        <div className={styles.detailSection}>
+                                            <h3>💊 Đơn thuốc</h3>
+                                            <p className={styles.detailText}>{selectedDetail.prescription}</p>
+                                        </div>
+                                    )}
+
+                                    {selectedDetail.note && (
+                                        <div className={styles.detailSection}>
+                                            <h3>📝 Ghi chú</h3>
+                                            <p className={styles.detailText}>{selectedDetail.note}</p>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+
+                            <div className={styles.detailSection}>
+                                <h3>Triệu chứng/Lý do khám</h3>
+                                <p className={styles.detailText}>{selectedDetail.symptoms}</p>
+                            </div>
+                        </div>
+
+                        <div className={styles.modalFooter}>
+                            <button
+                                className={styles.btnClose}
+                                onClick={() => setShowDetailModal(false)}
+                            >
+                                Đóng
+                            </button>
+                            {selectedDetail.status === 'completed' && (
+                                <button
+                                    className={styles.btnPrint}
+                                    onClick={() => window.print()}
+                                >
+                                    🖨️ In kết quả
+                                </button>
+                            )}
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

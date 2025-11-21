@@ -9,6 +9,8 @@ const Service = require('./Service');
 const Booking = require('./Booking');
 const Appointment = require('./Appointment');
 const Drug = require('./Drug');
+const Prescription = require('./Prescription');  // ✅ NEW
+const PrescriptionDetail = require('./PrescriptionDetail');  // ✅ NEW
 const Room = require('./Room');
 const Review = require('./Review');
 const Notification = require('./Notification');
@@ -181,6 +183,56 @@ try {
         as: 'servicesDoctors'
     });
 
+    // ✅ Prescription <-> Booking
+    Prescription.belongsTo(Booking, {
+        foreignKey: 'booking_id',
+        as: 'booking'
+    });
+    Booking.hasOne(Prescription, {
+        foreignKey: 'booking_id',
+        as: 'prescription'
+    });
+
+    // ✅ Prescription <-> Doctor
+    Prescription.belongsTo(Doctor, {
+        foreignKey: 'doctor_id',
+        as: 'doctor'
+    });
+    Doctor.hasMany(Prescription, {
+        foreignKey: 'doctor_id',
+        as: 'prescriptions'
+    });
+
+    // ✅ Prescription <-> Patient
+    Prescription.belongsTo(Patient, {
+        foreignKey: 'patient_id',
+        as: 'patient'
+    });
+    Patient.hasMany(Prescription, {
+        foreignKey: 'patient_id',
+        as: 'prescriptions'
+    });
+
+    // ✅ PrescriptionDetail <-> Prescription
+    PrescriptionDetail.belongsTo(Prescription, {
+        foreignKey: 'prescription_id',
+        as: 'prescription'
+    });
+    Prescription.hasMany(PrescriptionDetail, {
+        foreignKey: 'prescription_id',
+        as: 'details'
+    });
+
+    // ✅ PrescriptionDetail <-> Drug
+    PrescriptionDetail.belongsTo(Drug, {
+        foreignKey: 'drug_id',
+        as: 'drug'
+    });
+    Drug.hasMany(PrescriptionDetail, {
+        foreignKey: 'drug_id',
+        as: 'prescriptionDetails'
+    });
+
     // ✅ DoctorSchedule <-> Doctor
     DoctorSchedule.belongsTo(Doctor, {
         foreignKey: 'doctor_id',
@@ -206,6 +258,8 @@ module.exports = {
     Booking,
     Appointment,
     Drug,
+    Prescription,  // ✅ NEW
+    PrescriptionDetail,  // ✅ NEW
     Room,
     Review,
     Notification,

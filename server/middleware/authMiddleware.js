@@ -56,4 +56,8 @@ const isPatient = (req, res, next) => {
     }
 };
 
-module.exports = { verifyToken, isAdmin, isDoctor, isPatient };
+// Aliases for compatibility
+const checkDoctorRole = isDoctor;
+const checkAdminRole = isAdmin;
+
+module.exports = { verifyToken, isAdmin, isDoctor, isPatient, checkDoctorRole, checkAdminRole };

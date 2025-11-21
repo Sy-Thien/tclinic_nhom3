@@ -18,6 +18,8 @@ import DoctorDashboard from './pages/doctor/Dashboard';
 import DoctorAppointments from './pages/doctor/Appointments';
 import DoctorPatients from './pages/doctor/Patients';
 import DoctorSchedule from './pages/doctor/Schedule';
+import DoctorWorkflow from './pages/doctor/DoctorWorkflow';  // ✅ NEW
+import DoctorProfile from './pages/doctor/DoctorProfile';  // ✅ NEW
 
 // Admin Pages
 import AdminDashboard from './pages/admin/Dashboard';
@@ -29,6 +31,7 @@ import AdminRooms from './pages/admin/AdminRooms';
 import AdminServices from './pages/admin/Services';
 import AdminReports from './pages/admin/AdminReports';
 import AdminDoctorSchedule from './pages/admin/AdminDoctorSchedule';
+import DrugManagement from './pages/admin/DrugManagement';  // ✅ NEW
 
 export default function App() {
     return (
@@ -52,6 +55,8 @@ export default function App() {
                     <Route path="appointments" element={<DoctorAppointments />} />
                     <Route path="patients" element={<DoctorPatients />} />
                     <Route path="schedule" element={<DoctorSchedule />} />
+                    <Route path="workflow" element={<DoctorWorkflow />} />
+                    <Route path="profile" element={<DoctorProfile />} />
                 </Route>
 
                 {/* Admin Routes */}
@@ -65,6 +70,7 @@ export default function App() {
                     <Route path="services" element={<AdminServices />} />
                     <Route path="reports" element={<AdminReports />} />
                     <Route path="doctor-schedules" element={<AdminDoctorSchedule />} />
+                    <Route path="drugs" element={<DrugManagement />} />
                 </Route>
 
                 {/* Auth Routes */}

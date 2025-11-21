@@ -83,6 +83,16 @@ const Booking = sequelize.define('Booking', {
         type: DataTypes.TEXT,
         allowNull: false
     },
+    diagnosis: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        comment: 'Chẩn đoán từ bác sĩ'
+    },
+    conclusion: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        comment: 'Kết luận từ bác sĩ'
+    },
     note: {
         type: DataTypes.TEXT,
         allowNull: true

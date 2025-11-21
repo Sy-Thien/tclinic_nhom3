@@ -88,12 +88,36 @@ exports.getMyBookings = async (req, res) => {
                     model: Doctor,
                     as: 'doctor',
                     attributes: ['id', 'full_name', 'phone']
+                },
+                {
+                    model: Service,
+                    as: 'service',
+                    attributes: ['id', 'name', 'price'],
+                    include: [
+                        {
+                            model: Specialty,
+                            as: 'specialty',
+                            attributes: ['id', 'name']
+                        }
+                    ]
                 }
             ],
             order: [['created_at', 'DESC']]
         });
 
-        res.json({ bookings });
+        // ✅ Map lại data để match frontend expectations
+        const mappedBookings = bookings.map(booking => ({
+            ...booking.toJSON(),
+            service_name: booking.service?.name || 'Dịch vụ',
+            specialty_name: booking.specialty?.name || 'Chuyên khoa',
+            doctor_name: booking.doctor?.full_name || 'Chưa xác định',
+            service_price: booking.service?.price || booking.price || 0,
+            date: booking.appointment_date,
+            appointment_time: booking.appointment_time || 'Chưa xác định',
+            symptoms: booking.symptoms || ''
+        }));
+
+        res.json({ bookings: mappedBookings });
 
     } catch (error) {
         console.error('❌ Get my bookings error:', error);
@@ -161,6 +185,48 @@ exports.getDoctorsBySpecialty = async (req, res) => {
 
     } catch (error) {
         console.error('❌ Get doctors error:', error);
+        res.status(500).json({ message: 'Lỗi server', error: error.message });
+    }
+};
+
+// ✅ Cancel Booking
+exports.cancelBooking = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const patient_id = req.user.id;
+
+        const booking = await Booking.findOne({
+            where: {
+                id,
+                patient_id
+            }
+        });
+
+        if (!booking) {
+            return res.status(404).json({ message: 'Không tìm thấy lịch hẹn' });
+        }
+
+        if (booking.status === 'cancelled') {
+            return res.status(400).json({ message: 'Lịch hẹn đã được hủy' });
+        }
+
+        if (booking.status === 'completed') {
+            return res.status(400).json({ message: 'Không thể hủy lịch hẹn đã hoàn thành' });
+        }
+
+        await booking.update({
+            status: 'cancelled',
+            updated_at: new Date()
+        });
+
+        res.json({
+            success: true,
+            message: 'Hủy lịch hẹn thành công',
+            booking
+        });
+
+    } catch (error) {
+        console.error('❌ Cancel booking error:', error);
         res.status(500).json({ message: 'Lỗi server', error: error.message });
     }
 };

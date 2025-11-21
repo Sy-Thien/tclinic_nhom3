@@ -37,7 +37,7 @@ export default function Dashboard() {
             if (token) {
                 try {
                     const appointmentsRes = await api.get('/api/customer/appointments');
-                    const appointments = appointmentsRes.data.data || [];
+                    const appointments = appointmentsRes.data.bookings || appointmentsRes.data.data || [];
                     setStats({
                         totalAppointments: appointments.length,
                         completedAppointments: appointments.filter(a => a.status === 'completed').length,

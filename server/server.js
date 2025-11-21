@@ -39,12 +39,16 @@ const adminReportRoutes = require('./routes/adminReportRoutes');
 const doctorScheduleRoutes = require('./routes/doctorScheduleRoutes');
 const bookingAvailabilityRoutes = require('./routes/bookingAvailabilityRoutes');
 const adminDoctorScheduleRoutes = require('./routes/adminDoctorScheduleRoutes');
+const adminDrugRoutes = require('./routes/adminDrugRoutes');  // ✅ NEW
+const doctorPrescriptionRoutes = require('./routes/doctorPrescriptionRoutes');  // ✅ NEW
+const doctorProfileRoutes = require('./routes/doctorProfileRoutes');  // ✅ NEW
 
 app.use('/api/auth', authRoutes);
 app.use('/api/public', publicRoutes);
 app.use('/api/doctor', doctorRoutes);
 app.use('/api/patient', patientRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/customer', bookingRoutes);  // ✅ Added: /api/customer routes
 app.use('/api/doctor/appointments', doctorAppointmentRoutes);
 app.use('/api/admin', adminBookingRoutes);
 app.use('/api/admin', adminDoctorRoutes);
@@ -57,6 +61,9 @@ app.use('/api/admin', adminReportRoutes);
 app.use('/api/doctor-schedule', doctorScheduleRoutes);
 app.use('/api/bookings', bookingAvailabilityRoutes);
 app.use('/api/admin', adminDoctorScheduleRoutes);
+app.use('/api/admin', adminDrugRoutes);  // ✅ NEW: Drug management
+app.use('/api/doctor/prescriptions', doctorPrescriptionRoutes);  // ✅ NEW: Prescription management
+app.use('/api/doctor', doctorProfileRoutes);  // ✅ NEW: Doctor profile management
 
 // Health check
 app.get('/health', (req, res) => {

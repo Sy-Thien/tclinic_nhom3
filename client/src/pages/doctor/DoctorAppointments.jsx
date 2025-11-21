@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../utils/api';
+import PrescriptionForm from './PrescriptionForm';
+import PrescriptionView from './PrescriptionView';
 import styles from './DoctorAppointments.module.css';
 
 export default function DoctorAppointments() {
@@ -16,6 +18,7 @@ export default function DoctorAppointments() {
     });
     const [loading, setLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
+    const [showPrescriptionForm, setShowPrescriptionForm] = useState(false);
 
     useEffect(() => {
         fetchAppointments();
@@ -320,16 +323,13 @@ export default function DoctorAppointments() {
                                             />
                                         </div>
 
-                                        <div className={styles.formGroup}>
-                                            <label>Đơn thuốc (nếu có)</label>
-                                            <textarea
-                                                name="prescription"
-                                                value={diagnosisForm.prescription}
-                                                onChange={handleDiagnosisChange}
-                                                placeholder="Nhập đơn thuốc..."
-                                                rows={4}
-                                            />
-                                        </div>
+                                        <button
+                                            type="button"
+                                            className={styles.btnPrescription}
+                                            onClick={() => setShowPrescriptionForm(true)}
+                                        >
+                                            💊 Kê Đơn Thuốc
+                                        </button>
 
                                         <button
                                             type="submit"
@@ -348,11 +348,29 @@ export default function DoctorAppointments() {
                                     <div className={styles.completedInfo}>
                                         <p>Lịch khám này đã được hoàn thành.</p>
                                     </div>
+                                    <PrescriptionView
+                                        bookingId={selectedAppointment.id}
+                                        appointment={selectedAppointment}
+                                        doctor={selectedAppointment.doctor || { full_name: 'N/A' }}
+                                    />
                                 </section>
                             )}
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* PRESCRIPTION FORM MODAL */}
+            {showPrescriptionForm && selectedAppointment && (
+                <PrescriptionForm
+                    bookingId={selectedAppointment.id}
+                    appointment={selectedAppointment}
+                    onClose={() => setShowPrescriptionForm(false)}
+                    onSuccess={() => {
+                        alert('✅ Đơn thuốc đã được lưu thành công');
+                        setShowPrescriptionForm(false);
+                    }}
+                />
             )}
         </div>
     );

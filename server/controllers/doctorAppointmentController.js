@@ -96,6 +96,8 @@ exports.updateBookingDiagnosis = async (req, res) => {
         // Update booking
         await booking.update({
             status: status || booking.status,
+            diagnosis: diagnosis || booking.diagnosis,
+            conclusion: conclusion || booking.conclusion,
             note: note || booking.note
         });
 
@@ -156,7 +158,8 @@ exports.completeAppointment = async (req, res) => {
 
         await booking.update({
             status: 'completed',
-            note: `Chẩn đoán: ${diagnosis}\nKết luận: ${conclusion}\nĐơn thuốc: ${prescription || 'Không có'}`
+            diagnosis: diagnosis || booking.diagnosis,
+            conclusion: conclusion || booking.conclusion
         });
 
         res.json({ message: 'Hoàn thành khám bệnh', booking });

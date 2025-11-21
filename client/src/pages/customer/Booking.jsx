@@ -17,12 +17,15 @@ export default function Booking() {
         specialty_id: searchParams.get('specialty') || '',
         appointment_date: '',
         appointment_time: '',
+        doctor_id: null, // null = không chỉ định, admin sẽ gán
         symptoms: '',
         note: ''
     });
 
     const [specialties, setSpecialties] = useState([]);
+    const [doctors, setDoctors] = useState([]);
     const [availableSlots, setAvailableSlots] = useState([]);
+    const [selectedDoctor, setSelectedDoctor] = useState(null);
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
 
@@ -31,12 +34,25 @@ export default function Booking() {
         fetchSpecialties();
     }, []);
 
-    // Load available time slots when date changes
+    // Load bác sĩ và giờ khi chọn chuyên khoa
+    useEffect(() => {
+        if (formData.specialty_id) {
+            fetchDoctorsBySpecialty(formData.specialty_id);
+        }
+    }, [formData.specialty_id]);
+
+    // Load giờ rảnh khi chọn ngày
     useEffect(() => {
         if (formData.appointment_date) {
-            fetchAvailableSlots(formData.appointment_date);
+            if (selectedDoctor) {
+                // Nếu chọn bác sĩ, lấy giờ rảnh của bác sĩ đó
+                fetchAvailableSlotsForDoctor(selectedDoctor, formData.appointment_date);
+            } else if (formData.specialty_id) {
+                // Nếu không chọn bác sĩ, lấy tất cả giờ rảnh của tất cả bác sĩ trong chuyên khoa
+                fetchDefaultSlots(formData.appointment_date);
+            }
         }
-    }, [formData.appointment_date]);
+    }, [formData.appointment_date, selectedDoctor]);
 
     const fetchSpecialties = async () => {
         try {
@@ -47,12 +63,47 @@ export default function Booking() {
         }
     };
 
-    const fetchAvailableSlots = async (date) => {
+    // Lấy danh sách bác sĩ theo chuyên khoa
+    const fetchDoctorsBySpecialty = async (specialtyId) => {
+        try {
+            setLoading(true);
+            const response = await api.get('/api/bookings/doctors-by-specialty', {
+                params: { specialtyId }
+            });
+            setDoctors(response.data);
+            setSelectedDoctor(null);
+            setFormData(prev => ({ ...prev, doctor_id: null }));
+        } catch (error) {
+            console.error('Error fetching doctors:', error);
+            setDoctors([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Lấy giờ rảnh mặc định (tất cả bác sĩ trong chuyên khoa)
+    const fetchDefaultSlots = async (date) => {
         // Hiển thị tất cả giờ làm việc của phòng khám (8h-17h, nghỉ 12h-13h)
         setAvailableSlots([
             '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
             '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'
         ]);
+    };
+
+    // Lấy giờ rảnh của bác sĩ cụ thể
+    const fetchAvailableSlotsForDoctor = async (doctorId, date) => {
+        try {
+            setLoading(true);
+            const response = await api.get('/api/bookings/available-slots', {
+                params: { doctorId, date }
+            });
+            setAvailableSlots(response.data.availableSlots.map(s => s.start));
+        } catch (error) {
+            console.error('Error fetching doctor slots:', error);
+            setAvailableSlots([]);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleChange = (e) => {
@@ -70,6 +121,32 @@ export default function Booking() {
         // Reset time when date changes
         if (name === 'appointment_date') {
             setFormData(prev => ({ ...prev, appointment_time: '' }));
+        }
+    };
+
+    const handleSelectDoctor = (doctorId) => {
+        if (selectedDoctor === doctorId) {
+            // Bỏ chọn bác sĩ
+            setSelectedDoctor(null);
+            setFormData(prev => ({
+                ...prev,
+                doctor_id: null,
+                appointment_time: ''
+            }));
+            if (formData.appointment_date) {
+                fetchDefaultSlots(formData.appointment_date);
+            }
+        } else {
+            // Chọn bác sĩ
+            setSelectedDoctor(doctorId);
+            setFormData(prev => ({
+                ...prev,
+                doctor_id: doctorId,
+                appointment_time: ''
+            }));
+            if (formData.appointment_date) {
+                fetchAvailableSlotsForDoctor(doctorId, formData.appointment_date);
+            }
         }
     };
 
@@ -139,12 +216,14 @@ export default function Booking() {
                 patient_dob: '',
                 patient_gender: 'male',
                 patient_address: '',
-                specialty_id: '',
+                specialty_id: searchParams.get('specialty') || '',
                 appointment_date: '',
                 appointment_time: '',
+                doctor_id: null,
                 symptoms: '',
                 note: ''
             });
+            setSelectedDoctor(null);
 
             // Redirect to appointments page if logged in
             const user = localStorage.getItem('user');
@@ -252,6 +331,7 @@ export default function Booking() {
                     <h2 className={styles.sectionTitle}>🏥 Thông tin lịch khám</h2>
 
                     <div className={styles.formGrid}>
+                        {/* Chuyên khoa - Bắt buộc */}
                         <div className={styles.formGroup}>
                             <label>Chuyên khoa <span className={styles.required}>*</span></label>
                             <select
@@ -268,8 +348,7 @@ export default function Booking() {
                             {errors.specialty_id && <span className={styles.error}>{errors.specialty_id}</span>}
                         </div>
 
-
-
+                        {/* Ngày khám - Bắt buộc */}
                         <div className={styles.formGroup}>
                             <label>Ngày khám <span className={styles.required}>*</span></label>
                             <input
@@ -283,25 +362,73 @@ export default function Booking() {
                             {errors.appointment_date && <span className={styles.error}>{errors.appointment_date}</span>}
                         </div>
 
-                        <div className={styles.formGroup}>
-                            <label>Giờ khám (tùy chọn, admin sẽ sắp xếp nếu không chọn)</label>
-                            <select
-                                name="appointment_time"
-                                value={formData.appointment_time}
-                                onChange={handleChange}
-                                disabled={!formData.appointment_date}
-                                className={errors.appointment_time ? styles.inputError : ''}
-                            >
-                                <option value="">-- Chọn giờ khám (hoặc để admin sắp xếp) --</option>
-                                {availableSlots.map(slot => (
-                                    <option key={slot} value={slot}>{slot}</option>
-                                ))}
-                            </select>
-                            {formData.appointment_date && availableSlots.length > 0 && (
-                                <span className={styles.info}>📅 Chọn giờ khám phù hợp hoặc để trống để admin sắp xếp.</span>
-                            )}
-                        </div>
+                        {/* Chọn bác sĩ - Tùy chọn */}
+                        {formData.specialty_id && (
+                            <div style={{ gridColumn: '1 / -1' }} className={styles.formGroup}>
+                                <label>👨‍⚕️ Chọn bác sĩ (tùy chọn - nếu không chọn admin sẽ gán)</label>
+                                {loading ? (
+                                    <p>⏳ Đang tải danh sách bác sĩ...</p>
+                                ) : doctors.length > 0 ? (
+                                    <div className={styles.doctorsList}>
+                                        {/* Option "Chưa chọn" */}
+                                        <div
+                                            className={`${styles.doctorOption} ${selectedDoctor === null ? styles.selected : ''}`}
+                                            onClick={() => handleSelectDoctor(null)}
+                                        >
+                                            <h4>❌ Chưa chọn bác sĩ</h4>
+                                            <p>Admin sẽ tự động gán bác sĩ phù hợp với lịch rảnh</p>
+                                        </div>
 
+                                        {/* Các bác sĩ */}
+                                        {doctors.map(doc => (
+                                            <div
+                                                key={doc.id}
+                                                className={`${styles.doctorOption} ${selectedDoctor === doc.id ? styles.selected : ''}`}
+                                                onClick={() => handleSelectDoctor(doc.id)}
+                                            >
+                                                <h4>👨‍⚕️ {doc.full_name}</h4>
+                                                <p>📞 {doc.phone || 'Không có'}</p>
+                                                {doc.schedules && doc.schedules.length > 0 && (
+                                                    <p className={styles.info}>Lịch làm việc: {doc.schedules.map(s => s.day_of_week).join(', ')}</p>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className={styles.warning}>Không có bác sĩ nào trong chuyên khoa này</p>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Giờ khám - Hiển thị nếu chọn ngày */}
+                        {formData.appointment_date && (
+                            <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
+                                <label>Giờ khám</label>
+                                {loading ? (
+                                    <p>⏳ Đang tải giờ rảnh...</p>
+                                ) : availableSlots.length > 0 ? (
+                                    <>
+                                        <div className={styles.slotsGrid}>
+                                            {availableSlots.map(slot => (
+                                                <button
+                                                    key={slot}
+                                                    type="button"
+                                                    className={`${styles.slotBtn} ${formData.appointment_time === slot ? styles.selected : ''}`}
+                                                    onClick={() => setFormData(prev => ({ ...prev, appointment_time: slot }))}
+                                                >
+                                                    {slot}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <p className={styles.info}>💡 {selectedDoctor ? 'Chọn giờ rảnh của bác sĩ' : 'Chọn giờ khám phù hợp hoặc để trống để admin sắp xếp'}</p>
+                                    </>
+                                ) : (
+                                    <p className={styles.warning}>⚠️ {selectedDoctor ? 'Bác sĩ này không có giờ rảnh vào ngày được chọn' : 'Không có giờ rảnh vào ngày này'}</p>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Triệu chứng - Bắt buộc */}
                         <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
                             <label>Triệu chứng / Lý do khám <span className={styles.required}>*</span></label>
                             <textarea
@@ -315,6 +442,7 @@ export default function Booking() {
                             {errors.symptoms && <span className={styles.error}>{errors.symptoms}</span>}
                         </div>
 
+                        {/* Ghi chú - Tùy chọn */}
                         <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
                             <label>Ghi chú thêm</label>
                             <textarea
@@ -332,9 +460,18 @@ export default function Booking() {
                 <div className={styles.noteSection}>
                     <p>💡 <strong>Hướng dẫn:</strong></p>
                     <ul>
-                        <li>Admin sẽ xem xét triệu chứng và gán bác sĩ phù hợp cho bạn.</li>
-                        <li>Bạn có thể chọn giờ khám hoặc để admin sắp xếp dựa trên lịch của bác sĩ.</li>
-                        <li>Bạn sẽ nhận thông báo xác nhận qua số điện thoại sau khi admin xử lý.</li>
+                        <li>
+                            <strong>Chuyên khoa:</strong> Bắt buộc chọn - chuyên môn của bác sĩ mà bạn muốn khám
+                        </li>
+                        <li>
+                            <strong>Bác sĩ:</strong> Tùy chọn - nếu bạn không chọn, admin sẽ tự động gán bác sĩ phù hợp nhất dựa trên lịch rảnh
+                        </li>
+                        <li>
+                            <strong>Giờ khám:</strong> Nếu chọn bác sĩ cụ thể, bạn sẽ thấy giờ rảnh của bác sĩ đó. Nếu không chọn bác sĩ, hiển thị tất cả giờ làm việc của phòng khám.
+                        </li>
+                        <li>
+                            Admin sẽ xác nhận lịch của bạn trong thời gian sớm nhất. Bạn sẽ nhận thông báo xác nhận qua số điện thoại.
+                        </li>
                     </ul>
                 </div>
 

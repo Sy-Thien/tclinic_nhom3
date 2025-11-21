@@ -17,6 +17,9 @@ const Treatment = require('./Treatment');
 const BookingPhoto = require('./BookingPhoto');
 const DoctorAndService = require('./DoctorAndService');
 
+// Initialize DoctorSchedule model (it's a factory function)
+const DoctorSchedule = require('./DoctorSchedule')(sequelize, require('sequelize').DataTypes);
+
 console.log('📦 Loading models...');
 
 try {
@@ -178,6 +181,16 @@ try {
         as: 'servicesDoctors'
     });
 
+    // ✅ DoctorSchedule <-> Doctor
+    DoctorSchedule.belongsTo(Doctor, {
+        foreignKey: 'doctor_id',
+        as: 'doctor'
+    });
+    Doctor.hasMany(DoctorSchedule, {
+        foreignKey: 'doctor_id',
+        as: 'schedules'
+    });
+
     console.log('✅ All models and relationships loaded successfully');
 } catch (error) {
     console.error('❌ Error loading models:', error);
@@ -199,5 +212,6 @@ module.exports = {
     MedicalRecord,
     Treatment,
     BookingPhoto,
-    DoctorAndService
+    DoctorAndService,
+    DoctorSchedule
 };

@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import CustomerLayout from './components/customer/CustomerLayout';
 import DoctorLayout from './components/doctor/DoctorLayout';
 import AdminLayout from './components/admin/AdminLayout';
-import Home from './pages/customer/Home';
+import Dashboard from './pages/customer/Dashboard';
 import Booking from './pages/customer/Booking';
 import MyAppointments from './pages/customer/MyAppointments';
 import Services from './pages/customer/Services';
@@ -28,6 +28,7 @@ import AdminSpecialties from './pages/admin/AdminSpecialties';
 import AdminRooms from './pages/admin/AdminRooms';
 import AdminServices from './pages/admin/Services';
 import AdminReports from './pages/admin/AdminReports';
+import AdminDoctorSchedule from './pages/admin/AdminDoctorSchedule';
 
 export default function App() {
     return (
@@ -35,7 +36,7 @@ export default function App() {
             <Routes>
                 {/* Customer Routes */}
                 <Route path="/" element={<CustomerLayout />}>
-                    <Route index element={<Home />} />
+                    <Route index element={<Dashboard />} />
                     <Route path="booking" element={<Booking />} />
                     <Route path="my-appointments" element={<MyAppointments />} />
                     <Route path="services" element={<Services />} />
@@ -63,6 +64,7 @@ export default function App() {
                     <Route path="rooms" element={<AdminRooms />} />
                     <Route path="services" element={<AdminServices />} />
                     <Route path="reports" element={<AdminReports />} />
+                    <Route path="doctor-schedules" element={<AdminDoctorSchedule />} />
                 </Route>
 
                 {/* Auth Routes */}

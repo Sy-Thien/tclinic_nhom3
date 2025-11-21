@@ -135,7 +135,7 @@ exports.updateBooking = async (req, res) => {
     }
 };
 
-// Admin - Gán bác sĩ cho booking
+// Admin - Gán bác sĩ cho booking (chỉ gán bác sĩ có cùng chuyên khoa)
 exports.assignDoctor = async (req, res) => {
     try {
         const { id } = req.params;
@@ -145,10 +145,40 @@ exports.assignDoctor = async (req, res) => {
             return res.status(400).json({ message: 'Vui lòng chọn bác sĩ' });
         }
 
-        const booking = await Booking.findByPk(id);
+        const booking = await Booking.findByPk(id, {
+            include: [
+                {
+                    model: Specialty,
+                    as: 'specialty',
+                    attributes: ['id', 'name']
+                }
+            ]
+        });
 
         if (!booking) {
             return res.status(404).json({ message: 'Không tìm thấy lịch hẹn' });
+        }
+
+        // Check xem bác sĩ có cùng chuyên khoa không
+        const doctor = await Doctor.findByPk(doctor_id, {
+            include: [
+                {
+                    model: Specialty,
+                    as: 'specialty',
+                    attributes: ['id', 'name']
+                }
+            ]
+        });
+
+        if (!doctor) {
+            return res.status(404).json({ message: 'Không tìm thấy bác sĩ' });
+        }
+
+        // Validate: bác sĩ phải có cùng chuyên khoa với booking
+        if (doctor.specialty_id !== booking.specialty_id) {
+            return res.status(400).json({
+                message: `Bác sĩ này không có chuyên khoa ${booking.specialty?.name || 'được chọn'}. Bác sĩ này chuyên về ${doctor.specialty?.name || 'không xác định'}`
+            });
         }
 
         await booking.update({
@@ -156,12 +186,68 @@ exports.assignDoctor = async (req, res) => {
             status: 'confirmed'
         });
 
-        console.log('✅ Admin assigned doctor to booking:', booking.id);
+        console.log('✅ Admin assigned doctor to booking:', booking.id, 'Doctor:', doctor_id);
 
-        res.json({ message: 'Gán bác sĩ thành công', booking });
+        res.json({
+            message: 'Gán bác sĩ thành công',
+            booking,
+            doctor: {
+                id: doctor.id,
+                full_name: doctor.full_name,
+                specialty: doctor.specialty?.name
+            }
+        });
 
     } catch (error) {
         console.error('❌ Admin assign doctor error:', error);
+        res.status(500).json({ message: 'Lỗi server', error: error.message });
+    }
+};
+
+// Admin - Lấy danh sách bác sĩ khả dụng cho booking (cùng chuyên khoa)
+exports.getAvailableDoctorsForBooking = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const booking = await Booking.findByPk(id, {
+            include: [
+                {
+                    model: Specialty,
+                    as: 'specialty',
+                    attributes: ['id', 'name']
+                }
+            ]
+        });
+
+        if (!booking) {
+            return res.status(404).json({ message: 'Không tìm thấy lịch hẹn' });
+        }
+
+        // Lấy tất cả bác sĩ có cùng chuyên khoa
+        const doctors = await Doctor.findAll({
+            where: {
+                specialty_id: booking.specialty_id,
+                is_active: true
+            },
+            include: [
+                {
+                    model: Specialty,
+                    as: 'specialty',
+                    attributes: ['id', 'name']
+                }
+            ],
+            attributes: ['id', 'full_name', 'email', 'phone', 'specialty_id', 'experience'],
+            order: [['full_name', 'ASC']]
+        });
+
+        res.json({
+            doctors,
+            specialty: booking.specialty,
+            booking_id: booking.id
+        });
+
+    } catch (error) {
+        console.error('❌ Get available doctors for booking error:', error);
         res.status(500).json({ message: 'Lỗi server', error: error.message });
     }
 };

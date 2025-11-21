@@ -36,6 +36,9 @@ const adminSpecialtyRoutes = require('./routes/adminSpecialtyRoutes');
 const adminRoomRoutes = require('./routes/adminRoomRoutes');
 
 const adminReportRoutes = require('./routes/adminReportRoutes');
+const doctorScheduleRoutes = require('./routes/doctorScheduleRoutes');
+const bookingAvailabilityRoutes = require('./routes/bookingAvailabilityRoutes');
+const adminDoctorScheduleRoutes = require('./routes/adminDoctorScheduleRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/public', publicRoutes);
@@ -51,6 +54,9 @@ app.use('/api/admin', adminSpecialtyRoutes);
 app.use('/api/admin', adminRoomRoutes);
 
 app.use('/api/admin', adminReportRoutes);
+app.use('/api/doctor-schedule', doctorScheduleRoutes);
+app.use('/api/bookings', bookingAvailabilityRoutes);
+app.use('/api/admin', adminDoctorScheduleRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

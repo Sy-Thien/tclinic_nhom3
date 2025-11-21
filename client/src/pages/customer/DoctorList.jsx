@@ -10,7 +10,8 @@ export default function DoctorList() {
     const [searchParams, setSearchParams] = useSearchParams();
     const [filters, setFilters] = useState({
         specialty_id: searchParams.get('specialty') || '',
-        search: searchParams.get('search') || ''
+        search: searchParams.get('search') || '',
+        sort: 'name' // name, experience, rating
     });
     const navigate = useNavigate();
 
@@ -40,7 +41,26 @@ export default function DoctorList() {
             if (filters.search) params.append('search', filters.search);
 
             const response = await api.get(`/api/public/doctors?${params}`);
-            setDoctors(response.data);
+            let doctorList = response.data;
+
+            // Sort doctors
+            if (filters.sort === 'experience') {
+                doctorList.sort((a, b) => {
+                    const expA = parseInt(a.experience) || 0;
+                    const expB = parseInt(b.experience) || 0;
+                    return expB - expA;
+                });
+            } else if (filters.sort === 'rating') {
+                doctorList.sort((a, b) => {
+                    const ratingA = a.rating || 0;
+                    const ratingB = b.rating || 0;
+                    return ratingB - ratingA;
+                });
+            } else {
+                doctorList.sort((a, b) => a.full_name.localeCompare(b.full_name));
+            }
+
+            setDoctors(doctorList);
         } catch (error) {
             console.error('Error fetching doctors:', error);
         } finally {
@@ -109,6 +129,18 @@ export default function DoctorList() {
                     </select>
                 </div>
 
+                <div className={styles.filterGroup}>
+                    <select
+                        value={filters.sort}
+                        onChange={(e) => handleFilterChange('sort', e.target.value)}
+                        className={styles.selectInput}
+                    >
+                        <option value="name">Sắp xếp: Theo tên A-Z</option>
+                        <option value="experience">Sắp xếp: Kinh nghiệm cao nhất</option>
+                        <option value="rating">Sắp xếp: Đánh giá cao nhất</option>
+                    </select>
+                </div>
+
                 {(filters.specialty_id || filters.search) && (
                     <button onClick={handleClearFilters} className={styles.btnClear}>
                         Xóa bộ lọc
@@ -143,20 +175,33 @@ export default function DoctorList() {
                             <div className={styles.cardHeader}>
                                 <div className={styles.avatar}>
                                     {doctor.avatar ? (
-                                        <img src={doctor.avatar} alt={doctor.name} />
+                                        <img src={doctor.avatar} alt={doctor.full_name} />
                                     ) : (
                                         <div className={styles.avatarPlaceholder}>
-                                            {doctor.name.charAt(0)}
+                                            {doctor.full_name?.charAt(0)}
                                         </div>
                                     )}
                                 </div>
-                                <div className={styles.badge}>
-                                    {doctor.specialty?.name || 'Đa khoa'}
+                                <div className={styles.badges}>
+                                    <span className={styles.badge}>
+                                        {doctor.specialty?.name || 'Đa khoa'}
+                                    </span>
+                                    {doctor.rating && (
+                                        <span className={styles.rating}>
+                                            ⭐ {doctor.rating.toFixed(1)}
+                                        </span>
+                                    )}
                                 </div>
                             </div>
 
                             <div className={styles.cardBody}>
-                                <h3 className={styles.doctorName}>{doctor.name}</h3>
+                                <h3 className={styles.doctorName}>{doctor.full_name}</h3>
+
+                                {doctor.experience && (
+                                    <p className={styles.experience}>
+                                        📅 Kinh nghiệm: {doctor.experience}
+                                    </p>
+                                )}
 
                                 <p className={styles.doctorDesc}>
                                     {doctor.description || 'Bác sĩ giàu kinh nghiệm, tận tâm với bệnh nhân'}
@@ -166,14 +211,6 @@ export default function DoctorList() {
                                     <div className={styles.infoItem}>
                                         <span className={styles.icon}>📞</span>
                                         <span>{doctor.phone || 'Chưa cập nhật'}</span>
-                                    </div>
-                                    <div className={styles.infoItem}>
-                                        <span className={styles.icon}>💰</span>
-                                        <span>
-                                            {doctor.price
-                                                ? `${doctor.price.toLocaleString()}đ`
-                                                : 'Liên hệ'}
-                                        </span>
                                     </div>
                                 </div>
                             </div>

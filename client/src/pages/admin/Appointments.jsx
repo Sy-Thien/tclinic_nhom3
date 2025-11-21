@@ -6,6 +6,7 @@ import styles from './Appointments.module.css';
 export default function Appointments() {
     const [appointments, setAppointments] = useState([]);
     const [doctors, setDoctors] = useState([]);
+    const [availableDoctors, setAvailableDoctors] = useState([]);
     const [specialties, setSpecialties] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState({
@@ -20,6 +21,7 @@ export default function Appointments() {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [selectedDoctor, setSelectedDoctor] = useState('');
     const [cancelReason, setCancelReason] = useState('');
+    const [loadingDoctors, setLoadingDoctors] = useState(false);
     const [formData, setFormData] = useState({
         patient_name: '',
         patient_email: '',
@@ -79,6 +81,21 @@ export default function Appointments() {
             setSpecialties(response.data || []);
         } catch (error) {
             console.error('Error fetching specialties:', error);
+        }
+    };
+
+    // Lấy danh sách bác sĩ khả dụng cho một booking (cùng chuyên khoa)
+    const fetchAvailableDoctorsForBooking = async (bookingId) => {
+        try {
+            setLoadingDoctors(true);
+            const response = await api.get(`/api/admin/bookings/${bookingId}/available-doctors`);
+            setAvailableDoctors(response.data.doctors || []);
+        } catch (error) {
+            console.error('Error fetching available doctors:', error);
+            alert(error.response?.data?.message || '❌ Lỗi khi tải danh sách bác sĩ!');
+            setAvailableDoctors([]);
+        } finally {
+            setLoadingDoctors(false);
         }
     };
 
@@ -145,12 +162,13 @@ export default function Appointments() {
 
     const handleAssignDoctor = async () => {
         try {
-            await api.put(`/api/admin/bookings/${selectedAppointment.id}/assign-doctor`, {
+            const response = await api.put(`/api/admin/bookings/${selectedAppointment.id}/assign-doctor`, {
                 doctor_id: selectedDoctor
             });
             alert('✅ Gán bác sĩ thành công!');
             setShowAssignModal(false);
             setSelectedDoctor('');
+            setAvailableDoctors([]);
             fetchAppointments();
         } catch (error) {
             console.error('Error:', error);
@@ -309,6 +327,8 @@ export default function Appointments() {
                                                 className={styles.btnAssign}
                                                 onClick={() => {
                                                     setSelectedAppointment(app);
+                                                    setSelectedDoctor('');
+                                                    fetchAvailableDoctorsForBooking(app.id);
                                                     setShowAssignModal(true);
                                                 }}
                                             >
@@ -438,31 +458,41 @@ export default function Appointments() {
                     <div className={styles.modalContent}>
                         <h2>👨‍⚕️ Gán bác sĩ</h2>
                         <div className={styles.modalBody}>
-                            <p><strong>Bệnh nhân:</strong> {selectedAppointment.patient_name}</p>
+                            <p><strong>Bệnh nhân:</strong> {selectedAppointment?.patient_name}</p>
+                            <p><strong>Chuyên khoa:</strong> {selectedAppointment?.specialty?.name}</p>
 
                             <div className={styles.formGroup}>
-                                <label>Chọn bác sĩ:</label>
-                                <select
-                                    value={selectedDoctor}
-                                    onChange={(e) => setSelectedDoctor(e.target.value)}
-                                >
-                                    <option value="">-- Chọn bác sĩ --</option>
-                                    {doctors.map(doc => (
-                                        <option key={doc.id} value={doc.id}>
-                                            {doc.full_name} - {doc.specialty?.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                <label>Chọn bác sĩ (cùng chuyên khoa):</label>
+                                {loadingDoctors ? (
+                                    <p>⏳ Đang tải danh sách bác sĩ...</p>
+                                ) : availableDoctors.length > 0 ? (
+                                    <select
+                                        value={selectedDoctor}
+                                        onChange={(e) => setSelectedDoctor(e.target.value)}
+                                    >
+                                        <option value="">-- Chọn bác sĩ --</option>
+                                        {availableDoctors.map(doc => (
+                                            <option key={doc.id} value={doc.id}>
+                                                {doc.full_name} {doc.experience ? `(${doc.experience})` : ''}
+                                            </option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <p style={{ color: '#ef4444' }}>⚠️ Không có bác sĩ nào trong chuyên khoa này!</p>
+                                )}
                             </div>
                         </div>
                         <div className={styles.modalFooter}>
-                            <button className={styles.btnModalCancel} onClick={() => setShowAssignModal(false)}>
+                            <button className={styles.btnModalCancel} onClick={() => {
+                                setShowAssignModal(false);
+                                setAvailableDoctors([]);
+                            }}>
                                 Đóng
                             </button>
                             <button
                                 className={styles.btnModalConfirm}
                                 onClick={handleAssignDoctor}
-                                disabled={!selectedDoctor}
+                                disabled={!selectedDoctor || loadingDoctors}
                             >
                                 Gán bác sĩ
                             </button>

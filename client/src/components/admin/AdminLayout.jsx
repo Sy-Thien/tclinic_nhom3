@@ -149,6 +149,17 @@ export default function AdminLayout() {
                     </NavLink>
 
                     <NavLink
+                        to="/admin/doctor-schedules"
+                        className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}
+                    >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                            <polyline points="12 6 12 12 16 14" strokeWidth="2" strokeLinecap="round" />
+                        </svg>
+                        Lịch Bác Sĩ
+                    </NavLink>
+
+                    <NavLink
                         to="/admin/reports"
                         className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}
                     >

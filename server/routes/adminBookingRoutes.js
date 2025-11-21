@@ -8,6 +8,7 @@ router.use(verifyToken);
 router.use(isAdmin);
 
 router.get('/bookings', adminBookingController.getAllBookings);
+router.get('/bookings/:id/available-doctors', adminBookingController.getAvailableDoctorsForBooking);
 router.post('/bookings', adminBookingController.createBooking);
 router.put('/bookings/:id', adminBookingController.updateBooking);
 router.put('/bookings/:id/assign-doctor', adminBookingController.assignDoctor);

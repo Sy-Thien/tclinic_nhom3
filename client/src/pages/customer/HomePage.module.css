@@ -2,6 +2,42 @@
     background: #fff;
 }
 
+/* Loading State */
+.loading {
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.emptyState {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+    font-size: 16px;
+}
+
 /* Hero Section */
 .hero {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -91,6 +127,26 @@
     width: 100%;
     border-radius: 20px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+/* Hero Quick Search */
+.heroSearch {
+    margin: 24px 0 12px 0;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr 0.8fr auto;
+    gap: 12px;
+    align-items: center;
+}
+
+.heroSearch input[type="text"],
+.heroSearch input[type="date"],
+.heroSearch select {
+    padding: 14px 16px;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    background: rgba(255, 255, 255, 0.95);
+    color: #1a1a1a;
 }
 
 /* Stats Section */
@@ -238,8 +294,19 @@
 .specialtyDesc {
     font-size: 14px;
     color: #666;
-    margin: 0 0 20px 0;
+    margin: 0 0 12px 0;
     line-height: 1.6;
+    min-height: 60px;
+}
+
+.specialtyStats {
+    font-size: 13px;
+    color: #667eea;
+    margin: 0 0 16px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
 .specialtyBtn {
@@ -252,10 +319,387 @@
     font-weight: 500;
     cursor: pointer;
     transition: background 0.3s;
+    width: 100%;
 }
 
 .specialtyBtn:hover {
     background: #5568d3;
+}
+
+/* ========== Specialties with Doctors Section (BookingCare style) ========== */
+.specialtiesWithDoctors {
+    padding: 80px 20px;
+    background: #f9fafb;
+}
+
+.specialtySection {
+    margin-bottom: 60px;
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.specialtyHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.specialtyTitle {
+    font-size: 24px;
+    color: #45c3d2;
+    margin: 0;
+    font-weight: 600;
+}
+
+.viewMoreBtn {
+    background: none;
+    border: none;
+    color: #45c3d2;
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.viewMoreBtn:hover {
+    text-decoration: underline;
+}
+
+.specialtyDescription {
+    color: #666;
+    font-size: 14px;
+    margin: 0 0 24px 0;
+    line-height: 1.6;
+}
+
+.doctorsList {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.doctorScheduleCard {
+    display: grid;
+    grid-template-columns: 150px 1fr 320px;
+    gap: 24px;
+    padding: 20px;
+    border: 1px solid #e8e8e8;
+    border-radius: 12px;
+    background: #fafafa;
+}
+
+.doctorLeft {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.doctorAvatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #45c3d2;
+}
+
+.viewDoctorBtn {
+    background: none;
+    border: none;
+    color: #45c3d2;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.viewDoctorBtn:hover {
+    text-decoration: underline;
+}
+
+.doctorCenter {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.doctorBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #fff3cd;
+    color: #856404;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    width: fit-content;
+}
+
+.doctorFullName {
+    font-size: 18px;
+    color: #45c3d2;
+    margin: 0;
+    font-weight: 600;
+}
+
+.doctorExp {
+    color: #666;
+    font-size: 14px;
+    margin: 0;
+}
+
+.doctorBio {
+    color: #888;
+    font-size: 13px;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.doctorRight {
+    border-left: 1px solid #e8e8e8;
+    padding-left: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.dateSelector {
+    padding: 10px 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    background: white;
+}
+
+.scheduleLabel {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.timeSlotsGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.timeSlotBtn {
+    padding: 10px 8px;
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.timeSlotBtn:hover {
+    background: #ffc107;
+    color: #333;
+}
+
+.noSlots {
+    color: #999;
+    font-size: 13px;
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 10px;
+}
+
+.noSchedule {
+    color: #999;
+    font-size: 14px;
+    text-align: center;
+}
+
+.bookingNote {
+    color: #888;
+    font-size: 12px;
+    margin: 0;
+}
+
+/* Doctors Section */
+.doctors {
+    padding: 80px 20px;
+    background: white;
+}
+
+.doctorGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.doctorCard {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 2px solid #e0e0e0;
+}
+
+.doctorCard:hover {
+    border-color: #667eea;
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(102, 126, 234, 0.2);
+}
+
+.doctorImage {
+    width: 100%;
+    height: 250px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.doctorImage img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.doctorCard:hover .doctorImage img {
+    transform: scale(1.1);
+}
+
+.doctorInfo {
+    padding: 24px;
+}
+
+.doctorName {
+    font-size: 20px;
+    margin: 0 0 8px 0;
+    color: #1a1a1a;
+    font-weight: 600;
+}
+
+.doctorSpecialty {
+    font-size: 14px;
+    color: #667eea;
+    margin: 0 0 12px 0;
+    font-weight: 500;
+}
+
+.doctorExperience,
+.doctorStats {
+    font-size: 14px;
+    color: #666;
+    margin: 0 0 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.doctorExperience i,
+.doctorStats i {
+    color: #667eea;
+}
+
+.doctorBtn {
+    width: 100%;
+    margin-top: 16px;
+    padding: 12px;
+    background: #f3f4f6;
+    color: #667eea;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.doctorBtn:hover {
+    background: #667eea;
+    color: white;
+}
+
+/* Testimonials Section */
+.testimonials {
+    padding: 80px 20px;
+    background: #f9fafb;
+}
+
+.testimonialGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 30px;
+}
+
+.testimonialCard {
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    border-left: 4px solid #ffc107;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s;
+}
+
+.testimonialCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.testimonialHeader {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.testimonialAvatar {
+    font-size: 48px;
+    color: #667eea;
+}
+
+.testimonialAuthor h4 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    color: #1a1a1a;
+}
+
+.testimonialAuthor p {
+    margin: 0;
+    font-size: 13px;
+    color: #666;
+}
+
+.testimonialRating {
+    margin-bottom: 16px;
+}
+
+.stars {
+    display: flex;
+    gap: 4px;
+}
+
+.stars i {
+    font-size: 16px;
+}
+
+.testimonialComment {
+    font-size: 15px;
+    color: #444;
+    line-height: 1.6;
+    margin: 0 0 12px 0;
+    font-style: italic;
+}
+
+.testimonialDoctor {
+    font-size: 13px;
+    color: #667eea;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .sectionFooter {
@@ -277,6 +721,105 @@
 .btnViewAll:hover {
     background: #5568d3;
     transform: translateY(-2px);
+}
+
+/* Services Section */
+.services {
+    padding: 80px 20px;
+    background: white;
+}
+
+.serviceGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.serviceCard {
+    border: 1px solid #e0e0e0;
+    border-radius: 16px;
+    padding: 20px;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.serviceCard:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.serviceIcon {
+    font-size: 36px;
+    margin-bottom: 10px;
+}
+
+.serviceName {
+    font-size: 18px;
+    margin: 0 0 8px 0;
+}
+
+.serviceDesc {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0 0 12px 0;
+}
+
+.serviceMeta {
+    display: flex;
+    gap: 12px;
+    color: #444;
+    font-size: 14px;
+}
+
+/* Quick Booking */
+.quickBooking {
+    padding: 80px 20px;
+    background: white;
+}
+
+.qbControls {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.qbControls select,
+.qbControls input[type="date"] {
+    padding: 12px 14px;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+}
+
+.qbSlotsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.qbSlotCard {
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.qbSlotTime {
+    font-weight: 600;
+}
+
+.qbBookBtn {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
 }
 
 /* How it works Section */
@@ -375,6 +918,32 @@
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
+/* Contact & Map */
+.contactSection {
+    padding: 80px 20px;
+    background: #f9fafb;
+}
+
+.contactGrid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 24px;
+}
+
+.contactInfo {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 16px;
+    padding: 20px;
+}
+
+.mapWrapper {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 16px;
+    padding: 12px;
+}
+
 /* Animations */
 @keyframes fadeInUp {
     from {
@@ -419,6 +988,10 @@
         flex-direction: column;
     }
 
+    .heroSearch {
+        grid-template-columns: 1fr;
+    }
+
     .btnPrimary,
     .btnSecondary {
         width: 100%;
@@ -431,8 +1004,28 @@
     .statGrid,
     .featureGrid,
     .specialtyGrid,
+    .serviceGrid,
+    .qbControls,
+    .contactGrid,
     .stepGrid {
         grid-template-columns: 1fr;
+    }
+
+    /* Responsive cho Specialties with Doctors */
+    .doctorScheduleCard {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .doctorRight {
+        border-left: none;
+        border-top: 1px solid #e8e8e8;
+        padding-left: 0;
+        padding-top: 16px;
+    }
+
+    .timeSlotsGrid {
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .stepArrow {

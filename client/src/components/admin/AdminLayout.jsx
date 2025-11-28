@@ -1,36 +1,42 @@
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import styles from './AdminLayout.module.css';
 
 export default function AdminLayout() {
     const [admin, setAdmin] = useState(null);
+    const [doctorMenuOpen, setDoctorMenuOpen] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Auto-expand doctor menu if on doctor pages
+    useEffect(() => {
+        if (location.pathname.includes('/admin/doctors') ||
+            location.pathname.includes('/admin/doctor-schedules') ||
+            location.pathname.includes('/admin/time-slots')) {
+            setDoctorMenuOpen(true);
+        }
+    }, [location.pathname]);
 
     useEffect(() => {
         const userData = localStorage.getItem('user');
-        const token = localStorage.getItem('token');
 
-        if (!userData || !token) {
-            navigate('/login');
-            return;
+        if (userData) {
+            try {
+                const user = JSON.parse(userData);
+                setAdmin(user);
+            } catch (error) {
+                console.error('❌ Parse user error:', error);
+            }
         }
-
-        const user = JSON.parse(userData);
-
-        // Kiểm tra role
-        if (user.role !== 'admin') {
-            alert('Bạn không có quyền truy cập!');
-            navigate('/');
-            return;
-        }
-
-        setAdmin(user);
-    }, [navigate]);
+    }, []);
 
     const handleLogout = () => {
+        // Clear all auth data
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        navigate('/login');
+        localStorage.clear();
+        // Force reload to clean state
+        window.location.href = '/login';
     };
 
     if (!admin) {
@@ -89,18 +95,48 @@ export default function AdminLayout() {
                         Lịch hẹn
                     </NavLink>
 
-                    <NavLink
-                        to="/admin/doctors"
-                        className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}
-                    >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" strokeWidth="2" />
-                            <circle cx="9" cy="7" r="4" strokeWidth="2" />
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" strokeWidth="2" />
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75" strokeWidth="2" />
-                        </svg>
-                        Bác sĩ
-                    </NavLink>
+                    {/* Menu Bác sĩ với submenu */}
+                    <div className={styles.menuGroup}>
+                        <div
+                            className={`${styles.navItem} ${styles.menuParent} ${doctorMenuOpen ? styles.open : ''}`}
+                            onClick={() => setDoctorMenuOpen(!doctorMenuOpen)}
+                        >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" strokeWidth="2" />
+                                <circle cx="9" cy="7" r="4" strokeWidth="2" />
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87" strokeWidth="2" />
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75" strokeWidth="2" />
+                            </svg>
+                            👨‍⚕️ Bác sĩ
+                            <svg
+                                className={`${styles.arrow} ${doctorMenuOpen ? styles.arrowOpen : ''}`}
+                                width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            >
+                                <polyline points="6 9 12 15 18 9" strokeWidth="2" />
+                            </svg>
+                        </div>
+
+                        <div className={`${styles.submenu} ${doctorMenuOpen ? styles.submenuOpen : ''}`}>
+                            <NavLink
+                                to="/admin/doctors"
+                                className={({ isActive }) => isActive ? `${styles.subItem} ${styles.active}` : styles.subItem}
+                            >
+                                📋 Quản lý bác sĩ
+                            </NavLink>
+                            <NavLink
+                                to="/admin/doctor-schedules"
+                                className={({ isActive }) => isActive ? `${styles.subItem} ${styles.active}` : styles.subItem}
+                            >
+                                📅 Lịch làm việc
+                            </NavLink>
+                            <NavLink
+                                to="/admin/time-slots"
+                                className={({ isActive }) => isActive ? `${styles.subItem} ${styles.active}` : styles.subItem}
+                            >
+                                ⏰ Quản lý khung giờ
+                            </NavLink>
+                        </div>
+                    </div>
 
                     <NavLink
                         to="/admin/patients"
@@ -156,17 +192,6 @@ export default function AdminLayout() {
                             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" strokeWidth="2" />
                         </svg>
                         💊 Kho Thuốc
-                    </NavLink>
-
-                    <NavLink
-                        to="/admin/doctor-schedules"
-                        className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}
-                    >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <circle cx="12" cy="12" r="10" strokeWidth="2" />
-                            <polyline points="12 6 12 12 16 14" strokeWidth="2" strokeLinecap="round" />
-                        </svg>
-                        Lịch Bác Sĩ
                     </NavLink>
 
                     <NavLink

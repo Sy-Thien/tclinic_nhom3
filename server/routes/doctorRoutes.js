@@ -3,6 +3,8 @@ const router = express.Router();
 const { verifyToken } = require('../middleware/authMiddleware');
 const { Booking, Patient, Service, Specialty } = require('../models');
 const { Op } = require('sequelize');
+const doctorScheduleViewController = require('../controllers/doctorScheduleViewController');
+const doctorReviewController = require('../controllers/doctorReviewController');
 
 // Middleware kiểm tra role doctor
 const checkDoctorRole = (req, res, next) => {
@@ -15,12 +17,12 @@ const checkDoctorRole = (req, res, next) => {
 // GET - Danh sách lịch hẹn của bác sĩ
 router.get('/appointments', verifyToken, checkDoctorRole, async (req, res) => {
     try {
-        const { status, date } = req.query;
-        const doctor_id = req.user.doctor_id;
+        const { status, date, view } = req.query;
+        const doctor_id = req.user.id; // ✅ FIX: Dùng req.user.id thay vì req.user.doctor_id
 
-        console.log('📋 GET /api/doctor/appointments', { doctor_id, status, date });
+        console.log('📋 GET /api/doctor/appointments', { doctor_id, status, date, view });
 
-        let whereClause = {};
+        let whereClause = { doctor_id }; // ✅ FIX: Thêm doctor_id vào where
 
         // Lọc theo status
         if (status && status !== 'all') {
@@ -38,19 +40,13 @@ router.get('/appointments', verifyToken, checkDoctorRole, async (req, res) => {
                 {
                     model: Patient,
                     as: 'patient',
-                    attributes: ['id', 'full_name', 'email', 'phone', 'birthday', 'gender', 'address']
+                    attributes: ['id', 'full_name', 'email', 'phone', 'birthday', 'gender', 'address'],
+                    required: false
                 },
                 {
-                    model: Service,
-                    as: 'service',
-                    attributes: ['id', 'name', 'description', 'price', 'duration'],
-                    include: [
-                        {
-                            model: Specialty,
-                            as: 'specialty',
-                            attributes: ['id', 'name']
-                        }
-                    ]
+                    model: Specialty,
+                    as: 'specialty',
+                    attributes: ['id', 'name']
                 }
             ],
             order: [
@@ -61,7 +57,7 @@ router.get('/appointments', verifyToken, checkDoctorRole, async (req, res) => {
 
         console.log(`✅ Found ${appointments.length} appointments`);
 
-        res.json(appointments);
+        res.json({ appointments }); // ✅ FIX: Wrap trong object
     } catch (error) {
         console.error('❌ Error fetching appointments:', error);
         res.status(500).json({
@@ -70,6 +66,12 @@ router.get('/appointments', verifyToken, checkDoctorRole, async (req, res) => {
         });
     }
 });
+
+// GET - Lịch làm việc theo ngày
+router.get('/my-schedule', verifyToken, checkDoctorRole, doctorScheduleViewController.getDoctorSchedule);
+
+// GET - Thống kê lịch làm việc theo tuần/tháng
+router.get('/schedule-statistics', verifyToken, checkDoctorRole, doctorScheduleViewController.getDoctorScheduleStatistics);
 
 // PUT - Xác nhận lịch hẹn
 router.put('/appointments/:id/confirm', verifyToken, checkDoctorRole, async (req, res) => {
@@ -176,5 +178,76 @@ router.put('/appointments/:id/complete', verifyToken, checkDoctorRole, async (re
         });
     }
 });
+
+// ✅ PUT - Từ chối lịch hẹn
+router.put('/appointments/:id/reject', verifyToken, checkDoctorRole, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { reason } = req.body;
+
+        const appointment = await Booking.findByPk(id);
+
+        if (!appointment) {
+            return res.status(404).json({ message: 'Không tìm thấy lịch hẹn' });
+        }
+
+        await appointment.update({
+            status: 'doctor_rejected',
+            reject_reason: reason,
+            updated_at: new Date()
+        });
+
+        res.json({
+            success: true,
+            message: 'Đã từ chối lịch hẹn',
+            appointment
+        });
+    } catch (error) {
+        console.error('❌ Error rejecting appointment:', error);
+        res.status(500).json({
+            message: 'Lỗi server',
+            error: error.message
+        });
+    }
+});
+
+// ✅ PUT - Lưu kết quả khám (chẩn đoán, kết luận)
+router.put('/appointments/:id/exam', verifyToken, checkDoctorRole, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { diagnosis, conclusion, note } = req.body;
+
+        const appointment = await Booking.findByPk(id);
+
+        if (!appointment) {
+            return res.status(404).json({ message: 'Không tìm thấy lịch hẹn' });
+        }
+
+        await appointment.update({
+            diagnosis,
+            conclusion,
+            note,
+            updated_at: new Date()
+        });
+
+        res.json({
+            success: true,
+            message: 'Đã lưu kết quả khám',
+            appointment
+        });
+    } catch (error) {
+        console.error('❌ Error saving exam:', error);
+        res.status(500).json({
+            message: 'Lỗi server',
+            error: error.message
+        });
+    }
+});
+
+// GET - Lấy đánh giá của bác sĩ
+router.get('/reviews', verifyToken, checkDoctorRole, doctorReviewController.getDoctorReviews);
+
+// GET - Thống kê rating của bác sĩ
+router.get('/rating-stats', verifyToken, checkDoctorRole, doctorReviewController.getDoctorRatingStats);
 
 module.exports = router;

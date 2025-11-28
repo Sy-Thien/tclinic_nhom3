@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
+import { useStorageSync } from '../../hooks/useStorageSync';
+import ReviewModal from '../../components/customer/ReviewModal';
 import styles from './MyAppointments.module.css';
 
 export default function MyAppointments() {
@@ -9,18 +11,37 @@ export default function MyAppointments() {
     const [filter, setFilter] = useState('all');
     const [selectedDetail, setSelectedDetail] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
+    const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+    const [showReviewModal, setShowReviewModal] = useState(false);
+    const [selectedAppointment, setSelectedAppointment] = useState(null);
+    const [rescheduleData, setRescheduleData] = useState({ id: null, newDate: '', newTime: '' });
+    const [availableSlots, setAvailableSlots] = useState([]);
     const navigate = useNavigate();
 
+    // ✅ Auto-redirect if role changes in another tab
+    useStorageSync('patient');
+
     useEffect(() => {
-        const user = localStorage.getItem('user');
-        if (!user) {
+        const userStr = localStorage.getItem('user');
+        if (!userStr) {
             navigate('/login');
             return;
         }
-        fetchAppointments();
-    }, [navigate]);
 
-    const fetchAppointments = async () => {
+        const user = JSON.parse(userStr);
+
+        // ✅ Redirect if not patient
+        if (user.role === 'doctor') {
+            navigate('/doctor-portal');
+            return;
+        }
+        if (user.role === 'admin') {
+            navigate('/admin');
+            return;
+        }
+
+        fetchAppointments();
+    }, [navigate]); const fetchAppointments = async () => {
         try {
             const response = await api.get('/api/customer/appointments');
             // Backend returns { bookings }, not { data: [...] }
@@ -42,20 +63,93 @@ export default function MyAppointments() {
         }
 
         try {
-            const response = await api.put(`/api/customer/appointments/${id}/cancel`);
+            const response = await api.put(`/api/patient/my-appointments/${id}/cancel`);
 
-            if (response.data.success) {
-                alert('✅ Hủy lịch thành công!');
-                fetchAppointments(); // Refresh list
-            }
+            alert('✅ Hủy lịch thành công! Email thông báo đã được gửi.');
+            fetchAppointments(); // Refresh list
         } catch (error) {
             console.error('Error:', error);
             alert(error.response?.data?.message || '❌ Không thể hủy lịch hẹn!');
         }
     };
 
+    const handleOpenRescheduleModal = async (appointment) => {
+        setRescheduleData({
+            id: appointment.id,
+            newDate: appointment.appointment_date,
+            newTime: appointment.appointment_time || '08:00'
+        });
+
+        // Fetch available slots if doctor is assigned
+        if (appointment.doctor_id && appointment.appointment_date) {
+            try {
+                const response = await api.get('/api/customer/available-slots', {
+                    params: {
+                        doctor_id: appointment.doctor_id,
+                        date: appointment.appointment_date
+                    }
+                });
+                setAvailableSlots(response.data.availableSlots || []);
+            } catch (error) {
+                console.error('Error fetching slots:', error);
+                // Generate default slots if API fails
+                const defaultSlots = [];
+                for (let hour = 8; hour < 17; hour++) {
+                    defaultSlots.push(`${hour.toString().padStart(2, '0')}:00`);
+                    defaultSlots.push(`${hour.toString().padStart(2, '0')}:30`);
+                }
+                setAvailableSlots(defaultSlots);
+            }
+        } else {
+            // Generate default slots
+            const defaultSlots = [];
+            for (let hour = 8; hour < 17; hour++) {
+                defaultSlots.push(`${hour.toString().padStart(2, '0')}:00`);
+                defaultSlots.push(`${hour.toString().padStart(2, '0')}:30`);
+            }
+            setAvailableSlots(defaultSlots);
+        }
+
+        setShowRescheduleModal(true);
+    };
+
+    const handleSubmitReschedule = async () => {
+        if (!rescheduleData.newDate || !rescheduleData.newTime) {
+            alert('Vui lòng chọn ngày và giờ mới!');
+            return;
+        }
+
+        try {
+            const response = await api.put(
+                `/api/patient/my-appointments/${rescheduleData.id}/reschedule`,
+                {
+                    new_date: rescheduleData.newDate,
+                    new_time: rescheduleData.newTime
+                }
+            );
+
+            if (response.data.success) {
+                alert('✅ Đổi lịch thành công! Email xác nhận đã được gửi.');
+                setShowRescheduleModal(false);
+                fetchAppointments(); // Refresh list
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert(error.response?.data?.message || '❌ Không thể đổi lịch hẹn!');
+        }
+    };
+
     const handleReschedule = (appointmentId) => {
         navigate(`/booking?reschedule=${appointmentId}`);
+    };
+
+    const handleOpenReviewModal = (appointment) => {
+        setSelectedAppointment(appointment);
+        setShowReviewModal(true);
+    };
+
+    const handleReviewSuccess = () => {
+        fetchAppointments(); // Refresh to update review status
     };
 
     const handleViewDetail = (appointment) => {
@@ -84,11 +178,13 @@ export default function MyAppointments() {
 
     const getStatusBadge = (status) => {
         const badges = {
-            'pending': { text: 'Chờ xác nhận', color: '#f59e0b' },
-            'confirmed': { text: 'Đã xác nhận', color: '#3b82f6' },
-            'in_progress': { text: 'Đang khám', color: '#8b5cf6' },
-            'completed': { text: 'Hoàn thành', color: '#10b981' },
-            'cancelled': { text: 'Đã hủy', color: '#ef4444' }
+            'pending': { text: 'Chờ xử lý', color: '#f59e0b' },
+            'waiting_doctor_assignment': { text: 'Chờ xác nhận', color: '#f59e0b' },
+            'waiting_doctor_confirmation': { text: 'Chờ bác sĩ xác nhận', color: '#3b82f6' },
+            'confirmed': { text: 'Đã xác nhận', color: '#10b981' },
+            'completed': { text: 'Hoàn thành', color: '#6366f1' },
+            'cancelled': { text: 'Đã hủy', color: '#ef4444' },
+            'doctor_rejected': { text: 'Bác sĩ từ chối', color: '#dc2626' }
         };
 
         const badge = badges[status] || badges['pending'];
@@ -102,6 +198,10 @@ export default function MyAppointments() {
 
     const filteredAppointments = appointments.filter(app => {
         if (filter === 'all') return true;
+        // Gộp 2 trạng thái chờ vào 1 filter
+        if (filter === 'waiting') {
+            return app.status === 'waiting_doctor_assignment' || app.status === 'waiting_doctor_confirmation';
+        }
         return app.status === filter;
     });
 
@@ -140,8 +240,8 @@ export default function MyAppointments() {
                     Tất cả ({appointments.length})
                 </button>
                 <button
-                    className={filter === 'pending' ? styles.filterActive : styles.filterBtn}
-                    onClick={() => setFilter('pending')}
+                    className={filter === 'waiting' ? styles.filterActive : styles.filterBtn}
+                    onClick={() => setFilter('waiting')}
                 >
                     Chờ xác nhận
                 </button>
@@ -188,7 +288,7 @@ export default function MyAppointments() {
                                 <div className={styles.infoRow}>
                                     <span className={styles.label}>📅 Ngày khám:</span>
                                     <span className={styles.value}>
-                                        {new Date(appointment.date).toLocaleDateString('vi-VN')}
+                                        {new Date(appointment.appointment_date).toLocaleDateString('vi-VN')}
                                     </span>
                                 </div>
                                 <div className={styles.infoRow}>
@@ -216,53 +316,40 @@ export default function MyAppointments() {
                             </div>
 
                             <div className={styles.cardFooter}>
-                                {appointment.status === 'pending' && (
-                                    <>
-                                        <button
-                                            className={styles.btnReschedule}
-                                            onClick={() => handleReschedule(appointment.id)}
-                                        >
-                                            📅 Đổi lịch
-                                        </button>
-                                        <button
-                                            className={styles.btnReminder}
-                                            onClick={() => handleSetReminder(appointment.date, appointment.appointment_time)}
-                                        >
-                                            🔔 Nhắc lịch
-                                        </button>
-                                        <button
-                                            className={styles.btnCancel}
-                                            onClick={() => handleCancelAppointment(appointment.id)}
-                                        >
-                                            🚫 Hủy
-                                        </button>
-                                    </>
-                                )}
-
-                                {appointment.status === 'confirmed' && (
-                                    <>
-                                        <button
-                                            className={styles.btnReminder}
-                                            onClick={() => handleSetReminder(appointment.date, appointment.appointment_time)}
-                                        >
-                                            🔔 Nhắc lịch
-                                        </button>
-                                        <button
-                                            className={styles.btnCancel}
-                                            onClick={() => handleCancelAppointment(appointment.id)}
-                                        >
-                                            🚫 Hủy
-                                        </button>
-                                    </>
-                                )}
+                                {(appointment.status === 'waiting_doctor_assignment' ||
+                                    appointment.status === 'waiting_doctor_confirmation' ||
+                                    appointment.status === 'confirmed') && (
+                                        <>
+                                            <button
+                                                className={styles.btnReschedule}
+                                                onClick={() => handleOpenRescheduleModal(appointment)}
+                                            >
+                                                🔄 Đổi lịch
+                                            </button>
+                                            <button
+                                                className={styles.btnCancel}
+                                                onClick={() => handleCancelAppointment(appointment.id)}
+                                            >
+                                                🚫 Hủy
+                                            </button>
+                                        </>
+                                    )}
 
                                 {appointment.status === 'completed' && (
-                                    <button
-                                        className={styles.btnViewDetail}
-                                        onClick={() => handleViewDetail(appointment)}
-                                    >
-                                        📄 Xem kết quả khám
-                                    </button>
+                                    <>
+                                        <button
+                                            className={styles.btnViewDetail}
+                                            onClick={() => handleViewDetail(appointment)}
+                                        >
+                                            📄 Xem kết quả khám
+                                        </button>
+                                        <button
+                                            className={styles.btnReview}
+                                            onClick={() => handleOpenReviewModal(appointment)}
+                                        >
+                                            ⭐ Đánh giá
+                                        </button>
+                                    </>
                                 )}
 
                                 <button
@@ -308,7 +395,7 @@ export default function MyAppointments() {
                                 </div>
                                 <div className={styles.detailRow}>
                                     <span>Ngày khám:</span>
-                                    <span>{new Date(selectedDetail.date).toLocaleDateString('vi-VN')}</span>
+                                    <span>{new Date(selectedDetail.appointment_date).toLocaleDateString('vi-VN')}</span>
                                 </div>
                                 <div className={styles.detailRow}>
                                     <span>Giờ khám:</span>
@@ -371,6 +458,91 @@ export default function MyAppointments() {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* RESCHEDULE MODAL */}
+            {showRescheduleModal && (
+                <div className={styles.modal}>
+                    <div className={styles.modalContent}>
+                        <div className={styles.modalHeader}>
+                            <h2>🔄 Đổi thời gian lịch hẹn</h2>
+                            <button
+                                className={styles.btnClose}
+                                onClick={() => setShowRescheduleModal(false)}
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <div className={styles.modalBody}>
+                            <div className={styles.formGroup}>
+                                <label>📅 Chọn ngày mới:</label>
+                                <input
+                                    type="date"
+                                    className={styles.dateInput}
+                                    value={rescheduleData.newDate}
+                                    min={new Date().toISOString().split('T')[0]}
+                                    onChange={(e) => setRescheduleData({
+                                        ...rescheduleData,
+                                        newDate: e.target.value
+                                    })}
+                                />
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label>⏰ Chọn giờ mới:</label>
+                                <select
+                                    className={styles.timeSelect}
+                                    value={rescheduleData.newTime}
+                                    onChange={(e) => setRescheduleData({
+                                        ...rescheduleData,
+                                        newTime: e.target.value
+                                    })}
+                                >
+                                    <option value="">-- Chọn giờ --</option>
+                                    {availableSlots.map(slot => (
+                                        <option key={slot} value={slot}>
+                                            {slot}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className={styles.noteBox}>
+                                <p><strong>⚠️ Lưu ý:</strong></p>
+                                <ul>
+                                    <li>Lịch hẹn mới sẽ chờ bác sĩ xác nhận lại</li>
+                                    <li>Bạn sẽ nhận email thông báo khi được xác nhận</li>
+                                    <li>Nếu không thể đến, vui lòng hủy trước 2 giờ</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div className={styles.modalFooter}>
+                            <button
+                                className={styles.btnClose}
+                                onClick={() => setShowRescheduleModal(false)}
+                            >
+                                Hủy bỏ
+                            </button>
+                            <button
+                                className={styles.btnSubmit}
+                                onClick={handleSubmitReschedule}
+                            >
+                                ✅ Xác nhận đổi lịch
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* REVIEW MODAL */}
+            {showReviewModal && selectedAppointment && (
+                <ReviewModal
+                    appointment={selectedAppointment}
+                    onClose={() => setShowReviewModal(false)}
+                    onSuccess={handleReviewSuccess}
+                />
             )}
         </div>
     );

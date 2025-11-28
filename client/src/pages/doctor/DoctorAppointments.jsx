@@ -19,6 +19,9 @@ export default function DoctorAppointments() {
     const [loading, setLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [showPrescriptionForm, setShowPrescriptionForm] = useState(false);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [showRejectModal, setShowRejectModal] = useState(false);
+    const [rejectReason, setRejectReason] = useState('');
 
     useEffect(() => {
         fetchAppointments();
@@ -82,6 +85,52 @@ export default function DoctorAppointments() {
         }
     };
 
+    // Xác nhận booking mới (từ waiting_doctor_confirmation → confirmed)
+    const handleConfirmBooking = async (appointmentId) => {
+        setShowConfirmModal(false);
+        try {
+            const token = localStorage.getItem('token');
+            await api.put(`/api/doctor/appointments/appointments/${appointmentId}/confirm-booking`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            alert('✅ Đã xác nhận lịch khám!');
+            fetchAppointments();
+            if (selectedAppointment?.id === appointmentId) {
+                setShowModal(false);
+            }
+        } catch (error) {
+            console.error('Error confirming booking:', error);
+            alert(error.response?.data?.message || 'Lỗi khi xác nhận lịch khám');
+        }
+    };
+
+    // Từ chối booking
+    const handleRejectBooking = async () => {
+        if (!rejectReason.trim()) {
+            alert('Vui lòng nhập lý do từ chối!');
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            await api.put(
+                `/api/doctor/appointments/appointments/${selectedAppointment.id}/reject-booking`,
+                { reject_reason: rejectReason },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            alert('✅ Đã từ chối lịch khám');
+            setShowRejectModal(false);
+            setShowModal(false);
+            setRejectReason('');
+            fetchAppointments();
+        } catch (error) {
+            console.error('Error rejecting booking:', error);
+            alert(error.response?.data?.message || 'Lỗi khi từ chối lịch khám');
+        }
+    };
+
     const handleDiagnosisChange = (e) => {
         const { name, value } = e.target;
         setDiagnosisForm(prev => ({ ...prev, [name]: value }));
@@ -122,9 +171,11 @@ export default function DoctorAppointments() {
     const getStatusBadge = (status) => {
         const statusMap = {
             pending: { text: 'Chờ xác nhận', className: styles.statusPending },
+            waiting_doctor_confirmation: { text: 'Chờ bạn xác nhận', className: styles.statusWaitingConfirm },
             confirmed: { text: 'Đã xác nhận', className: styles.statusConfirmed },
             completed: { text: 'Hoàn thành', className: styles.statusCompleted },
-            cancelled: { text: 'Đã hủy', className: styles.statusCancelled }
+            cancelled: { text: 'Đã hủy', className: styles.statusCancelled },
+            doctor_rejected: { text: 'Đã từ chối', className: styles.statusRejected }
         };
 
         const statusInfo = statusMap[status] || { text: status, className: '' };
@@ -220,6 +271,29 @@ export default function DoctorAppointments() {
                                     >
                                         👁️ Xem chi tiết
                                     </button>
+
+                                    {appointment.status === 'waiting_doctor_confirmation' && (
+                                        <>
+                                            <button
+                                                className={styles.btnConfirmBooking}
+                                                onClick={() => {
+                                                    setSelectedAppointment(appointment);
+                                                    setShowConfirmModal(true);
+                                                }}
+                                            >
+                                                ✅ Xác nhận
+                                            </button>
+                                            <button
+                                                className={styles.btnReject}
+                                                onClick={() => {
+                                                    setSelectedAppointment(appointment);
+                                                    setShowRejectModal(true);
+                                                }}
+                                            >
+                                                ❌ Từ chối
+                                            </button>
+                                        </>
+                                    )}
 
                                     {appointment.status === 'pending' && (
                                         <button
@@ -371,6 +445,79 @@ export default function DoctorAppointments() {
                         setShowPrescriptionForm(false);
                     }}
                 />
+            )}
+
+            {/* CONFIRM BOOKING MODAL */}
+            {showConfirmModal && selectedAppointment && (
+                <div className={styles.modalOverlay} onClick={() => setShowConfirmModal(false)}>
+                    <div className={styles.modalSmall} onClick={(e) => e.stopPropagation()}>
+                        <h3>✅ Xác nhận lịch khám</h3>
+                        <div className={styles.modalBody}>
+                            <p><strong>Bệnh nhân:</strong> {selectedAppointment.patient_name}</p>
+                            <p><strong>Ngày giờ:</strong> {selectedAppointment.appointment_date} - {selectedAppointment.appointment_time}</p>
+                            <p><strong>Triệu chứng:</strong> {selectedAppointment.symptoms}</p>
+                            <p style={{ marginTop: '1rem', color: '#3b82f6' }}>
+                                Bạn xác nhận sẽ khám cho bệnh nhân này?
+                            </p>
+                        </div>
+                        <div className={styles.modalFooter}>
+                            <button
+                                className={styles.btnCancel}
+                                onClick={() => setShowConfirmModal(false)}
+                            >
+                                Hủy
+                            </button>
+                            <button
+                                className={styles.btnConfirmBooking}
+                                onClick={() => handleConfirmBooking(selectedAppointment.id)}
+                            >
+                                ✅ Xác nhận
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* REJECT BOOKING MODAL */}
+            {showRejectModal && selectedAppointment && (
+                <div className={styles.modalOverlay} onClick={() => setShowRejectModal(false)}>
+                    <div className={styles.modalSmall} onClick={(e) => e.stopPropagation()}>
+                        <h3>❌ Từ chối lịch khám</h3>
+                        <div className={styles.modalBody}>
+                            <p><strong>Bệnh nhân:</strong> {selectedAppointment.patient_name}</p>
+                            <p><strong>Ngày giờ:</strong> {selectedAppointment.appointment_date} - {selectedAppointment.appointment_time}</p>
+
+                            <div className={styles.formGroup} style={{ marginTop: '1.5rem' }}>
+                                <label>Lý do từ chối <span className={styles.required}>*</span></label>
+                                <textarea
+                                    value={rejectReason}
+                                    onChange={(e) => setRejectReason(e.target.value)}
+                                    placeholder="Vui lòng nhập lý do từ chối (bị trùng lịch, bận việc đột xuất...)"
+                                    rows={4}
+                                    className={styles.textarea}
+                                />
+                            </div>
+                        </div>
+                        <div className={styles.modalFooter}>
+                            <button
+                                className={styles.btnCancel}
+                                onClick={() => {
+                                    setShowRejectModal(false);
+                                    setRejectReason('');
+                                }}
+                            >
+                                Hủy
+                            </button>
+                            <button
+                                className={styles.btnReject}
+                                onClick={handleRejectBooking}
+                                disabled={!rejectReason.trim()}
+                            >
+                                ❌ Từ chối
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

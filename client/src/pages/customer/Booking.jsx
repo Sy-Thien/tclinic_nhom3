@@ -15,16 +15,18 @@ export default function Booking() {
         patient_gender: 'male',
         patient_address: '',
         specialty_id: searchParams.get('specialty') || '',
-        appointment_date: '',
-        appointment_time: '',
-        doctor_id: null, // null = không chỉ định, admin sẽ gán
-        symptoms: '',
+        appointment_date: searchParams.get('date') || '',
+        appointment_time: searchParams.get('time') || '',
+        doctor_id: searchParams.get('doctor') ? Number(searchParams.get('doctor')) : null, // null = không chỉ định, admin sẽ gán
+        symptoms: searchParams.get('symptoms') || '',
         note: ''
     });
 
+    const [bookingType, setBookingType] = useState('instant'); // 'instant' hoặc 'with_doctor'
     const [specialties, setSpecialties] = useState([]);
     const [doctors, setDoctors] = useState([]);
     const [availableSlots, setAvailableSlots] = useState([]);
+    const [doctorTimeSlots, setDoctorTimeSlots] = useState(null); // ✅ NEW: Full time slots với booking count
     const [selectedDoctor, setSelectedDoctor] = useState(null);
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
@@ -40,6 +42,20 @@ export default function Booking() {
             fetchDoctorsBySpecialty(formData.specialty_id);
         }
     }, [formData.specialty_id]);
+
+    // Sync selectedDoctor if doctor_id comes from URL
+    useEffect(() => {
+        if (formData.doctor_id) {
+            setSelectedDoctor(formData.doctor_id);
+        }
+        // If both doctor and date provided, try load slots
+        if (formData.doctor_id && formData.appointment_date) {
+            fetchAvailableSlotsForDoctor(formData.doctor_id, formData.appointment_date);
+        } else if (!formData.doctor_id && formData.appointment_date) {
+            fetchDefaultSlots(formData.appointment_date);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // Load giờ rảnh khi chọn ngày
     useEffect(() => {
@@ -83,24 +99,140 @@ export default function Booking() {
 
     // Lấy giờ rảnh mặc định (tất cả bác sĩ trong chuyên khoa)
     const fetchDefaultSlots = async (date) => {
-        // Hiển thị tất cả giờ làm việc của phòng khám (8h-17h, nghỉ 12h-13h)
-        setAvailableSlots([
+        // Tạo slots mặc định với format giống API (8h-17h, nghỉ 12h-13h)
+        const defaultSlots = [];
+        const workingHours = [
             '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
             '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'
-        ]);
+        ];
+
+        // ✅ Kiểm tra nếu là hôm nay thì lọc bỏ giờ đã qua
+        const today = new Date();
+        const selectedDate = new Date(date + 'T00:00:00');
+        const isToday = selectedDate.toDateString() === today.toDateString();
+        const currentHour = today.getHours();
+        const currentMinute = today.getMinutes();
+
+        for (const startTime of workingHours) {
+            const [hour, min] = startTime.split(':').map(Number);
+            let endMin = min + 30;
+            let endHour = hour;
+            if (endMin >= 60) {
+                endMin = 0;
+                endHour += 1;
+            }
+            const endTime = `${String(endHour).padStart(2, '0')}:${String(endMin).padStart(2, '0')}`;
+
+            // Check if it's break time
+            const isBreakTime = hour === 12;
+
+            // ✅ Nếu là hôm nay, kiểm tra giờ đã qua chưa (cần trước ít nhất 30 phút)
+            let isPastTime = false;
+            if (isToday) {
+                const slotTimeInMinutes = hour * 60 + min;
+                const currentTimeInMinutes = currentHour * 60 + currentMinute + 30; // +30 phút buffer
+                isPastTime = slotTimeInMinutes < currentTimeInMinutes;
+            }
+
+            defaultSlots.push({
+                time: `${startTime}-${endTime}`,
+                startTime,
+                endTime,
+                isBreakTime,
+                bookingCount: 0, // Không biết số lượng booking khi chưa chọn bác sĩ
+                isAvailable: !isBreakTime && !isPastTime,
+                isPastTime
+            });
+        }
+
+        setDoctorTimeSlots({
+            isWorking: true,
+            slots: defaultSlots,
+            date,
+            schedule: {
+                start_time: '08:00',
+                end_time: '17:00',
+                break_start: '12:00',
+                break_end: '13:00'
+            }
+        });
+        setAvailableSlots(workingHours.filter(h => {
+            if (h.startsWith('12:')) return false;
+            if (isToday) {
+                const [hour, min] = h.split(':').map(Number);
+                const slotTimeInMinutes = hour * 60 + min;
+                const currentTimeInMinutes = currentHour * 60 + currentMinute + 30;
+                return slotTimeInMinutes >= currentTimeInMinutes;
+            }
+            return true;
+        }));
     };
 
-    // Lấy giờ rảnh của bác sĩ cụ thể
+    // Lấy giờ rảnh của bác sĩ cụ thể với booking count
     const fetchAvailableSlotsForDoctor = async (doctorId, date) => {
+        if (!doctorId || !date) {
+            console.warn('fetchAvailableSlotsForDoctor: Missing doctorId or date');
+            return;
+        }
+
         try {
             setLoading(true);
-            const response = await api.get('/api/bookings/available-slots', {
-                params: { doctorId, date }
+            console.log('Fetching time slots for doctor:', doctorId, 'date:', date);
+            const response = await api.get(`/api/bookings/doctor-time-slots/${doctorId}`, {
+                params: { date }
             });
-            setAvailableSlots(response.data.availableSlots.map(s => s.start));
+
+            console.log('Time slots response:', response.data);
+
+            if (response.data.success && response.data.data.isWorking) {
+                // ✅ Xử lý isPastTime cho slots từ API
+                const today = new Date();
+                const selectedDate = new Date(date + 'T00:00:00');
+                const isToday = selectedDate.toDateString() === today.toDateString();
+                const currentHour = today.getHours();
+                const currentMinute = today.getMinutes();
+
+                const processedData = {
+                    ...response.data.data,
+                    slots: response.data.data.slots.map(slot => {
+                        let isPastTime = false;
+                        if (isToday) {
+                            const [hour, min] = slot.startTime.split(':').map(Number);
+                            const slotTimeInMinutes = hour * 60 + min;
+                            const currentTimeInMinutes = currentHour * 60 + currentMinute + 30; // +30 phút buffer
+                            isPastTime = slotTimeInMinutes < currentTimeInMinutes;
+                        }
+                        return {
+                            ...slot,
+                            isPastTime,
+                            isAvailable: slot.isAvailable && !isPastTime
+                        };
+                    })
+                };
+
+                setDoctorTimeSlots(processedData);
+                // Vẫn giữ availableSlots cho backward compatibility
+                setAvailableSlots(
+                    processedData.slots
+                        .filter(s => !s.isBreakTime && s.isAvailable && !s.isPastTime)
+                        .map(s => s.startTime)
+                );
+            } else {
+                console.log('Doctor not working on this date');
+                setDoctorTimeSlots(null);
+                setAvailableSlots([]);
+            }
         } catch (error) {
             console.error('Error fetching doctor slots:', error);
+            console.error('Error details:', error.response?.data);
+            setDoctorTimeSlots(null);
             setAvailableSlots([]);
+            // Show error to user
+            if (error.response?.status === 404) {
+                alert('Không tìm thấy lịch làm việc của bác sĩ');
+            } else if (error.response?.status === 500) {
+                alert('Lỗi server khi tải lịch làm việc. Vui lòng thử lại sau.');
+            }
         } finally {
             setLoading(false);
         }
@@ -108,6 +240,28 @@ export default function Booking() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+
+        // ✅ Kiểm tra ngày quá khứ ngay khi chọn
+        if (name === 'appointment_date' && value) {
+            const selectedDate = new Date(value + 'T00:00:00');
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (selectedDate < today) {
+                alert('⚠️ Không thể chọn ngày trong quá khứ. Vui lòng chọn ngày hôm nay hoặc sau.');
+                return; // Không cập nhật state nếu ngày không hợp lệ
+            }
+
+            // Nếu chọn ngày hôm nay, kiểm tra còn giờ nào không
+            if (selectedDate.getTime() === today.getTime()) {
+                const currentHour = new Date().getHours();
+                if (currentHour >= 17) {
+                    alert('⚠️ Đã hết giờ làm việc hôm nay. Vui lòng chọn ngày khác.');
+                    return;
+                }
+            }
+        }
+
         setFormData(prev => ({
             ...prev,
             [name]: value
@@ -128,6 +282,8 @@ export default function Booking() {
         if (selectedDoctor === doctorId) {
             // Bỏ chọn bác sĩ
             setSelectedDoctor(null);
+            setDoctorTimeSlots(null);
+            setAvailableSlots([]);
             setFormData(prev => ({
                 ...prev,
                 doctor_id: null,
@@ -137,7 +293,9 @@ export default function Booking() {
                 fetchDefaultSlots(formData.appointment_date);
             }
         } else {
-            // Chọn bác sĩ
+            // Chọn bác sĩ - clear old data trước
+            setDoctorTimeSlots(null);
+            setAvailableSlots([]);
             setSelectedDoctor(doctorId);
             setFormData(prev => ({
                 ...prev,
@@ -187,6 +345,16 @@ export default function Booking() {
             newErrors.symptoms = 'Vui lòng mô tả triệu chứng';
         }
 
+        // ✅ Validate appointment_time - Bắt buộc phải chọn giờ
+        if (!formData.appointment_time) {
+            newErrors.appointment_time = 'Vui lòng chọn giờ khám';
+        }
+
+        // ✅ Nếu chọn booking with_doctor, phải chọn bác sĩ
+        if (bookingType === 'with_doctor' && !formData.doctor_id) {
+            newErrors.doctor_id = 'Vui lòng chọn bác sĩ';
+        }
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -202,11 +370,14 @@ export default function Booking() {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await api.post('/api/bookings/create', formData, {
+            const response = await api.post('/api/bookings/create', {
+                ...formData,
+                booking_type: bookingType
+            }, {
                 headers: token ? { Authorization: `Bearer ${token}` } : {}
             });
 
-            alert('✅ Đặt lịch thành công! Mã đặt lịch: ' + response.data.booking.booking_code);
+            alert('✅ ' + response.data.message + '\nMã đặt lịch: ' + response.data.booking.booking_code);
 
             // Reset form
             setFormData({
@@ -224,12 +395,13 @@ export default function Booking() {
                 note: ''
             });
             setSelectedDoctor(null);
+            setBookingType('instant');
 
             // Redirect to appointments page if logged in
             const user = localStorage.getItem('user');
             if (user) {
                 setTimeout(() => {
-                    navigate('/customer/my-appointments');
+                    navigate('/my-appointments');
                 }, 2000);
             }
         } catch (error) {
@@ -330,6 +502,45 @@ export default function Booking() {
                 <section className={styles.section}>
                     <h2 className={styles.sectionTitle}>🏥 Thông tin lịch khám</h2>
 
+                    {/* Chọn kiểu đặt lịch */}
+                    <div className={styles.bookingTypeSelector}>
+                        <div
+                            className={`${styles.typeOption} ${bookingType === 'instant' ? styles.active : ''}`}
+                            onClick={() => {
+                                setBookingType('instant');
+                                setSelectedDoctor(null);
+                                setDoctorTimeSlots(null);
+                                setFormData(prev => ({
+                                    ...prev,
+                                    doctor_id: null,
+                                    appointment_time: ''
+                                }));
+                                // Nếu đã chọn ngày, load default slots
+                                if (formData.appointment_date) {
+                                    fetchDefaultSlots(formData.appointment_date);
+                                }
+                            }}
+                        >
+                            <h3>⚡ Đặt luôn</h3>
+                            <p>Chúng tôi sẽ sắp xếp bác sĩ phù hợp cho bạn</p>
+                        </div>
+                        <div
+                            className={`${styles.typeOption} ${bookingType === 'with_doctor' ? styles.active : ''}`}
+                            onClick={() => {
+                                setBookingType('with_doctor');
+                                setAvailableSlots([]);
+                                setDoctorTimeSlots(null);
+                                setFormData(prev => ({
+                                    ...prev,
+                                    appointment_time: ''
+                                }));
+                            }}
+                        >
+                            <h3>👨‍⚕️ Chọn bác sĩ</h3>
+                            <p>Bạn chọn bác sĩ và khung giờ mong muốn</p>
+                        </div>
+                    </div>
+
                     <div className={styles.formGrid}>
                         {/* Chuyên khoa - Bắt buộc */}
                         <div className={styles.formGroup}>
@@ -362,23 +573,14 @@ export default function Booking() {
                             {errors.appointment_date && <span className={styles.error}>{errors.appointment_date}</span>}
                         </div>
 
-                        {/* Chọn bác sĩ - Tùy chọn */}
-                        {formData.specialty_id && (
+                        {/* Chọn bác sĩ - CHỈ hiển thị khi chọn 'with_doctor' */}
+                        {bookingType === 'with_doctor' && formData.specialty_id && (
                             <div style={{ gridColumn: '1 / -1' }} className={styles.formGroup}>
-                                <label>👨‍⚕️ Chọn bác sĩ (tùy chọn - nếu không chọn admin sẽ gán)</label>
+                                <label>👨‍⚕️ Chọn bác sĩ <span className={styles.required}>*</span></label>
                                 {loading ? (
                                     <p>⏳ Đang tải danh sách bác sĩ...</p>
                                 ) : doctors.length > 0 ? (
                                     <div className={styles.doctorsList}>
-                                        {/* Option "Chưa chọn" */}
-                                        <div
-                                            className={`${styles.doctorOption} ${selectedDoctor === null ? styles.selected : ''}`}
-                                            onClick={() => handleSelectDoctor(null)}
-                                        >
-                                            <h4>❌ Chưa chọn bác sĩ</h4>
-                                            <p>Admin sẽ tự động gán bác sĩ phù hợp với lịch rảnh</p>
-                                        </div>
-
                                         {/* Các bác sĩ */}
                                         {doctors.map(doc => (
                                             <div
@@ -397,36 +599,80 @@ export default function Booking() {
                                 ) : (
                                     <p className={styles.warning}>Không có bác sĩ nào trong chuyên khoa này</p>
                                 )}
+                                {errors.doctor_id && <span className={styles.error}>{errors.doctor_id}</span>}
                             </div>
                         )}
 
                         {/* Giờ khám - Hiển thị nếu chọn ngày */}
-                        {formData.appointment_date && (
+                        {formData.appointment_date ? (
                             <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
                                 <label>Giờ khám</label>
                                 {loading ? (
                                     <p>⏳ Đang tải giờ rảnh...</p>
-                                ) : availableSlots.length > 0 ? (
+                                ) : doctorTimeSlots && doctorTimeSlots.isWorking ? (
+                                    // ✅ Hiển thị grid chi tiết với màu sắc cho cả 2 chế độ
                                     <>
-                                        <div className={styles.slotsGrid}>
-                                            {availableSlots.map(slot => (
-                                                <button
-                                                    key={slot}
-                                                    type="button"
-                                                    className={`${styles.slotBtn} ${formData.appointment_time === slot ? styles.selected : ''}`}
-                                                    onClick={() => setFormData(prev => ({ ...prev, appointment_time: slot }))}
-                                                >
-                                                    {slot}
-                                                </button>
-                                            ))}
+                                        <div className={styles.timeSlotsGrid}>
+                                            {doctorTimeSlots.slots.map((slot, index) => {
+                                                // Xác định trạng thái của slot
+                                                const isPast = slot.isPastTime;
+                                                const isBreak = slot.isBreakTime;
+                                                const isBooked = slot.bookingCount > 0;
+                                                const isSelected = formData.appointment_time === slot.startTime;
+                                                const isDisabled = isPast || isBreak || isBooked;
+
+                                                return (
+                                                    <button
+                                                        key={index}
+                                                        type="button"
+                                                        className={`${styles.timeSlotBtn} ${isPast ? styles.pastSlot :
+                                                            isBreak ? styles.breakTime :
+                                                                isBooked ? styles.bookedSlot :
+                                                                    isSelected ? styles.selectedSlot :
+                                                                        styles.availableSlot
+                                                            }`}
+                                                        onClick={() => {
+                                                            if (!isDisabled) {
+                                                                setFormData(prev => ({ ...prev, appointment_time: slot.startTime }));
+                                                            }
+                                                        }}
+                                                        disabled={isDisabled}
+                                                    >
+                                                        <div className={styles.slotTime}>{slot.time}</div>
+                                                        {isPast ? (
+                                                            <div className={styles.slotStatus}>⏰ Đã qua</div>
+                                                        ) : isBreak ? (
+                                                            <div className={styles.slotStatus}>☕ Nghỉ</div>
+                                                        ) : isBooked ? (
+                                                            <div className={styles.slotStatus}>🔒 Đã đặt</div>
+                                                        ) : (
+                                                            <div className={styles.slotStatus}>✓ Trống</div>
+                                                        )}
+                                                    </button>
+                                                );
+                                            })}
                                         </div>
-                                        <p className={styles.info}>💡 {selectedDoctor ? 'Chọn giờ rảnh của bác sĩ' : 'Chọn giờ khám phù hợp hoặc để trống để admin sắp xếp'}</p>
+                                        <p className={styles.info}>
+                                            💡 <strong>Xanh lá</strong> = còn trống •
+                                            <strong> Đen</strong> = đã đặt •
+                                            <strong> Xám</strong> = đã qua/nghỉ trưa
+                                            {bookingType === 'instant' && ' • (Chưa chọn bác sĩ - số lượng booking chưa chính xác)'}
+                                        </p>
+                                        {errors.appointment_time && <span className={styles.error}>{errors.appointment_time}</span>}
                                     </>
                                 ) : (
-                                    <p className={styles.warning}>⚠️ {selectedDoctor ? 'Bác sĩ này không có giờ rảnh vào ngày được chọn' : 'Không có giờ rảnh vào ngày này'}</p>
+                                    <p className={styles.warning}>
+                                        ⚠️ {selectedDoctor ? 'Bác sĩ này không có giờ rảnh vào ngày được chọn' : 'Không có giờ rảnh vào ngày này'}
+                                    </p>
                                 )}
                             </div>
-                        )}
+                        ) : selectedDoctor && bookingType === 'with_doctor' ? (
+                            <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
+                                <p className={styles.info}>
+                                    💡 Vui lòng chọn <strong>Ngày khám</strong> để xem các khung giờ còn trống của bác sĩ
+                                </p>
+                            </div>
+                        ) : null}
 
                         {/* Triệu chứng - Bắt buộc */}
                         <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>

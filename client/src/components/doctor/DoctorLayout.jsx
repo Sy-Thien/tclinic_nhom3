@@ -8,29 +8,24 @@ export default function DoctorLayout() {
 
     useEffect(() => {
         const userData = localStorage.getItem('user');
-        const token = localStorage.getItem('token');
 
-        if (!userData || !token) {
-            navigate('/login');
-            return;
+        if (userData) {
+            try {
+                const user = JSON.parse(userData);
+                setDoctor(user);
+            } catch (error) {
+                console.error('❌ Parse user error:', error);
+            }
         }
-
-        const user = JSON.parse(userData);
-
-        // Kiểm tra role
-        if (user.role !== 'doctor') {
-            alert('Bạn không có quyền truy cập!');
-            navigate('/');
-            return;
-        }
-
-        setDoctor(user);
-    }, [navigate]);
+    }, []);
 
     const handleLogout = () => {
+        // Clear all auth data
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        navigate('/login');
+        localStorage.clear();
+        // Force reload to clean state
+        window.location.href = '/login';
     };
 
     if (!doctor) {
@@ -66,7 +61,7 @@ export default function DoctorLayout() {
 
                 <nav className={styles.nav}>
                     <NavLink
-                        to="/doctor"
+                        to="/doctor-portal"
                         end
                         className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}
                     >
@@ -77,7 +72,7 @@ export default function DoctorLayout() {
                     </NavLink>
 
                     <NavLink
-                        to="/doctor/appointments"
+                        to="/doctor-portal/appointments"
                         className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}
                     >
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -90,42 +85,18 @@ export default function DoctorLayout() {
                     </NavLink>
 
                     <NavLink
-                        to="/doctor/patients"
+                        to="/doctor-portal/schedule"
                         className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}
                     >
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                            <circle cx="9" cy="7" r="4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                        Bệnh Nhân
-                    </NavLink>
-
-                    <NavLink
-                        to="/doctor/schedule"
-                        className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}
-                    >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <circle cx="12" cy="12" r="10" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                            <polyline points="12 6 12 12 16 14" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            <path d="M8 2v4M16 2v4M3 10h18" strokeWidth="2" strokeLinecap="round" />
                         </svg>
                         Lịch Làm Việc
                     </NavLink>
 
                     <NavLink
-                        to="/doctor/workflow"
-                        className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}
-                    >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                        Hướng Dẫn
-                    </NavLink>
-
-                    <NavLink
-                        to="/doctor/profile"
+                        to="/doctor-portal/profile"
                         className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}
                     >
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">

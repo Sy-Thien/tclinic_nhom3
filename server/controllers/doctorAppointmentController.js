@@ -1,4 +1,4 @@
-const { Booking, Patient, Specialty, Appointment } = require('../models');
+const { Booking, Patient, Specialty, Appointment, MedicalHistory, Prescription } = require('../models');
 const { Op } = require('sequelize');
 
 // Doctor - Lấy danh sách booking được gán
@@ -162,10 +162,121 @@ exports.completeAppointment = async (req, res) => {
             conclusion: conclusion || booking.conclusion
         });
 
+        // ✅ Tự động lưu vào lịch sử bệnh án
+        const existingHistory = await MedicalHistory.findOne({
+            where: { booking_id: id }
+        });
+
+        if (!existingHistory) {
+            // Lấy prescription_id nếu có
+            const prescriptionRecord = await Prescription.findOne({
+                where: { booking_id: id }
+            });
+
+            await MedicalHistory.create({
+                booking_id: booking.id,
+                patient_id: booking.patient_id,
+                doctor_id: doctor_id,
+                visit_date: booking.appointment_date,
+                visit_time: booking.appointment_time,
+                symptoms: booking.symptoms,
+                diagnosis: booking.diagnosis,
+                conclusion: booking.conclusion,
+                note: booking.note,
+                prescription_id: prescriptionRecord ? prescriptionRecord.id : null
+            });
+
+            console.log('✅ Medical history auto-saved for booking:', id);
+        }
+
         res.json({ message: 'Hoàn thành khám bệnh', booking });
 
     } catch (error) {
         console.error('❌ Complete appointment error:', error);
+        res.status(500).json({ message: 'Lỗi server', error: error.message });
+    }
+};
+
+// Doctor - Xác nhận booking
+exports.confirmBooking = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const doctor_id = req.user.id;
+
+        const booking = await Booking.findOne({
+            where: {
+                id,
+                doctor_id,
+                status: 'waiting_doctor_confirmation'
+            }
+        });
+
+        if (!booking) {
+            return res.status(404).json({
+                message: 'Không tìm thấy lịch hẹn hoặc lịch không cần xác nhận'
+            });
+        }
+
+        await booking.update({ status: 'confirmed' });
+
+        const updatedBooking = await Booking.findByPk(id, {
+            include: [
+                { model: Specialty, as: 'specialty', attributes: ['id', 'name'] },
+                { model: Patient, as: 'patient', attributes: ['id', 'full_name', 'phone'], required: false }
+            ]
+        });
+
+        console.log('✅ Doctor confirmed booking:', id);
+        res.json({ message: 'Xác nhận lịch khám thành công!', booking: updatedBooking });
+
+    } catch (error) {
+        console.error('❌ Confirm booking error:', error);
+        res.status(500).json({ message: 'Lỗi server', error: error.message });
+    }
+};
+
+// Doctor - Từ chối booking
+exports.rejectBooking = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { reject_reason } = req.body;
+        const doctor_id = req.user.id;
+
+        if (!reject_reason || reject_reason.trim() === '') {
+            return res.status(400).json({ message: 'Vui lòng nhập lý do từ chối' });
+        }
+
+        const booking = await Booking.findOne({
+            where: {
+                id,
+                doctor_id,
+                status: { [Op.in]: ['waiting_doctor_confirmation', 'confirmed'] }
+            }
+        });
+
+        if (!booking) {
+            return res.status(404).json({
+                message: 'Không tìm thấy lịch hẹn hoặc không thể từ chối'
+            });
+        }
+
+        await booking.update({
+            status: 'doctor_rejected',
+            reject_reason
+        });
+
+        const updatedBooking = await Booking.findByPk(id, {
+            include: [
+                { model: Specialty, as: 'specialty', attributes: ['id', 'name'] },
+                { model: Patient, as: 'patient', attributes: ['id', 'full_name', 'phone'], required: false }
+            ]
+        });
+
+        console.log('❌ Doctor rejected booking:', id, 'Reason:', reject_reason);
+        res.json({ message: 'Đã từ chối lịch khám', booking: updatedBooking });
+
+    } catch (error) {
+        console.error('❌ Reject booking error:', error);
         res.status(500).json({ message: 'Lỗi server', error: error.message });
     }
 };

@@ -98,17 +98,49 @@ const Booking = sequelize.define('Booking', {
         allowNull: true
     },
     status: {
-        type: DataTypes.ENUM('pending', 'confirmed', 'completed', 'cancelled'),
+        type: DataTypes.ENUM(
+            'pending',                      // Chờ xử lý (legacy)
+            'waiting_doctor_assignment',    // Chờ admin gán bác sĩ (Option 1: Đặt luôn)
+            'waiting_doctor_confirmation',  // Chờ bác sĩ xác nhận (Option 2: Chọn bác sĩ)
+            'confirmed',                    // Đã xác nhận
+            'completed',                    // Đã hoàn thành khám
+            'cancelled',                    // Đã hủy
+            'doctor_rejected'               // Bác sĩ từ chối
+        ),
         allowNull: true,
         defaultValue: 'pending'
     },
     cancel_reason: {
         type: DataTypes.TEXT,
-        allowNull: true
+        allowNull: true,
+        comment: 'Lý do hủy'
+    },
+    reject_reason: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        comment: 'Lý do bác sĩ từ chối'
     },
     price: {
         type: DataTypes.DECIMAL(10, 0),
         allowNull: true
+    },
+    time_slot_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+            model: 'tn_time_slots',
+            key: 'id'
+        }
+    },
+    reminder_sent: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        comment: 'Đã gửi email nhắc lịch chưa'
+    },
+    reminder_sent_at: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        comment: 'Thời điểm gửi email nhắc lịch'
     },
     created_at: {
         type: DataTypes.DATE,

@@ -52,7 +52,7 @@ exports.getScheduleByDoctor = async (req, res) => {
 // Tạo lịch làm việc
 exports.createSchedule = async (req, res) => {
     try {
-        const { doctor_id, day_of_week, start_time, end_time, break_start, break_end } = req.body;
+        const { doctor_id, day_of_week, start_time, end_time, break_start, break_end, room, is_active } = req.body;
 
         // Kiểm tra doctor tồn tại
         const doctor = await Doctor.findByPk(doctor_id);
@@ -76,7 +76,8 @@ exports.createSchedule = async (req, res) => {
             end_time,
             break_start: break_start || null,
             break_end: break_end || null,
-            is_active: true
+            room: room || null,
+            is_active: is_active !== false
         });
 
         const scheduleWithDoctor = await DoctorSchedule.findByPk(schedule.id, {
@@ -96,7 +97,7 @@ exports.createSchedule = async (req, res) => {
 exports.updateSchedule = async (req, res) => {
     try {
         const { scheduleId } = req.params;
-        const { day_of_week, start_time, end_time, break_start, break_end, is_active } = req.body;
+        const { day_of_week, start_time, end_time, break_start, break_end, is_active, room } = req.body;
 
         const schedule = await DoctorSchedule.findByPk(scheduleId);
         if (!schedule) {
@@ -123,7 +124,8 @@ exports.updateSchedule = async (req, res) => {
             end_time: end_time || schedule.end_time,
             break_start: break_start !== undefined ? break_start : schedule.break_start,
             break_end: break_end !== undefined ? break_end : schedule.break_end,
-            is_active: is_active !== undefined ? is_active : schedule.is_active
+            is_active: is_active !== undefined ? is_active : schedule.is_active,
+            room: room !== undefined ? room : schedule.room
         });
 
         const updatedSchedule = await DoctorSchedule.findByPk(scheduleId, {

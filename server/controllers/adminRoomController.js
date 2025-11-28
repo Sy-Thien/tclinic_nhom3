@@ -1,12 +1,12 @@
-const { Room } = require('../models');
+const { Room, Specialty, TimeSlot } = require('../models');
 const { Op } = require('sequelize');
 
 // GET - Lấy danh sách tất cả phòng khám
 exports.getAllRooms = async (req, res) => {
     try {
-        const { search } = req.query;
+        const { search, floor, specialty_id, status } = req.query;
 
-        console.log('📋 GET /api/admin/rooms', { search });
+        console.log('📋 GET /api/admin/rooms', { search, floor, specialty_id, status });
 
         let whereClause = {};
 
@@ -14,13 +14,34 @@ exports.getAllRooms = async (req, res) => {
         if (search) {
             whereClause[Op.or] = [
                 { name: { [Op.like]: `%${search}%` } },
-                { location: { [Op.like]: `%${search}%` } }
+                { location: { [Op.like]: `%${search}%` } },
+                { room_number: { [Op.like]: `%${search}%` } }
             ];
+        }
+
+        // Lọc theo tầng
+        if (floor) {
+            whereClause.floor = floor;
+        }
+
+        // Lọc theo chuyên khoa
+        if (specialty_id) {
+            whereClause.specialty_id = specialty_id;
+        }
+
+        // Lọc theo trạng thái
+        if (status) {
+            whereClause.status = status;
         }
 
         const rooms = await Room.findAll({
             where: whereClause,
-            order: [['name', 'ASC']]
+            include: [{
+                model: Specialty,
+                as: 'specialty',
+                attributes: ['id', 'name']
+            }],
+            order: [['floor', 'ASC'], ['room_number', 'ASC'], ['name', 'ASC']]
         });
 
         console.log(`✅ Found ${rooms.length} rooms`);
@@ -32,6 +53,78 @@ exports.getAllRooms = async (req, res) => {
             message: 'Lỗi khi lấy danh sách phòng khám',
             error: error.message
         });
+    }
+};
+
+// GET - Lấy danh sách các tầng có phòng khám
+exports.getFloors = async (req, res) => {
+    try {
+        const rooms = await Room.findAll({
+            attributes: ['floor'],
+            group: ['floor'],
+            order: [['floor', 'ASC']]
+        });
+
+        const floors = rooms.map(r => r.floor).filter(f => f !== null);
+        res.json(floors);
+    } catch (error) {
+        console.error('❌ Error fetching floors:', error);
+        res.status(500).json({ message: 'Lỗi khi lấy danh sách tầng' });
+    }
+};
+
+// GET - Lấy thống kê phòng khám theo tầng
+exports.getRoomStats = async (req, res) => {
+    try {
+        const rooms = await Room.findAll({
+            include: [{
+                model: Specialty,
+                as: 'specialty',
+                attributes: ['id', 'name']
+            }]
+        });
+
+        // Nhóm theo tầng
+        const byFloor = {};
+        const bySpecialty = {};
+        const byStatus = { active: 0, inactive: 0, maintenance: 0 };
+
+        rooms.forEach(room => {
+            // Theo tầng
+            const floor = room.floor || 0;
+            if (!byFloor[floor]) {
+                byFloor[floor] = { count: 0, specialties: new Set() };
+            }
+            byFloor[floor].count++;
+            if (room.specialty) {
+                byFloor[floor].specialties.add(room.specialty.name);
+            }
+
+            // Theo chuyên khoa
+            const specName = room.specialty?.name || 'Chưa phân loại';
+            if (!bySpecialty[specName]) {
+                bySpecialty[specName] = 0;
+            }
+            bySpecialty[specName]++;
+
+            // Theo trạng thái
+            byStatus[room.status]++;
+        });
+
+        // Convert Set to Array
+        Object.keys(byFloor).forEach(floor => {
+            byFloor[floor].specialties = Array.from(byFloor[floor].specialties);
+        });
+
+        res.json({
+            total: rooms.length,
+            byFloor,
+            bySpecialty,
+            byStatus
+        });
+    } catch (error) {
+        console.error('❌ Error fetching room stats:', error);
+        res.status(500).json({ message: 'Lỗi khi lấy thống kê phòng khám' });
     }
 };
 
@@ -63,9 +156,9 @@ exports.getRoomById = async (req, res) => {
 // POST - Thêm phòng khám mới
 exports.createRoom = async (req, res) => {
     try {
-        const { name, location } = req.body;
+        const { name, room_number, floor, specialty_id, location, status, capacity, description } = req.body;
 
-        console.log('➕ POST /api/admin/rooms', { name });
+        console.log('➕ POST /api/admin/rooms', { name, floor, specialty_id });
 
         // Validation
         if (!name) {
@@ -78,21 +171,48 @@ exports.createRoom = async (req, res) => {
         const existingRoom = await Room.findOne({ where: { name } });
         if (existingRoom) {
             return res.status(400).json({
-                message: 'Phòng khám đã tồn tại'
+                message: 'Tên phòng khám đã tồn tại'
             });
+        }
+
+        // Kiểm tra số phòng đã tồn tại trong cùng tầng
+        if (room_number && floor) {
+            const existingRoomNumber = await Room.findOne({
+                where: { room_number, floor }
+            });
+            if (existingRoomNumber) {
+                return res.status(400).json({
+                    message: `Số phòng ${room_number} đã tồn tại ở tầng ${floor}`
+                });
+            }
         }
 
         // Tạo phòng khám mới
         const room = await Room.create({
             name,
-            location: location || null
+            room_number: room_number || null,
+            floor: floor || 1,
+            specialty_id: specialty_id || null,
+            location: location || null,
+            status: status || 'active',
+            capacity: capacity || 1,
+            description: description || null
+        });
+
+        // Reload với specialty
+        const createdRoom = await Room.findByPk(room.id, {
+            include: [{
+                model: Specialty,
+                as: 'specialty',
+                attributes: ['id', 'name']
+            }]
         });
 
         console.log('✅ Room created:', room.id);
 
         res.status(201).json({
             message: 'Thêm phòng khám thành công',
-            room
+            room: createdRoom
         });
     } catch (error) {
         console.error('❌ Error creating room:', error);
@@ -107,7 +227,7 @@ exports.createRoom = async (req, res) => {
 exports.updateRoom = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, location } = req.body;
+        const { name, room_number, floor, specialty_id, location, status, capacity, description } = req.body;
 
         console.log(`✏️ PUT /api/admin/rooms/${id}`);
 
@@ -127,17 +247,48 @@ exports.updateRoom = async (req, res) => {
             }
         }
 
+        // Kiểm tra số phòng trùng trong cùng tầng
+        if (room_number && floor) {
+            const existingRoomNumber = await Room.findOne({
+                where: {
+                    room_number,
+                    floor,
+                    id: { [Op.ne]: id }
+                }
+            });
+            if (existingRoomNumber) {
+                return res.status(400).json({
+                    message: `Số phòng ${room_number} đã tồn tại ở tầng ${floor}`
+                });
+            }
+        }
+
         // Cập nhật
         await room.update({
-            name: name || room.name,
-            location: location !== undefined ? location : room.location
+            name: name !== undefined ? name : room.name,
+            room_number: room_number !== undefined ? room_number : room.room_number,
+            floor: floor !== undefined ? floor : room.floor,
+            specialty_id: specialty_id !== undefined ? specialty_id : room.specialty_id,
+            location: location !== undefined ? location : room.location,
+            status: status !== undefined ? status : room.status,
+            capacity: capacity !== undefined ? capacity : room.capacity,
+            description: description !== undefined ? description : room.description
+        });
+
+        // Reload với specialty
+        const updatedRoom = await Room.findByPk(id, {
+            include: [{
+                model: Specialty,
+                as: 'specialty',
+                attributes: ['id', 'name']
+            }]
         });
 
         console.log('✅ Room updated:', id);
 
         res.json({
             message: 'Cập nhật phòng khám thành công',
-            room
+            room: updatedRoom
         });
     } catch (error) {
         console.error('❌ Error updating room:', error);

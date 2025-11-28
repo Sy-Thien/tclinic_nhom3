@@ -19,7 +19,9 @@
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.11.5",
+    "nodemailer": "^7.0.10",
     "pdfkit": "^0.17.2",
+    "resend": "^6.5.2",
     "sequelize": "^6.37.5"
   },
   "devDependencies": {

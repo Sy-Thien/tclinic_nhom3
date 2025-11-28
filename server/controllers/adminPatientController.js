@@ -28,7 +28,7 @@ exports.getAllPatients = async (req, res) => {
         const patients = await Patient.findAll({
             where: whereClause,
             attributes: { exclude: ['password'] },
-            order: [['created_at', 'DESC']]
+            order: [['id', 'ASC']]
         });
 
         console.log(`✅ Found ${patients.length} patients`);
@@ -94,7 +94,7 @@ exports.getPatientHistory = async (req, res) => {
                     required: false
                 }
             ],
-            order: [['appointment_date', 'DESC'], ['created_at', 'DESC']]
+            order: [['appointment_date', 'DESC'], ['id', 'ASC']]
         });
 
         console.log(`✅ Found ${bookings.length} booking records`);

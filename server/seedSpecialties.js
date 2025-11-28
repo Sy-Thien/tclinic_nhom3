@@ -25,18 +25,13 @@ async function seed() {
         await sequelize.authenticate();
         console.log('✅ Kết nối database thành công');
 
-        console.log('🗑️  Đang xóa bảng cũ (nếu có)...');
-        await sequelize.query('DROP TABLE IF EXISTS tn_specialties');
-        console.log('✅ Đã xóa bảng cũ');
-
-        console.log('📦 Đang tạo bảng mới...');
-        await sequelize.sync({ force: true }); // Tạo bảng mới với timestamps
-        console.log('✅ Đã tạo bảng tn_specialties');
-
         console.log('➕ Đang thêm dữ liệu...');
         for (const spec of specialties) {
-            await Specialty.create(spec);
-            console.log(`   ✓ ${spec.name}`);
+            const [specialty, created] = await Specialty.findOrCreate({
+                where: { name: spec.name },
+                defaults: spec
+            });
+            console.log(`   ${created ? '✓ Thêm mới' : '✓ Đã tồn tại'}: ${spec.name}`);
         }
 
         console.log('');

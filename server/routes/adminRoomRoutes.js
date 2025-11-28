@@ -9,6 +9,12 @@ router.use(verifyToken, isAdmin);
 // GET - Danh sách phòng khám
 router.get('/rooms', adminRoomController.getAllRooms);
 
+// GET - Danh sách tầng
+router.get('/rooms/floors', adminRoomController.getFloors);
+
+// GET - Thống kê phòng khám
+router.get('/rooms/stats', adminRoomController.getRoomStats);
+
 // GET - Thông tin chi tiết phòng khám
 router.get('/rooms/:id', adminRoomController.getRoomById);
 

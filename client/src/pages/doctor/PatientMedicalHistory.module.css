@@ -1,0 +1,310 @@
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.backBtn {
+    padding: 0.5rem 1rem;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+}
+
+.backBtn:hover {
+    background: #f7fafc;
+    border-color: #cbd5e0;
+}
+
+.header h1 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #1a202c;
+}
+
+/* Patient Card */
+.patientCard {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+}
+
+.patientInfo {
+    display: flex;
+    gap: 1.5rem;
+    flex: 1;
+}
+
+.avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 600;
+    color: white;
+    flex-shrink: 0;
+}
+
+.details h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1a202c;
+    margin-bottom: 1rem;
+}
+
+.infoGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.infoItem {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.label {
+    font-weight: 600;
+    color: #718096;
+}
+
+.statsCard {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    color: white;
+    min-width: 150px;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.statNumber {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.statLabel {
+    font-size: 0.95rem;
+    opacity: 0.95;
+}
+
+/* Histories Section */
+.historiesSection {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.historiesSection h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1a202c;
+    margin-bottom: 1.5rem;
+}
+
+.empty {
+    text-align: center;
+    padding: 3rem;
+    color: #a0aec0;
+    font-size: 1rem;
+}
+
+.timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.historyCard {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.2s;
+}
+
+.historyCard:hover {
+    border-color: #cbd5e0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.historyHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem;
+    background: #f7fafc;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.historyHeader:hover {
+    background: #edf2f7;
+}
+
+.visitInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.visitDate {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #667eea;
+}
+
+.doctorName {
+    font-size: 0.95rem;
+    color: #4a5568;
+}
+
+.expandBtn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: #667eea;
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: transform 0.2s;
+}
+
+.historyContent {
+    padding: 1.5rem;
+    background: white;
+    border-top: 1px solid #e2e8f0;
+}
+
+.section {
+    margin-bottom: 1.5rem;
+}
+
+.section:last-child {
+    margin-bottom: 0;
+}
+
+.section h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+}
+
+.section p {
+    color: #4a5568;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+/* Prescription Table */
+.prescriptionTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.5rem;
+}
+
+.prescriptionTable th,
+.prescriptionTable td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.prescriptionTable th {
+    background: #f7fafc;
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 0.9rem;
+}
+
+.prescriptionTable td {
+    color: #4a5568;
+    font-size: 0.9rem;
+}
+
+.prescriptionTable tbody tr:hover {
+    background: #f7fafc;
+}
+
+.prescriptionNote {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: #fff5f5;
+    border-left: 3px solid #fc8181;
+    color: #c53030;
+    font-size: 0.9rem;
+}
+
+/* Loading & Error */
+.loading,
+.error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    font-size: 1.1rem;
+    color: #718096;
+}
+
+.error {
+    color: #e53e3e;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+
+    .patientCard {
+        flex-direction: column;
+    }
+
+    .patientInfo {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .infoGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .statsCard {
+        width: 100%;
+    }
+
+    .prescriptionTable {
+        font-size: 0.85rem;
+    }
+
+    .prescriptionTable th,
+    .prescriptionTable td {
+        padding: 0.5rem;
+    }
+}

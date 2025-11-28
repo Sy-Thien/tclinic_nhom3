@@ -40,7 +40,7 @@ exports.getAllDoctors = async (req, res) => {
                 }
             ],
             attributes: { exclude: ['password', 'recovery_token'] },
-            order: [['created_at', 'DESC']]
+            order: [['id', 'ASC']]
         });
 
         console.log(`✅ Found ${doctors.length} doctors`);

@@ -147,6 +147,24 @@
     color: #856404;
 }
 
+.statusWaitingConfirm {
+    background: #fce7f3;
+    color: #db2777;
+    animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
 .statusConfirmed {
     background: #D1ECF1;
     color: #0C5460;
@@ -160,6 +178,11 @@
 .statusCancelled {
     background: #F8D7DA;
     color: #721C24;
+}
+
+.statusRejected {
+    background: #fee2e2;
+    color: #991b1b;
 }
 
 .cardBody {
@@ -239,6 +262,56 @@
     background: #218838;
 }
 
+.btnConfirmBooking {
+    background: #10b981;
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btnConfirmBooking:hover {
+    background: #059669;
+    transform: translateY(-2px);
+}
+
+.btnReject {
+    background: #ef4444;
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btnReject:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+}
+
+.btnCancel {
+    background: #6b7280;
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btnCancel:hover {
+    background: #4b5563;
+}
+
 /* MODAL */
 .modalOverlay {
     position: fixed;
@@ -262,6 +335,36 @@
     max-height: 90vh;
     overflow-y: auto;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.modalSmall {
+    background: white;
+    border-radius: 16px;
+    max-width: 500px;
+    width: 100%;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.modalSmall h3 {
+    margin: 0 0 1.5rem 0;
+    color: #333;
+    font-size: 1.5rem;
+}
+
+.modalBody {
+    margin-bottom: 1.5rem;
+}
+
+.modalBody p {
+    margin: 0.5rem 0;
+    color: #555;
+}
+
+.modalFooter {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
 }
 
 .modalHeader {
@@ -438,6 +541,27 @@
     border-radius: 8px;
     color: #155724;
     text-align: center;
+}
+
+.required {
+    color: #ef4444;
+    margin-left: 0.25rem;
+}
+
+.textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    resize: vertical;
+    transition: border-color 0.2s;
+}
+
+.textarea:focus {
+    outline: none;
+    border-color: #667eea;
 }
 
 @media (max-width: 768px) {

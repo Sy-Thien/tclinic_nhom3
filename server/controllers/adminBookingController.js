@@ -42,7 +42,7 @@ exports.getAllBookings = async (req, res) => {
                     required: false
                 }
             ],
-            order: [['created_at', 'DESC']]
+            order: [['id', 'ASC']]
         });
 
         res.json({ bookings, total: bookings.length });
@@ -298,6 +298,135 @@ exports.deleteBooking = async (req, res) => {
 
     } catch (error) {
         console.error('❌ Admin delete booking error:', error);
+        res.status(500).json({ message: 'Lỗi server', error: error.message });
+    }
+};
+
+// Admin - Lấy danh sách bác sĩ còn trống cho booking (để gán)
+exports.getAvailableDoctorsForAssignment = async (req, res) => {
+    try {
+        const { booking_id } = req.params;
+
+        // Lấy thông tin booking
+        const booking = await Booking.findByPk(booking_id, {
+            include: [{ model: Specialty, as: 'specialty' }]
+        });
+
+        if (!booking) {
+            return res.status(404).json({ message: 'Không tìm thấy lịch hẹn' });
+        }
+
+        // Tìm tất cả bác sĩ trong chuyên khoa
+        const doctors = await Doctor.findAll({
+            where: {
+                specialty_id: booking.specialty_id,
+                is_active: true
+            },
+            attributes: ['id', 'full_name', 'phone', 'email']
+        });
+
+        // Lọc bác sĩ đã có booking trùng giờ
+        const busyDoctorIds = await Booking.findAll({
+            where: {
+                appointment_date: booking.appointment_date,
+                appointment_time: booking.appointment_time,
+                status: {
+                    [Op.notIn]: ['cancelled', 'doctor_rejected']
+                },
+                doctor_id: { [Op.ne]: null }
+            },
+            attributes: ['doctor_id']
+        }).then(bookings => bookings.map(b => b.doctor_id));
+
+        // Lọc ra bác sĩ còn trống
+        const availableDoctors = doctors.filter(doc => !busyDoctorIds.includes(doc.id));
+
+        res.json({
+            booking: {
+                id: booking.id,
+                booking_code: booking.booking_code,
+                specialty: booking.specialty.name,
+                date: booking.appointment_date,
+                time: booking.appointment_time
+            },
+            availableDoctors,
+            busyDoctors: doctors.filter(doc => busyDoctorIds.includes(doc.id))
+        });
+
+    } catch (error) {
+        console.error('❌ Get available doctors for assignment error:', error);
+        res.status(500).json({ message: 'Lỗi server', error: error.message });
+    }
+};
+
+// Admin - Gán bác sĩ cho booking
+exports.assignDoctorToBooking = async (req, res) => {
+    try {
+        const { booking_id } = req.params;
+        const { doctor_id, time_slot } = req.body;
+
+        if (!doctor_id) {
+            return res.status(400).json({ message: 'Vui lòng chọn bác sĩ' });
+        }
+
+        const booking = await Booking.findByPk(booking_id);
+
+        if (!booking) {
+            return res.status(404).json({ message: 'Không tìm thấy lịch hẹn' });
+        }
+
+        // Nếu có time_slot mới thì kiểm tra conflict với time_slot đó
+        const checkTimeSlot = time_slot || booking.time_slot;
+
+        // Kiểm tra bác sĩ có trống không
+        const conflictBooking = await Booking.findOne({
+            where: {
+                doctor_id,
+                appointment_date: booking.appointment_date,
+                time_slot: checkTimeSlot,
+                status: { [Op.notIn]: ['cancelled', 'doctor_rejected'] },
+                id: { [Op.ne]: booking_id }
+            }
+        });
+
+        if (conflictBooking) {
+            return res.status(400).json({
+                message: 'Bác sĩ này đã có lịch khác vào khung giờ này'
+            });
+        }
+
+        // Gán bác sĩ và chuyển status
+        const updateData = {
+            doctor_id,
+            status: 'waiting_doctor_confirmation'
+        };
+
+        // Nếu có time_slot mới thì cập nhật luôn
+        if (time_slot) {
+            updateData.time_slot = time_slot;
+            // Parse time_slot để lấy appointment_time (start time)
+            const startTime = time_slot.split('-')[0];
+            updateData.appointment_time = startTime;
+        }
+
+        await booking.update(updateData);
+
+        const updatedBooking = await Booking.findByPk(booking_id, {
+            include: [
+                { model: Doctor, as: 'doctor', attributes: ['id', 'full_name', 'phone'] },
+                { model: Specialty, as: 'specialty', attributes: ['id', 'name'] }
+            ]
+        });
+
+        console.log('✅ Admin assigned doctor to booking:', booking_id, 'Doctor:', doctor_id, 'Time:', time_slot || booking.time_slot);
+
+        res.json({
+            message: 'Gán bác sĩ thành công! Đang chờ bác sĩ xác nhận.',
+            booking: updatedBooking
+        });
+
+    } catch (error) {
+        console.error('❌ Assign doctor to booking error:', error);
         res.status(500).json({ message: 'Lỗi server', error: error.message });
     }
 };

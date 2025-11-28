@@ -32,6 +32,11 @@ module.exports = (sequelize, DataTypes) => {
         is_active: {
             type: DataTypes.BOOLEAN,
             defaultValue: true
+        },
+        room: {
+            type: DataTypes.STRING(50),
+            allowNull: true,
+            comment: 'Phòng khám'
         }
     }, {
         tableName: 'doctor_schedules',

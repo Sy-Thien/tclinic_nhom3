@@ -32,17 +32,22 @@ export default function Dashboard() {
             setSpecialties(specialtiesRes.data);
             setServices(servicesRes.data.slice(0, 6));
 
-            // Fetch user appointments nếu đã login
+            // Fetch user appointments nếu đã login VÀ là patient
             const token = localStorage.getItem('token');
-            if (token) {
+            const userStr = localStorage.getItem('user');
+            if (token && userStr) {
                 try {
-                    const appointmentsRes = await api.get('/api/customer/appointments');
-                    const appointments = appointmentsRes.data.bookings || appointmentsRes.data.data || [];
-                    setStats({
-                        totalAppointments: appointments.length,
-                        completedAppointments: appointments.filter(a => a.status === 'completed').length,
-                        pendingAppointments: appointments.filter(a => a.status === 'pending' || a.status === 'confirmed').length
-                    });
+                    const user = JSON.parse(userStr);
+                    // ✅ Chỉ gọi API khi role là patient
+                    if (user.role === 'patient') {
+                        const appointmentsRes = await api.get('/api/customer/appointments');
+                        const appointments = appointmentsRes.data.bookings || appointmentsRes.data.data || [];
+                        setStats({
+                            totalAppointments: appointments.length,
+                            completedAppointments: appointments.filter(a => a.status === 'completed').length,
+                            pendingAppointments: appointments.filter(a => a.status === 'pending' || a.status === 'confirmed').length
+                        });
+                    }
                 } catch (error) {
                     console.error('Error fetching appointments:', error);
                 }

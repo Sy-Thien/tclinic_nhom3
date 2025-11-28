@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const adminDoctorScheduleController = require('../controllers/adminDoctorScheduleController');
+const doctorScheduleController = require('../controllers/doctorScheduleController');
 const { verifyToken } = require('../middleware/authMiddleware');
 
 // Lấy tất cả bác sĩ
@@ -26,5 +27,8 @@ router.delete('/doctor-schedules/:scheduleId', verifyToken, adminDoctorScheduleC
 
 // Xóa tất cả lịch của một bác sĩ
 router.delete('/doctor-schedules-doctor/:doctorId', verifyToken, adminDoctorScheduleController.deleteAllSchedulesForDoctor);
+
+// ✅ NEW: Lấy time slots của bác sĩ với booking count
+router.get('/doctor-time-slots/:doctorId', verifyToken, doctorScheduleController.getDoctorTimeSlotsWithBookings);
 
 module.exports = router;

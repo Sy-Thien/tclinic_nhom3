@@ -33,7 +33,18 @@ router.get('/doctors', async (req, res) => {
 // POST - Thêm bác sĩ mới
 router.post('/doctors', async (req, res) => {
     try {
-        const doctor = await Doctor.create(req.body);
+        const { password, ...otherData } = req.body;
+
+        // Hash password nếu có
+        let hashedPassword = null;
+        if (password) {
+            hashedPassword = await bcrypt.hash(password, 10);
+        }
+
+        const doctor = await Doctor.create({
+            ...otherData,
+            password: hashedPassword
+        });
         res.status(201).json(doctor);
     } catch (error) {
         console.error('Error:', error);
@@ -46,6 +57,12 @@ router.put('/doctors/:id', async (req, res) => {
     try {
         const doctor = await Doctor.findByPk(req.params.id);
         if (!doctor) return res.status(404).json({ message: 'Không tìm thấy' });
+
+        // Hash password nếu có trong body
+        if (req.body.password) {
+            req.body.password = await bcrypt.hash(req.body.password, 10);
+        }
+
         await doctor.update(req.body);
         res.json(doctor);
     } catch (error) {
@@ -81,7 +98,18 @@ router.get('/patients', async (req, res) => {
 // POST - Thêm bệnh nhân mới
 router.post('/patients', async (req, res) => {
     try {
-        const patient = await Patient.create(req.body);
+        const { password, ...otherData } = req.body;
+
+        // Hash password nếu có
+        let hashedPassword = null;
+        if (password) {
+            hashedPassword = await bcrypt.hash(password, 10);
+        }
+
+        const patient = await Patient.create({
+            ...otherData,
+            password: hashedPassword
+        });
         res.status(201).json(patient);
     } catch (error) {
         res.status(500).json({ message: 'Lỗi khi tạo bệnh nhân' });
@@ -93,6 +121,12 @@ router.put('/patients/:id', async (req, res) => {
     try {
         const patient = await Patient.findByPk(req.params.id);
         if (!patient) return res.status(404).json({ message: 'Không tìm thấy' });
+
+        // Hash password nếu có trong body
+        if (req.body.password) {
+            req.body.password = await bcrypt.hash(req.body.password, 10);
+        }
+
         await patient.update(req.body);
         res.json(patient);
     } catch (error) {

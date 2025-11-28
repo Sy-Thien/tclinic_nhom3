@@ -1,79 +1,104 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import ProtectedRoute from './components/ProtectedRoute';
 import CustomerLayout from './components/customer/CustomerLayout';
 import DoctorLayout from './components/doctor/DoctorLayout';
 import AdminLayout from './components/admin/AdminLayout';
+import HomePage from './pages/customer/HomePage';
 import Dashboard from './pages/customer/Dashboard';
 import Booking from './pages/customer/Booking';
 import MyAppointments from './pages/customer/MyAppointments';
 import Services from './pages/customer/Services';
 import DoctorList from './pages/customer/DoctorList';
 import DoctorDetail from './pages/customer/DoctorDetail';
+import PublicDoctorList from './pages/public/DoctorList';
+import PublicDoctorDetail from './pages/public/DoctorDetail';
+import PublicServiceList from './pages/public/ServiceList';
 import About from './pages/customer/About';
 import Contact from './pages/customer/Contact';
 import Login from './pages/Login';
 import Register from './pages/Register';
 
-// Doctor Pages
-import DoctorDashboard from './pages/doctor/Dashboard';
-import DoctorAppointments from './pages/doctor/Appointments';
-import DoctorPatients from './pages/doctor/Patients';
-import DoctorSchedule from './pages/doctor/Schedule';
-import DoctorWorkflow from './pages/doctor/DoctorWorkflow';  // ✅ NEW
-import DoctorProfile from './pages/doctor/DoctorProfile';  // ✅ NEW
+// Doctor Pages - NEW Design
+import DoctorDashboardNew from './pages/doctor/DoctorDashboardNew';
+import AppointmentsList from './pages/doctor/AppointmentsList';
+import ExaminationPage from './pages/doctor/ExaminationPage';
+import DoctorProfile from './pages/doctor/DoctorProfile';
+import DoctorScheduleView from './pages/doctor/DoctorScheduleView';
+import PatientMedicalHistory from './pages/doctor/PatientMedicalHistory';
+import PatientProfile from './pages/customer/PatientProfile';
+import MedicalHistory from './pages/customer/MedicalHistory';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminAppointments from './pages/admin/Appointments';
 import AdminDoctorsManagement from './pages/admin/AdminDoctors';
+import AdminDoctorManagement from './pages/admin/AdminDoctorManagement';  // ✅ NEW: Combined Doctors + Schedule
 import AdminPatientsManagement from './pages/admin/AdminPatients';
 import AdminSpecialties from './pages/admin/AdminSpecialties';
 import AdminRooms from './pages/admin/AdminRooms';
 import AdminServices from './pages/admin/Services';
 import AdminReports from './pages/admin/AdminReports';
 import AdminDoctorSchedule from './pages/admin/AdminDoctorSchedule';
+import AdminTimeSlots from './pages/admin/AdminTimeSlots';
 import DrugManagement from './pages/admin/DrugManagement';  // ✅ NEW
 
 export default function App() {
     return (
         <Router>
             <Routes>
-                {/* Customer Routes */}
-                <Route path="/" element={<CustomerLayout />}>
-                    <Route index element={<Dashboard />} />
+                {/* ✅ Customer Routes - Public (guest + patient) */}
+                <Route path="/" element={
+                    <ProtectedRoute requiredRole="any">
+                        <CustomerLayout />
+                    </ProtectedRoute>
+                }>
+                    <Route index element={<HomePage />} />
+                    <Route path="dashboard" element={<Dashboard />} />
                     <Route path="booking" element={<Booking />} />
                     <Route path="my-appointments" element={<MyAppointments />} />
-                    <Route path="services" element={<Services />} />
-                    <Route path="doctors" element={<DoctorList />} />
-                    <Route path="doctors/:id" element={<DoctorDetail />} />
+                    <Route path="services" element={<PublicServiceList />} />
+                    <Route path="doctors" element={<PublicDoctorList />} />
+                    <Route path="doctors/:id" element={<PublicDoctorDetail />} />
+                    <Route path="profile" element={<PatientProfile />} />
+                    <Route path="medical-history" element={<MedicalHistory />} />
                     <Route path="about" element={<About />} />
                     <Route path="contact" element={<Contact />} />
                 </Route>
 
-                {/* Doctor Routes */}
-                <Route path="/doctor" element={<DoctorLayout />}>
-                    <Route index element={<DoctorDashboard />} />
-                    <Route path="appointments" element={<DoctorAppointments />} />
-                    <Route path="patients" element={<DoctorPatients />} />
-                    <Route path="schedule" element={<DoctorSchedule />} />
-                    <Route path="workflow" element={<DoctorWorkflow />} />
+                {/* ✅ Doctor Routes - CHỈ DOCTOR */}
+                <Route path="/doctor-portal" element={
+                    <ProtectedRoute requiredRole="doctor">
+                        <DoctorLayout />
+                    </ProtectedRoute>
+                }>
+                    <Route index element={<DoctorDashboardNew />} />
+                    <Route path="appointments" element={<AppointmentsList />} />
+                    <Route path="examination" element={<ExaminationPage />} />
+                    <Route path="schedule" element={<DoctorScheduleView />} />
                     <Route path="profile" element={<DoctorProfile />} />
+                    <Route path="patient-history/:patientId" element={<PatientMedicalHistory />} />
                 </Route>
 
-                {/* Admin Routes */}
-                <Route path="/admin" element={<AdminLayout />}>
+                {/* ✅ Admin Routes - CHỈ ADMIN */}
+                <Route path="/admin" element={
+                    <ProtectedRoute requiredRole="admin">
+                        <AdminLayout />
+                    </ProtectedRoute>
+                }>
                     <Route index element={<AdminDashboard />} />
                     <Route path="appointments" element={<AdminAppointments />} />
-                    <Route path="doctors" element={<AdminDoctorsManagement />} />
+                    <Route path="doctors" element={<AdminDoctorManagement />} />
+                    <Route path="doctor-schedules" element={<AdminDoctorSchedule />} />
+                    <Route path="time-slots" element={<AdminTimeSlots />} />
                     <Route path="patients" element={<AdminPatientsManagement />} />
                     <Route path="specialties" element={<AdminSpecialties />} />
                     <Route path="rooms" element={<AdminRooms />} />
                     <Route path="services" element={<AdminServices />} />
                     <Route path="reports" element={<AdminReports />} />
-                    <Route path="doctor-schedules" element={<AdminDoctorSchedule />} />
                     <Route path="drugs" element={<DrugManagement />} />
                 </Route>
 
-                {/* Auth Routes */}
+                {/* Auth Routes - Guest only */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
 

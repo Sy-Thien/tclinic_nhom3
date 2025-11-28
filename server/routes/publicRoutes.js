@@ -2,8 +2,9 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const { Op } = require('sequelize');
+const publicController = require('../controllers/publicController');
 
-let Specialty, Service, Booking, Patient, Doctor;
+let Specialty, Service, Booking, Patient, Doctor, Drug, DoctorSchedule, Room, TimeSlot;
 try {
     const models = require('../models');
     Specialty = models.Specialty;
@@ -11,10 +12,21 @@ try {
     Booking = models.Booking;
     Patient = models.Patient;
     Doctor = models.Doctor;
+    Drug = models.Drug;
+    DoctorSchedule = models.DoctorSchedule;
+    Room = models.Room;
+    TimeSlot = models.TimeSlot;
     console.log('✅ Models loaded in publicRoutes');
 } catch (error) {
     console.error('❌ Cannot load models:', error.message);
 }
+
+// ✅ NEW: Home page APIs
+router.get('/home-stats', publicController.getHomeStats);
+router.get('/featured-doctors', publicController.getFeaturedDoctors);
+router.get('/testimonials', publicController.getTestimonials);
+router.get('/popular-specialties', publicController.getPopularSpecialties);
+router.get('/specialties-with-doctors', publicController.getSpecialtiesWithDoctors);
 
 // GET - Danh sách chuyên khoa
 router.get('/specialties', async (req, res) => {
@@ -234,11 +246,17 @@ router.get('/doctors', async (req, res) => {
             order: [['full_name', 'ASC']]
         });
 
-        // ✅ Thêm rating mặc định (0 sao nếu không có review)
-        const doctorsWithRating = doctors.map(doc => ({
-            ...doc.toJSON(),
-            rating: doc.rating || 0
-        }));
+        // ✅ Thêm rating mặc định và specialty_name
+        const doctorsWithRating = doctors.map(doc => {
+            const jsonDoc = doc.toJSON();
+            return {
+                ...jsonDoc,
+                specialty_name: jsonDoc.specialty?.name || null,
+                experience_years: jsonDoc.experience || null,
+                bio: jsonDoc.description || null,
+                rating: doc.rating || 0
+            };
+        });
 
         console.log(`✅ Found ${doctorsWithRating.length} doctors`);
         res.json(doctorsWithRating);
@@ -276,9 +294,13 @@ router.get('/doctors/:id', async (req, res) => {
             return res.status(404).json({ message: 'Không tìm thấy bác sĩ' });
         }
 
-        // ✅ Thêm rating mặc định
+        // ✅ Map dữ liệu cho frontend
+        const jsonDoc = doctor.toJSON();
         const doctorWithRating = {
-            ...doctor.toJSON(),
+            ...jsonDoc,
+            specialty_name: jsonDoc.specialty?.name || null,
+            experience_years: jsonDoc.experience || null,
+            bio: jsonDoc.description || null,
             rating: doctor.rating || 0
         };
 
@@ -286,6 +308,92 @@ router.get('/doctors/:id', async (req, res) => {
         res.json(doctorWithRating);
     } catch (error) {
         console.error('❌ Error fetching doctor:', error);
+        res.status(500).json({
+            message: 'Lỗi server',
+            error: error.message
+        });
+    }
+});
+
+// ✅ GET - Lịch làm việc của bác sĩ (14 ngày tới)
+router.get('/doctors/:id/schedule', async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log(`📋 GET /api/public/doctors/${id}/schedule`);
+
+        if (!TimeSlot) {
+            return res.status(500).json({ message: 'TimeSlot model not loaded' });
+        }
+
+        // Lấy lịch từ hôm nay đến 14 ngày tới
+        const today = new Date().toISOString().split('T')[0];
+        const twoWeeksLater = new Date();
+        twoWeeksLater.setDate(twoWeeksLater.getDate() + 14);
+        const endDate = twoWeeksLater.toISOString().split('T')[0];
+
+        const timeSlots = await TimeSlot.findAll({
+            where: {
+                doctor_id: id,
+                date: {
+                    [Op.between]: [today, endDate]
+                },
+                is_available: true
+            },
+            include: [
+                {
+                    model: Room,
+                    as: 'room',
+                    attributes: ['id', 'name', 'location'],
+                    required: false
+                }
+            ],
+            order: [['date', 'ASC'], ['start_time', 'ASC']]
+        });
+
+        const scheduleData = timeSlots.map(slot => ({
+            id: slot.id,
+            work_date: slot.date,
+            start_time: slot.start_time,
+            end_time: slot.end_time,
+            room_name: slot.room ? slot.room.name : null,
+            room_location: slot.room ? slot.room.location : null,
+            max_patients: slot.max_patients,
+            current_patients: slot.current_patients,
+            available_slots: slot.max_patients - slot.current_patients
+        }));
+
+        console.log(`✅ Found ${scheduleData.length} time slots for doctor ${id}`);
+        res.json(scheduleData);
+    } catch (error) {
+        console.error('❌ Error fetching doctor schedule:', error);
+        res.status(500).json({
+            message: 'Lỗi server',
+            error: error.message
+        });
+    }
+});
+
+// ✅ GET - Danh sách thuốc (public access cho doctor prescription)
+router.get('/drugs', async (req, res) => {
+    try {
+        console.log('📋 GET /api/public/drugs');
+
+        if (!Drug) {
+            return res.status(500).json({ message: 'Models not loaded' });
+        }
+
+        const drugs = await Drug.findAll({
+            attributes: ['id', 'name', 'description', 'unit', 'price', 'stock_quantity'],
+            where: {
+                stock_quantity: { [Op.gt]: 0 }  // Chỉ lấy thuốc còn hàng
+            },
+            order: [['name', 'ASC']]
+        });
+
+        console.log(`✅ Found ${drugs.length} drugs in stock`);
+        res.json({ drugs });
+    } catch (error) {
+        console.error('❌ Error fetching drugs:', error);
         res.status(500).json({
             message: 'Lỗi server',
             error: error.message

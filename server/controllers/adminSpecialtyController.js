@@ -31,7 +31,7 @@ exports.getAllSpecialties = async (req, res) => {
                     required: false
                 }
             ],
-            order: [['created_at', 'DESC']]
+            order: [['id', 'ASC']]
         });
 
         // Thêm số lượng bác sĩ và dịch vụ

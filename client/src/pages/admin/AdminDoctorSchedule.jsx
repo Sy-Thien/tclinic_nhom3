@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../utils/api';
 import styles from './AdminDoctorSchedule.module.css';
 
 export default function AdminDoctorSchedule() {
@@ -8,6 +8,7 @@ export default function AdminDoctorSchedule() {
     const [loading, setLoading] = useState(false);
     const [selectedDoctor, setSelectedDoctor] = useState('');
     const [editingId, setEditingId] = useState(null);
+    const [searchDoctor, setSearchDoctor] = useState('');
 
     // Form states
     const [formData, setFormData] = useState({
@@ -16,53 +17,34 @@ export default function AdminDoctorSchedule() {
         start_time: '08:00',
         end_time: '17:00',
         break_start: '12:00',
-        break_end: '13:00'
+        break_end: '13:00',
+        room: '',
+        is_active: true
     });
 
     const dayOptions = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật'];
 
     useEffect(() => {
         fetchDoctors();
-        fetchAllSchedules();
     }, []);
 
     const fetchDoctors = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:5000/api/admin/doctors-list', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.get('/api/admin/doctors-list');
             setDoctors(response.data);
         } catch (error) {
             console.error('Lỗi lấy danh sách bác sĩ:', error);
         }
     };
 
-    const fetchAllSchedules = async () => {
-        try {
-            setLoading(true);
-            const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:5000/api/admin/doctor-schedules', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setSchedules(response.data);
-        } catch (error) {
-            console.error('Lỗi lấy danh sách lịch:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const fetchSchedulesByDoctor = async (doctorId) => {
         try {
             setLoading(true);
-            const token = localStorage.getItem('token');
-            const response = await axios.get(`http://localhost:5000/api/admin/doctor-schedules/${doctorId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.get(`/api/admin/doctor-schedules/${doctorId}`);
             setSchedules(response.data);
         } catch (error) {
             console.error('Lỗi lấy lịch bác sĩ:', error);
+            setSchedules([]);
         } finally {
             setLoading(false);
         }
@@ -71,14 +53,16 @@ export default function AdminDoctorSchedule() {
     const handleSelectDoctor = (doctorId) => {
         setSelectedDoctor(doctorId);
         setFormData(prev => ({ ...prev, doctor_id: doctorId }));
-        if (doctorId) {
-            fetchSchedulesByDoctor(doctorId);
-        }
+        fetchSchedulesByDoctor(doctorId);
+        setEditingId(null);
     };
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        const { name, value, type, checked } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
     };
 
     const handleSubmit = async (e) => {
@@ -90,19 +74,11 @@ export default function AdminDoctorSchedule() {
         }
 
         try {
-            const token = localStorage.getItem('token');
-
             if (editingId) {
-                // Update
-                await axios.put(`http://localhost:5000/api/admin/doctor-schedules/${editingId}`, formData, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                await api.put(`/api/admin/doctor-schedules/${editingId}`, formData);
                 alert('✅ Cập nhật lịch thành công');
             } else {
-                // Create
-                await axios.post('http://localhost:5000/api/admin/doctor-schedules', formData, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                await api.post('/api/admin/doctor-schedules', formData);
                 alert('✅ Tạo lịch thành công');
             }
 
@@ -113,7 +89,9 @@ export default function AdminDoctorSchedule() {
                 start_time: '08:00',
                 end_time: '17:00',
                 break_start: '12:00',
-                break_end: '13:00'
+                break_end: '13:00',
+                room: '',
+                is_active: true
             });
             setEditingId(null);
             fetchSchedulesByDoctor(selectedDoctor);
@@ -127,10 +105,12 @@ export default function AdminDoctorSchedule() {
         setFormData({
             doctor_id: schedule.doctor_id,
             day_of_week: schedule.day_of_week,
-            start_time: schedule.start_time,
-            end_time: schedule.end_time,
-            break_start: schedule.break_start,
-            break_end: schedule.break_end
+            start_time: schedule.start_time?.substring(0, 5) || '08:00',
+            end_time: schedule.end_time?.substring(0, 5) || '17:00',
+            break_start: schedule.break_start?.substring(0, 5) || '12:00',
+            break_end: schedule.break_end?.substring(0, 5) || '13:00',
+            room: schedule.room || '',
+            is_active: schedule.is_active !== false
         });
     };
 
@@ -138,14 +118,24 @@ export default function AdminDoctorSchedule() {
         if (!window.confirm('Bạn có chắc muốn xóa lịch này?')) return;
 
         try {
-            const token = localStorage.getItem('token');
-            await axios.delete(`http://localhost:5000/api/admin/doctor-schedules/${scheduleId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await api.delete(`/api/admin/doctor-schedules/${scheduleId}`);
             alert('✅ Xóa lịch thành công');
             fetchSchedulesByDoctor(selectedDoctor);
         } catch (error) {
             alert('❌ ' + (error.response?.data?.message || 'Có lỗi xảy ra'));
+        }
+    };
+
+    const handleToggleActive = async (schedule) => {
+        try {
+            await api.put(`/api/admin/doctor-schedules/${schedule.id}`, {
+                ...schedule,
+                is_active: !schedule.is_active
+            });
+            alert(`✅ ${schedule.is_active ? 'Đã tắt' : 'Đã bật'} lịch ${schedule.day_of_week}`);
+            fetchSchedulesByDoctor(selectedDoctor);
+        } catch (error) {
+            alert('❌ Lỗi khi thay đổi trạng thái');
         }
     };
 
@@ -157,44 +147,71 @@ export default function AdminDoctorSchedule() {
             start_time: '08:00',
             end_time: '17:00',
             break_start: '12:00',
-            break_end: '13:00'
+            break_end: '13:00',
+            room: '',
+            is_active: true
         });
     };
+
+    // Lọc bác sĩ theo tìm kiếm
+    const filteredDoctors = doctors.filter(doc =>
+        doc.full_name.toLowerCase().includes(searchDoctor.toLowerCase()) ||
+        doc.specialty?.name?.toLowerCase().includes(searchDoctor.toLowerCase())
+    );
+
+    const selectedDoctorInfo = doctors.find(d => d.id === selectedDoctor);
 
     return (
         <div className={styles.container}>
             <div className={styles.header}>
-                <h1>⏰ Quản Lý Lịch Làm Việc Bác Sĩ</h1>
-                <p>Cấu hình lịch làm việc hàng ngày cho các bác sĩ</p>
+                <h1>📅 Quản Lý Lịch Làm Việc</h1>
+                <p>Cấu hình lịch làm việc hàng tuần cho các bác sĩ. Có thể tắt lịch khi bác sĩ xin nghỉ.</p>
             </div>
 
             <div className={styles.content}>
                 {/* Chọn bác sĩ */}
                 <div className={styles.section}>
-                    <h2>Chọn Bác Sĩ</h2>
+                    <h2>👨‍⚕️ Chọn Bác Sĩ</h2>
+                    <input
+                        type="text"
+                        placeholder="🔍 Tìm kiếm bác sĩ theo tên hoặc chuyên khoa..."
+                        value={searchDoctor}
+                        onChange={(e) => setSearchDoctor(e.target.value)}
+                        className={styles.searchInput}
+                    />
                     <div className={styles.doctorsList}>
-                        {doctors.map(doctor => (
+                        {filteredDoctors.map(doctor => (
                             <button
                                 key={doctor.id}
                                 className={`${styles.doctorBtn} ${selectedDoctor === doctor.id ? styles.selected : ''}`}
                                 onClick={() => handleSelectDoctor(doctor.id)}
                             >
                                 <div className={styles.doctorName}>{doctor.full_name}</div>
-                                <div className={styles.doctorSpecialty}>{doctor.specialty?.name}</div>
+                                <div className={styles.doctorSpecialty}>{doctor.specialty?.name || 'Chưa có chuyên khoa'}</div>
                             </button>
                         ))}
+                        {filteredDoctors.length === 0 && (
+                            <p className={styles.noData}>Không tìm thấy bác sĩ</p>
+                        )}
                     </div>
                 </div>
 
                 {selectedDoctor && (
                     <>
+                        {/* Thông tin bác sĩ đang chọn */}
+                        <div className={styles.selectedInfo}>
+                            <span>📋 Đang quản lý lịch của: </span>
+                            <strong>{selectedDoctorInfo?.full_name}</strong>
+                            <span className={styles.specialty}>({selectedDoctorInfo?.specialty?.name})</span>
+                        </div>
+
                         {/* Form thêm/sửa lịch */}
                         <div className={styles.section}>
-                            <h2>{editingId ? 'Chỉnh Sửa Lịch Làm Việc' : 'Thêm Lịch Làm Việc'}</h2>
+                            <h2>{editingId ? '✏️ Chỉnh Sửa Lịch' : '➕ Thêm Lịch Mới'}</h2>
                             <form onSubmit={handleSubmit} className={styles.form}>
                                 <div className={styles.formRow}>
                                     <div className={styles.formGroup}>
-                                        <label>Ngày trong tuần *</label>
+                                        <label>Ngày trong tuần <span className={styles.required}>*</span></label>
                                         <select
                                             name="day_of_week"
                                             value={formData.day_of_week}
@@ -208,7 +225,18 @@ export default function AdminDoctorSchedule() {
                                     </div>
 
                                     <div className={styles.formGroup}>
-                                        <label>Giờ bắt đầu *</label>
+                                        <label>Phòng khám</label>
+                                        <input
+                                            type="text"
+                                            name="room"
+                                            value={formData.room}
+                                            onChange={handleChange}
+                                            placeholder="VD: Phòng 101"
+                                        />
+                                    </div>
+
+                                    <div className={styles.formGroup}>
+                                        <label>Giờ bắt đầu <span className={styles.required}>*</span></label>
                                         <input
                                             type="time"
                                             name="start_time"
@@ -219,7 +247,7 @@ export default function AdminDoctorSchedule() {
                                     </div>
 
                                     <div className={styles.formGroup}>
-                                        <label>Giờ kết thúc *</label>
+                                        <label>Giờ kết thúc <span className={styles.required}>*</span></label>
                                         <input
                                             type="time"
                                             name="end_time"
@@ -231,7 +259,7 @@ export default function AdminDoctorSchedule() {
                                 </div>
 
                                 <div className={styles.breakSection}>
-                                    <h3>Giờ Nghỉ (Tùy Chọn)</h3>
+                                    <h3>☕ Giờ Nghỉ Trưa (Tùy Chọn)</h3>
                                     <div className={styles.formRow}>
                                         <div className={styles.formGroup}>
                                             <label>Bắt đầu nghỉ</label>
@@ -252,16 +280,28 @@ export default function AdminDoctorSchedule() {
                                                 onChange={handleChange}
                                             />
                                         </div>
+
+                                        <div className={styles.formGroup}>
+                                            <label className={styles.checkboxLabel}>
+                                                <input
+                                                    type="checkbox"
+                                                    name="is_active"
+                                                    checked={formData.is_active}
+                                                    onChange={handleChange}
+                                                />
+                                                <span>Lịch đang hoạt động</span>
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
 
                                 <div className={styles.formActions}>
                                     <button type="submit" className={styles.btnSubmit}>
-                                        {editingId ? 'Cập Nhật Lịch' : 'Thêm Lịch'}
+                                        {editingId ? '💾 Cập Nhật' : '➕ Thêm Lịch'}
                                     </button>
                                     {editingId && (
                                         <button type="button" className={styles.btnCancel} onClick={handleCancel}>
-                                            Hủy
+                                            ❌ Hủy
                                         </button>
                                     )}
                                 </div>
@@ -270,21 +310,32 @@ export default function AdminDoctorSchedule() {
 
                         {/* Danh sách lịch */}
                         <div className={styles.section}>
-                            <h2>Lịch Làm Việc</h2>
+                            <h2>📋 Lịch Làm Việc Hiện Tại</h2>
                             {loading ? (
-                                <p>Đang tải...</p>
+                                <p className={styles.loading}>⏳ Đang tải...</p>
                             ) : schedules.length > 0 ? (
-                                <div className={styles.scheduleList}>
+                                <div className={styles.scheduleGrid}>
                                     {schedules.map(schedule => (
-                                        <div key={schedule.id} className={styles.scheduleCard}>
+                                        <div
+                                            key={schedule.id}
+                                            className={`${styles.scheduleCard} ${!schedule.is_active ? styles.inactive : ''}`}
+                                        >
+                                            <div className={styles.scheduleHeader}>
+                                                <span className={styles.day}>{schedule.day_of_week}</span>
+                                                {!schedule.is_active && <span className={styles.offBadge}>NGHỈ</span>}
+                                            </div>
                                             <div className={styles.scheduleInfo}>
-                                                <div className={styles.day}>{schedule.day_of_week}</div>
                                                 <div className={styles.time}>
-                                                    {schedule.start_time} - {schedule.end_time}
+                                                    ⏰ {schedule.start_time?.substring(0, 5)} - {schedule.end_time?.substring(0, 5)}
                                                 </div>
                                                 {schedule.break_start && schedule.break_end && (
                                                     <div className={styles.breakTime}>
-                                                        Nghỉ: {schedule.break_start} - {schedule.break_end}
+                                                        ☕ Nghỉ: {schedule.break_start?.substring(0, 5)} - {schedule.break_end?.substring(0, 5)}
+                                                    </div>
+                                                )}
+                                                {schedule.room && (
+                                                    <div className={styles.room}>
+                                                        🏥 {schedule.room}
                                                     </div>
                                                 )}
                                             </div>
@@ -292,24 +343,40 @@ export default function AdminDoctorSchedule() {
                                                 <button
                                                     className={styles.btnEdit}
                                                     onClick={() => handleEdit(schedule)}
+                                                    title="Sửa"
                                                 >
-                                                    ✏️ Sửa
+                                                    ✏️
+                                                </button>
+                                                <button
+                                                    className={`${styles.btnToggle} ${!schedule.is_active ? styles.toggleOff : ''}`}
+                                                    onClick={() => handleToggleActive(schedule)}
+                                                    title={schedule.is_active ? 'Cho nghỉ' : 'Mở lại'}
+                                                >
+                                                    {schedule.is_active ? '🔒' : '🔓'}
                                                 </button>
                                                 <button
                                                     className={styles.btnDelete}
                                                     onClick={() => handleDelete(schedule.id)}
+                                                    title="Xóa"
                                                 >
-                                                    🗑️ Xóa
+                                                    🗑️
                                                 </button>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <p className={styles.empty}>Bác sĩ này chưa có lịch làm việc</p>
+                                <p className={styles.empty}>Bác sĩ này chưa có lịch làm việc. Hãy thêm lịch mới!</p>
                             )}
                         </div>
                     </>
+                )}
+
+                {!selectedDoctor && (
+                    <div className={styles.placeholder}>
+                        <div className={styles.placeholderIcon}>👆</div>
+                        <p>Vui lòng chọn một bác sĩ để quản lý lịch làm việc</p>
+                    </div>
                 )}
             </div>
         </div>

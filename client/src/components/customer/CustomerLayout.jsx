@@ -42,10 +42,13 @@ export default function CustomerLayout() {
     };
 
     const handleLogout = () => {
+        // Clear all auth data
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        localStorage.clear(); // Clear any other potential data
         setUser(null);
-        navigate('/');
+        // Force reload để đảm bảo clean state
+        window.location.href = '/';
     };
 
     const navLinks = [
@@ -81,6 +84,7 @@ export default function CustomerLayout() {
                         <Link to="/">Trang chủ</Link>
                         <Link to="/booking">Đặt lịch</Link>
                         <Link to="/my-appointments">Lịch của tôi</Link>
+                        <Link to="/medical-history">Lịch sử khám</Link>
                         <Link to="/services">Dịch vụ</Link>
                         <Link to="/doctors">Bác sĩ</Link>
                         <Link to="/about">Giới thiệu</Link> {/* ✅ Thêm */}
@@ -91,25 +95,23 @@ export default function CustomerLayout() {
                         {!loading && (
                             <>
                                 {user ? (
-                                    // ✅ Đã đăng nhập - Hiển thị đầy đủ
+                                    // ✅ Đã đăng nhập
                                     <>
                                         <div className={styles.userInfo}>
                                             <span className={styles.userName}>{user.name || user.username}</span>
                                             <span className={styles.userRole}>
-                                                {user.role === 'admin' ? 'Admin' : 'Khách hàng'}
+                                                {user.role === 'patient' ? 'Bệnh nhân' : 'Người dùng'}
                                             </span>
                                         </div>
-                                        {user.role === 'admin' && (
-                                            <Link to="/admin" className={styles.btnAdmin}>
-                                                Quản trị
-                                            </Link>
-                                        )}
+                                        <Link to="/profile" className={styles.btnProfile} title="Xem thông tin cá nhân">
+                                            👤
+                                        </Link>
                                         <button onClick={handleLogout} className={styles.btnLogout}>
                                             Đăng xuất
                                         </button>
                                     </>
                                 ) : (
-                                    // ✅ Chưa đăng nhập - CHỈ HIỆN NÚT ĐĂNG NHẬP
+                                    // ✅ Chưa đăng nhập
                                     <Link to="/login" className={styles.btnLogin}>
                                         Đăng nhập
                                     </Link>

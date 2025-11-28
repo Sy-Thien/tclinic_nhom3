@@ -18,8 +18,12 @@ export default function Appointments() {
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [showAssignModal, setShowAssignModal] = useState(false);
+    const [showAssignNewModal, setShowAssignNewModal] = useState(false);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [selectedDoctor, setSelectedDoctor] = useState('');
+    const [availableDoctorsForAssignment, setAvailableDoctorsForAssignment] = useState([]);
+    const [doctorTimeSlots, setDoctorTimeSlots] = useState(null);
+    const [selectedTimeSlot, setSelectedTimeSlot] = useState('');
     const [cancelReason, setCancelReason] = useState('');
     const [loadingDoctors, setLoadingDoctors] = useState(false);
     const [formData, setFormData] = useState({
@@ -176,6 +180,66 @@ export default function Appointments() {
         }
     };
 
+    // Lấy danh sách bác sĩ còn trống để gán cho booking chưa có bác sĩ
+    const fetchAvailableDoctorsForAssignment = async (bookingId) => {
+        try {
+            setLoadingDoctors(true);
+            const response = await api.get(`/api/admin/bookings/${bookingId}/available-doctors-for-assignment`);
+            setAvailableDoctorsForAssignment(response.data.availableDoctors || []);
+        } catch (error) {
+            console.error('Error:', error);
+            alert(error.response?.data?.message || '❌ Lỗi khi tải danh sách bác sĩ!');
+            setAvailableDoctorsForAssignment([]);
+        } finally {
+            setLoadingDoctors(false);
+        }
+    };
+
+    // ✅ NEW: Lấy time slots của bác sĩ theo ngày
+    const fetchDoctorTimeSlots = async (doctorId, date) => {
+        try {
+            const response = await api.get(`/api/admin/doctor-schedule/doctor-time-slots/${doctorId}`, {
+                params: { date }
+            });
+            if (response.data.success) {
+                setDoctorTimeSlots(response.data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching doctor time slots:', error);
+            setDoctorTimeSlots(null);
+        }
+    };
+
+    // Gán bác sĩ cho booking chưa có bác sĩ
+    const handleAssignDoctorNew = async () => {
+        if (!selectedDoctor) {
+            alert('Vui lòng chọn bác sĩ!');
+            return;
+        }
+
+        if (!selectedTimeSlot) {
+            alert('Vui lòng chọn khung giờ!');
+            return;
+        }
+
+        try {
+            await api.put(`/api/admin/bookings/${selectedAppointment.id}/assign-doctor-new`, {
+                doctor_id: selectedDoctor,
+                time_slot: selectedTimeSlot
+            });
+            alert('✅ Gán bác sĩ thành công! Đang chờ bác sĩ xác nhận.');
+            setShowAssignNewModal(false);
+            setSelectedDoctor('');
+            setSelectedTimeSlot('');
+            setAvailableDoctorsForAssignment([]);
+            setDoctorTimeSlots(null);
+            fetchAppointments();
+        } catch (error) {
+            console.error('Error:', error);
+            alert(error.response?.data?.message || '❌ Lỗi khi gán bác sĩ!');
+        }
+    };
+
     const handleStatusChange = async (id, newStatus) => {
         if (!window.confirm(`Chuyển trạng thái sang "${newStatus}"?`)) return;
 
@@ -192,10 +256,13 @@ export default function Appointments() {
     const getStatusBadge = (status) => {
         const badges = {
             'pending': { text: 'Chờ xác nhận', color: '#f59e0b' },
+            'waiting_doctor_assignment': { text: 'Chờ gán bác sĩ', color: '#ec4899' },
+            'waiting_doctor_confirmation': { text: 'Chờ bác sĩ xác nhận', color: '#f59e0b' },
             'confirmed': { text: 'Đã xác nhận', color: '#3b82f6' },
             'in_progress': { text: 'Đang khám', color: '#8b5cf6' },
             'completed': { text: 'Hoàn thành', color: '#10b981' },
-            'cancelled': { text: 'Đã hủy', color: '#ef4444' }
+            'cancelled': { text: 'Đã hủy', color: '#ef4444' },
+            'doctor_rejected': { text: 'Bác sĩ từ chối', color: '#ef4444' }
         };
         const badge = badges[status] || badges['pending'];
         return <span className={styles.badge} style={{ background: badge.color }}>{badge.text}</span>;
@@ -322,6 +389,18 @@ export default function Appointments() {
                                     <td>
                                         {app.doctor ? (
                                             app.doctor.full_name
+                                        ) : app.status === 'waiting_doctor_assignment' ? (
+                                            <button
+                                                className={styles.btnAssignPrimary}
+                                                onClick={() => {
+                                                    setSelectedAppointment(app);
+                                                    setSelectedDoctor('');
+                                                    fetchAvailableDoctorsForAssignment(app.id);
+                                                    setShowAssignNewModal(true);
+                                                }}
+                                            >
+                                                🔔 Gán bác sĩ ngay
+                                            </button>
                                         ) : (
                                             <button
                                                 className={styles.btnAssign}
@@ -638,6 +717,120 @@ export default function Appointments() {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* ASSIGN DOCTOR NEW MODAL - Cho booking chưa có bác sĩ */}
+            {showAssignNewModal && (
+                <div className={styles.modal}>
+                    <div className={styles.modalContent} style={{ maxWidth: '800px' }}>
+                        <h2>🔔 Gán bác sĩ cho lịch khám</h2>
+                        <div className={styles.modalBody}>
+                            {selectedAppointment && (
+                                <>
+                                    <p><strong>Mã booking:</strong> {selectedAppointment.booking_code}</p>
+                                    <p><strong>Bệnh nhân:</strong> {selectedAppointment.patient_name}</p>
+                                    <p><strong>Chuyên khoa:</strong> {selectedAppointment.specialty?.name}</p>
+                                    <p><strong>Ngày khám:</strong> {new Date(selectedAppointment.appointment_date).toLocaleDateString('vi-VN')}</p>
+                                    <p><strong>Giờ khám:</strong> {selectedAppointment.appointment_time}</p>
+
+                                    <div className={styles.formGroup} style={{ marginTop: '1.5rem' }}>
+                                        <label>Chọn bác sĩ <span className={styles.required}>*</span></label>
+                                        {loadingDoctors ? (
+                                            <p>⏳ Đang tải danh sách bác sĩ...</p>
+                                        ) : availableDoctorsForAssignment.length > 0 ? (
+                                            <select
+                                                value={selectedDoctor}
+                                                onChange={(e) => {
+                                                    const docId = e.target.value;
+                                                    setSelectedDoctor(docId);
+                                                    setSelectedTimeSlot('');
+                                                    if (docId && selectedAppointment.appointment_date) {
+                                                        fetchDoctorTimeSlots(docId, selectedAppointment.appointment_date);
+                                                    } else {
+                                                        setDoctorTimeSlots(null);
+                                                    }
+                                                }}
+                                                className={styles.select}
+                                            >
+                                                <option value="">-- Chọn bác sĩ còn trống --</option>
+                                                {availableDoctorsForAssignment.map(doc => (
+                                                    <option key={doc.id} value={doc.id}>
+                                                        {doc.full_name} - {doc.phone}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        ) : (
+                                            <p style={{ color: '#ef4444' }}>❌ Không có bác sĩ nào còn trống trong khung giờ này</p>
+                                        )}
+                                    </div>
+
+                                    {/* Time Slots Grid */}
+                                    {selectedDoctor && doctorTimeSlots && (
+                                        <div className={styles.timeSlotsSection}>
+                                            <label>Chọn khung giờ <span className={styles.required}>*</span></label>
+                                            {!doctorTimeSlots.isWorking ? (
+                                                <p style={{ color: '#ef4444' }}>Bác sĩ không làm việc vào ngày này</p>
+                                            ) : (
+                                                <div className={styles.timeSlotsGrid}>
+                                                    {doctorTimeSlots.slots.map((slot, index) => (
+                                                        <button
+                                                            key={index}
+                                                            type="button"
+                                                            className={`${styles.timeSlotBtn} ${slot.isBreakTime
+                                                                    ? styles.breakTime
+                                                                    : slot.bookingCount > 0
+                                                                        ? styles.bookedSlot
+                                                                        : selectedTimeSlot === slot.time
+                                                                            ? styles.selectedSlot
+                                                                            : styles.availableSlot
+                                                                }`}
+                                                            onClick={() => {
+                                                                if (!slot.isBreakTime && slot.bookingCount === 0) {
+                                                                    setSelectedTimeSlot(slot.time);
+                                                                }
+                                                            }}
+                                                            disabled={slot.isBreakTime || slot.bookingCount > 0}
+                                                        >
+                                                            <div className={styles.slotTime}>{slot.time}</div>
+                                                            {slot.isBreakTime ? (
+                                                                <div className={styles.slotStatus}>☕ Nghỉ</div>
+                                                            ) : slot.bookingCount > 0 ? (
+                                                                <div className={styles.slotStatus}>🔒 Đã đặt</div>
+                                                            ) : (
+                                                                <div className={styles.slotStatus}>✓ Trống</div>
+                                                            )}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                        </div>
+                        <div className={styles.modalFooter}>
+                            <button
+                                className={styles.btnModalCancel}
+                                onClick={() => {
+                                    setShowAssignNewModal(false);
+                                    setSelectedDoctor('');
+                                    setSelectedTimeSlot('');
+                                    setAvailableDoctorsForAssignment([]);
+                                    setDoctorTimeSlots(null);
+                                }}
+                            >
+                                Hủy
+                            </button>
+                            <button
+                                className={styles.btnModalConfirm}
+                                onClick={handleAssignDoctorNew}
+                                disabled={!selectedDoctor || !selectedTimeSlot || loadingDoctors}
+                            >
+                                Gán bác sĩ
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

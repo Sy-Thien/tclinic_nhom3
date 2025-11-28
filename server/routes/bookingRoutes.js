@@ -1,11 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const bookingController = require('../controllers/bookingController');
+const doctorScheduleController = require('../controllers/doctorScheduleController');
 const { verifyToken } = require('../middleware/authMiddleware');
 
 // Public routes
 router.get('/doctors', bookingController.getDoctorsBySpecialty);
 router.get('/available-slots', bookingController.getDoctorAvailableSlots);
+router.get('/doctor-time-slots/:doctorId', doctorScheduleController.getDoctorTimeSlotsWithBookings); // ✅ NEW
 
 // Patient routes (cần đăng nhập)
 router.post('/create', verifyToken, bookingController.createBooking);

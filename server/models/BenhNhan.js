@@ -48,7 +48,19 @@ exports.getAllDoctors = async (req, res) => {
 
 exports.addDoctor = async (req, res) => {
     try {
-        const doctor = await Doctor.create(req.body);
+        const { password, ...otherData } = req.body;
+
+        // Hash password nếu có
+        let hashedPassword = null;
+        if (password) {
+            const bcrypt = require('bcryptjs');
+            hashedPassword = await bcrypt.hash(password, 10);
+        }
+
+        const doctor = await Doctor.create({
+            ...otherData,
+            password: hashedPassword
+        });
         res.status(201).json(doctor);
     } catch (error) {
         res.status(400).json({ message: 'Lỗi khi thêm bác sĩ', error: error.message });

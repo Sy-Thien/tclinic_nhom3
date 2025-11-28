@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../utils/api';
 import styles from './Login.module.css';
@@ -12,6 +12,32 @@ export default function Login() {
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
+
+    // ✅ Check nếu đã đăng nhập → redirect về trang phù hợp
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        const userData = localStorage.getItem('user');
+
+        if (token && userData) {
+            try {
+                const user = JSON.parse(userData);
+                const role = user.role;
+
+                console.log('🔄 Already logged in, redirecting...', role);
+
+                if (role === 'admin') {
+                    navigate('/admin', { replace: true });
+                } else if (role === 'doctor') {
+                    navigate('/doctor-portal', { replace: true });
+                } else {
+                    navigate('/', { replace: true });
+                }
+            } catch (error) {
+                console.error('❌ Parse user error:', error);
+                localStorage.clear();
+            }
+        }
+    }, [navigate]);
 
     const handleChange = (e) => {
         setFormData({
@@ -40,7 +66,7 @@ export default function Login() {
             if (role === 'admin') {
                 navigate('/admin');
             } else if (role === 'doctor') {
-                navigate('/doctor');
+                navigate('/doctor-portal');
             } else if (role === 'patient') {
                 navigate('/');
             } else {

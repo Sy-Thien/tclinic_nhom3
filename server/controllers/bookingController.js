@@ -16,7 +16,8 @@ exports.createBooking = async (req, res) => {
             appointment_date,
             appointment_time,
             symptoms,
-            note
+            note,
+            booking_type  // 'instant' (đặt luôn) hoặc 'with_doctor' (chọn bác sĩ)
         } = req.body;
 
         // Validate required fields
@@ -27,8 +28,44 @@ exports.createBooking = async (req, res) => {
         // Generate booking code
         const bookingCode = 'BK' + Date.now().toString().slice(-8);
 
-        // Get patient_id if logged in
-        const patient_id = req.user ? req.user.id : null;
+        // Get patient_id if logged in AND exists in database
+        let patient_id = null;
+        if (req.user && req.user.id) {
+            const patientExists = await Patient.findByPk(req.user.id);
+            if (patientExists) {
+                patient_id = req.user.id;
+            }
+        }
+
+        // Xác định status dựa vào booking_type
+        let status;
+        if (booking_type === 'instant' || !doctor_id) {
+            // Option 1: Đặt luôn (không chọn bác sĩ) → Chờ admin gán bác sĩ
+            status = 'waiting_doctor_assignment';
+        } else {
+            // Option 2: Đặt bác sĩ cụ thể → Chờ bác sĩ xác nhận
+            status = 'waiting_doctor_confirmation';
+
+            // ✅ Kiểm tra conflict: Cùng bác sĩ, cùng ngày, cùng giờ
+            if (appointment_time) {
+                const existingBooking = await Booking.findOne({
+                    where: {
+                        doctor_id,
+                        appointment_date,
+                        appointment_time,
+                        status: {
+                            [Op.notIn]: ['cancelled', 'doctor_rejected']
+                        }
+                    }
+                });
+
+                if (existingBooking) {
+                    return res.status(400).json({
+                        message: `Khung giờ ${appointment_time} ngày ${appointment_date} đã có người đặt. Vui lòng chọn giờ khác.`
+                    });
+                }
+            }
+        }
 
         // Create booking
         const booking = await Booking.create({
@@ -48,20 +85,40 @@ exports.createBooking = async (req, res) => {
             position: null,
             symptoms,
             note,
-            status: 'pending',
+            status: status,
             price: 0
         });
 
-        console.log('✅ Booking created:', booking.id);
+        console.log('✅ Booking created:', booking.id, 'Status:', status);
+
+        // Gửi email xác nhận đặt lịch
+        if (patient_email) {
+            const emailService = require('../services/emailService');
+            const specialty = await Specialty.findByPk(specialty_id);
+            const appointmentData = {
+                patient_name,
+                patient_email,
+                booking_code: bookingCode,
+                appointment_date,
+                appointment_time: appointment_time || 'Chưa xác định',
+                specialty_name: specialty?.name || 'Chưa xác định'
+            };
+            emailService.sendBookingConfirmation(appointmentData).catch(err =>
+                console.error('❌ Failed to send confirmation email:', err)
+            );
+        }
 
         res.status(201).json({
-            message: 'Đặt lịch thành công',
+            message: doctor_id
+                ? 'Đặt lịch thành công! Vui lòng đợi bác sĩ xác nhận.'
+                : 'Đặt lịch thành công! Chúng tôi sẽ sắp xếp bác sĩ phù hợp cho bạn.',
             booking: {
                 id: booking.id,
                 booking_code: booking.booking_code,
                 appointment_date: booking.appointment_date,
                 appointment_time: booking.appointment_time,
-                status: booking.status
+                status: booking.status,
+                doctor_assigned: !!doctor_id
             }
         });
 
@@ -75,6 +132,19 @@ exports.createBooking = async (req, res) => {
 exports.getMyBookings = async (req, res) => {
     try {
         const patient_id = req.user.id;
+        const userRole = req.user.role;
+
+        console.log('📋 GET /api/customer/appointments', { patient_id, userRole });
+
+        // ✅ FIX: Chỉ patient mới được xem
+        if (userRole !== 'patient') {
+            console.log('❌ Access denied - not a patient');
+            return res.status(403).json({
+                success: false,
+                message: 'Chỉ bệnh nhân mới có thể xem lịch hẹn',
+                bookings: []
+            });
+        }
 
         const bookings = await Booking.findAll({
             where: { patient_id },
@@ -102,7 +172,7 @@ exports.getMyBookings = async (req, res) => {
                     ]
                 }
             ],
-            order: [['created_at', 'DESC']]
+            order: [['id', 'ASC']]
         });
 
         // ✅ Map lại data để match frontend expectations

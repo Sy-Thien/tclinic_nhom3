@@ -146,7 +146,7 @@ exports.getDoctorPrescriptions = async (req, res) => {
                     attributes: ['id', 'full_name', 'phone']
                 }
             ],
-            order: [['created_at', 'DESC']]
+            order: [['id', 'ASC']]
         });
 
         console.log(`✅ Found ${prescriptions.length} prescriptions`);

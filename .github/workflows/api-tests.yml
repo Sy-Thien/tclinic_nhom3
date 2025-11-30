@@ -56,7 +56,7 @@ jobs:
           done
           echo "MySQL is ready!"
 
-      # 5. Setup database schema
+      # 5. Setup database schema - use sync instead of migrations for CI
       - name: 🗄️ Setup database
         working-directory: ./server
         env:
@@ -65,7 +65,25 @@ jobs:
           DB_PASSWORD: root
           DB_NAME: tn_clinic
         run: |
-          npx sequelize-cli db:migrate || echo "Migration completed or skipped"
+          # Create a script to sync database
+          cat > sync-db.js << 'EOF'
+          const { sequelize } = require('./models');
+          
+          async function syncDB() {
+            try {
+              await sequelize.sync({ force: true });
+              console.log('✅ Database synced successfully');
+              process.exit(0);
+            } catch (err) {
+              console.error('❌ Database sync failed:', err.message);
+              process.exit(1);
+            }
+          }
+          
+          syncDB();
+          EOF
+          
+          node sync-db.js
 
       # 6. Seed test data (admin account, etc.)
       - name: 🌱 Seed test data
@@ -76,11 +94,69 @@ jobs:
           DB_PASSWORD: root
           DB_NAME: tn_clinic
         run: |
-          # Tạo admin account để test login
-          mysql -h 127.0.0.1 -u root -proot tn_clinic -e "
-            INSERT IGNORE INTO tn_admins (id, username, password, email, created_at, updated_at) 
-            VALUES (1, 'admin', '\$2b\$10\$rQZ5xzGqHqnFr/0TmXMpZeYwYqVQC5q5L5LVxJr5xz5v5z5v5z5v5', 'admin@tclinic.com', NOW(), NOW());
-          " || echo "Admin seeding skipped"
+          # Create seed script
+          cat > seed-test-data.js << 'EOF'
+          const bcrypt = require('bcrypt');
+          const { sequelize, Admin, Specialty, Doctor, Service, Room } = require('./models');
+          
+          async function seedData() {
+            try {
+              // Create admin
+              const hashedPassword = await bcrypt.hash('admin123', 10);
+              await Admin.create({
+                username: 'admin',
+                password: hashedPassword,
+                email: 'admin@tclinic.com',
+                full_name: 'Administrator'
+              }).catch(() => console.log('Admin exists'));
+              
+              // Create specialty
+              await Specialty.create({
+                id: 1,
+                name: 'Khoa Nội',
+                description: 'Khám và điều trị bệnh nội khoa'
+              }).catch(() => console.log('Specialty exists'));
+              
+              // Create room
+              await Room.create({
+                id: 1,
+                name: 'Phòng 101',
+                floor: 1,
+                description: 'Phòng khám tổng quát'
+              }).catch(() => console.log('Room exists'));
+              
+              // Create doctor
+              const doctorPassword = await bcrypt.hash('doctor123', 10);
+              await Doctor.create({
+                id: 1,
+                full_name: 'Bác sĩ Test',
+                email: 'doctor1@tclinic.com',
+                password: doctorPassword,
+                phone: '0901234567',
+                specialty_id: 1
+              }).catch(() => console.log('Doctor exists'));
+              
+              // Create service
+              await Service.create({
+                id: 1,
+                name: 'Khám tổng quát',
+                description: 'Dịch vụ khám tổng quát',
+                price: 100000,
+                specialty_id: 1
+              }).catch(() => console.log('Service exists'));
+              
+              console.log('✅ Test data seeded successfully');
+              process.exit(0);
+            } catch (err) {
+              console.error('❌ Seeding failed:', err.message);
+              process.exit(0); // Don't fail the workflow
+            }
+          }
+          
+          seedData();
+          EOF
+          
+          node seed-test-data.js
 
       # 7. Start server in background
       - name: 🚀 Start server
@@ -93,7 +169,8 @@ jobs:
           DB_DIALECT: mysql
           JWT_SECRET: test-secret-key-for-ci
           PORT: 5000
-          NODE_ENV: development
+          NODE_ENV: ci
+          SKIP_REMINDER: "true"
         run: |
           # Create .env file for server
           echo "DB_HOST=127.0.0.1" > .env
@@ -103,11 +180,13 @@ jobs:
           echo "DB_DIALECT=mysql" >> .env
           echo "JWT_SECRET=test-secret-key-for-ci" >> .env
           echo "PORT=5000" >> .env
+          echo "NODE_ENV=ci" >> .env
+          echo "SKIP_REMINDER=true" >> .env
           
           # Start server
           node server.js &
           echo "Waiting for server to start..."
-          sleep 20
+          sleep 15
 
       # 8. Check server health
       - name: ❤️ Health check

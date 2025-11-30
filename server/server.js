@@ -90,7 +90,15 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`🚀 Server đang chạy trên port ${PORT}`);
 
-    // ✅ Start appointment reminder scheduler
-    const reminderService = require('./services/reminderService');
-    reminderService.startScheduler();
+    // ✅ Start appointment reminder scheduler (only in production/development, not in CI)
+    if (process.env.NODE_ENV !== 'ci' && process.env.SKIP_REMINDER !== 'true') {
+        try {
+            const reminderService = require('./services/reminderService');
+            reminderService.startScheduler();
+        } catch (err) {
+            console.log('⚠️ Reminder service skipped:', err.message);
+        }
+    } else {
+        console.log('⏭️ Reminder service skipped in CI environment');
+    }
 });

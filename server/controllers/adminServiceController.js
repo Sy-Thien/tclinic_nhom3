@@ -199,3 +199,37 @@ exports.getServiceStats = async (req, res) => {
         res.status(500).json({ message: 'Lỗi server', error: error.message });
     }
 };
+
+// DELETE - Cleanup test service by name (for API testing)
+exports.cleanupService = async (req, res) => {
+    try {
+        const { name } = req.query;
+
+        console.log(`🧹 DELETE /api/admin/services/cleanup - name: ${name}`);
+
+        if (!name) {
+            return res.status(400).json({ message: 'Tên dịch vụ là bắt buộc' });
+        }
+
+        const service = await Service.findOne({ where: { name } });
+
+        if (!service) {
+            return res.status(404).json({ message: 'Không tìm thấy dịch vụ' });
+        }
+
+        await service.destroy();
+
+        console.log('✅ Test service cleaned up:', name);
+
+        res.json({
+            message: 'Xóa dịch vụ test thành công',
+            deleted_name: name
+        });
+    } catch (error) {
+        console.error('❌ Error cleaning up service:', error);
+        res.status(500).json({
+            message: 'Lỗi khi xóa dịch vụ test',
+            error: error.message
+        });
+    }
+};

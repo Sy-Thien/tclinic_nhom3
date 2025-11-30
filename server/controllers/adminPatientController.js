@@ -325,4 +325,38 @@ exports.togglePatientStatus = async (req, res) => {
     }
 };
 
+// DELETE - Cleanup test patient by email (for API testing)
+exports.cleanupPatient = async (req, res) => {
+    try {
+        const { email } = req.query;
+
+        console.log(`🧹 DELETE /api/admin/patients/cleanup - email: ${email}`);
+
+        if (!email) {
+            return res.status(400).json({ message: 'Email là bắt buộc' });
+        }
+
+        const patient = await Patient.findOne({ where: { email } });
+
+        if (!patient) {
+            return res.status(404).json({ message: 'Không tìm thấy bệnh nhân' });
+        }
+
+        await patient.destroy();
+
+        console.log('✅ Test patient cleaned up:', email);
+
+        res.json({
+            message: 'Xóa bệnh nhân test thành công',
+            deleted_email: email
+        });
+    } catch (error) {
+        console.error('❌ Error cleaning up patient:', error);
+        res.status(500).json({
+            message: 'Lỗi khi xóa bệnh nhân test',
+            error: error.message
+        });
+    }
+};
+
 module.exports = exports;

@@ -1160,6 +1160,158 @@
                     }
                 }
             ]
+        },
+        {
+            "name": "🧹 Cleanup Test Data",
+            "item": [
+                {
+                    "name": "Delete Test Doctor",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Cleanup doctor response\", function () {",
+                                    "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+                                    "});",
+                                    "",
+                                    "if (pm.response.code === 200) {",
+                                    "    console.log('✅ Test doctor deleted');",
+                                    "} else {",
+                                    "    console.log('ℹ️ Test doctor not found (already clean)');",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/doctors/cleanup?email=doctor_api_test@tclinic.com",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "doctors",
+                                "cleanup"
+                            ],
+                            "query": [
+                                {
+                                    "key": "email",
+                                    "value": "doctor_api_test@tclinic.com"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Test Service",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Cleanup service response\", function () {",
+                                    "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+                                    "});",
+                                    "",
+                                    "if (pm.response.code === 200) {",
+                                    "    console.log('✅ Test service deleted');",
+                                    "} else {",
+                                    "    console.log('ℹ️ Test service not found (already clean)');",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/services/cleanup?name=Dich vu Test API",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "services",
+                                "cleanup"
+                            ],
+                            "query": [
+                                {
+                                    "key": "name",
+                                    "value": "Dich vu Test API"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Test Patient",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Cleanup patient response\", function () {",
+                                    "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+                                    "});",
+                                    "",
+                                    "if (pm.response.code === 200) {",
+                                    "    console.log('✅ Test patient deleted');",
+                                    "} else {",
+                                    "    console.log('ℹ️ Test patient not found (already clean)');",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{admin_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/admin/patients/cleanup?email=test_new_patient_api@gmail.com",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "admin",
+                                "patients",
+                                "cleanup"
+                            ],
+                            "query": [
+                                {
+                                    "key": "email",
+                                    "value": "test_new_patient_api@gmail.com"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
         }
     ]
 }

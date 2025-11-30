@@ -21,6 +21,9 @@ router.put('/doctors/:id', adminDoctorController.updateDoctor);
 // PUT - Toggle trạng thái active/inactive
 router.put('/doctors/:id/toggle-status', adminDoctorController.toggleDoctorStatus);
 
+// DELETE - Cleanup test doctor (for API testing)
+router.delete('/doctors/cleanup', adminDoctorController.cleanupDoctor);
+
 // DELETE - Xóa bác sĩ
 router.delete('/doctors/:id', adminDoctorController.deleteDoctor);
 

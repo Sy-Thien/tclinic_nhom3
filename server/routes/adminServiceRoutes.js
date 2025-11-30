@@ -12,6 +12,9 @@ router.get('/', adminServiceController.getAllServices);
 // GET - Thống kê
 router.get('/stats', adminServiceController.getServiceStats);
 
+// DELETE - Cleanup test service (for API testing) - MUST be before /:id
+router.delete('/cleanup', adminServiceController.cleanupService);
+
 // GET - Chi tiết dịch vụ
 router.get('/:id', adminServiceController.getServiceById);
 

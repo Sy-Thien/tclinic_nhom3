@@ -345,3 +345,41 @@ exports.toggleDoctorStatus = async (req, res) => {
         });
     }
 };
+
+// DELETE - Cleanup test doctor by email (for API testing)
+exports.cleanupDoctor = async (req, res) => {
+    try {
+        const { email } = req.query;
+
+        console.log(`🧹 DELETE /api/admin/doctors/cleanup - email: ${email}`);
+
+        if (!email) {
+            return res.status(400).json({ message: 'Email là bắt buộc' });
+        }
+
+        const doctor = await Doctor.findOne({ where: { email } });
+
+        if (!doctor) {
+            return res.status(404).json({ message: 'Không tìm thấy bác sĩ' });
+        }
+
+        // Xóa lịch làm việc của bác sĩ trước
+        await DoctorSchedule.destroy({ where: { doctor_id: doctor.id } });
+
+        // Xóa bác sĩ
+        await doctor.destroy();
+
+        console.log('✅ Test doctor cleaned up:', email);
+
+        res.json({
+            message: 'Xóa bác sĩ test thành công',
+            deleted_email: email
+        });
+    } catch (error) {
+        console.error('❌ Error cleaning up doctor:', error);
+        res.status(500).json({
+            message: 'Lỗi khi xóa bác sĩ test',
+            error: error.message
+        });
+    }
+};

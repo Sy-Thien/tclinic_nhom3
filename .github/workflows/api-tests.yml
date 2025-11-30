@@ -90,25 +90,42 @@ jobs:
           DB_USER: root
           DB_PASSWORD: root
           DB_NAME: tn_clinic
+          DB_DIALECT: mysql
           JWT_SECRET: test-secret-key-for-ci
           PORT: 5000
+          NODE_ENV: development
         run: |
-          npm start &
+          # Create .env file for server
+          echo "DB_HOST=127.0.0.1" > .env
+          echo "DB_USER=root" >> .env
+          echo "DB_PASSWORD=root" >> .env
+          echo "DB_NAME=tn_clinic" >> .env
+          echo "DB_DIALECT=mysql" >> .env
+          echo "JWT_SECRET=test-secret-key-for-ci" >> .env
+          echo "PORT=5000" >> .env
+          
+          # Start server
+          node server.js &
           echo "Waiting for server to start..."
-          sleep 15
+          sleep 20
 
       # 8. Check server health
       - name: ❤️ Health check
         run: |
-          for i in 1 2 3 4 5; do
-            if curl -s http://localhost:5000/health; then
-              echo "Server is healthy!"
+          echo "Checking server health..."
+          for i in 1 2 3 4 5 6; do
+            echo "Attempt $i..."
+            if curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/health | grep -q "200"; then
+              echo "✅ Server is healthy!"
+              curl -s http://localhost:5000/health
               exit 0
             fi
-            echo "Attempt $i failed, retrying..."
+            echo "Server not ready yet, waiting..."
             sleep 5
           done
-          echo "Server health check failed"
+          echo "❌ Server health check failed after 6 attempts"
+          # Show server logs if possible
+          ps aux | grep node || true
           exit 1
 
       # 9. Install Newman (Postman CLI)

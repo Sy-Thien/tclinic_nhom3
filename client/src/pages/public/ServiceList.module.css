@@ -20,6 +20,34 @@
     color: #718096;
 }
 
+/* Stats Bar */
+.statsBar {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+}
+
+.statItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: white;
+}
+
+.statValue {
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+.statLabel {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
 /* Filters */
 .filters {
     display: flex;
@@ -79,6 +107,17 @@
 .specialtyHeader p {
     color: #718096;
     font-size: 1.05rem;
+}
+
+.serviceCount {
+    display: inline-block;
+    background: #f0f4ff;
+    color: #667eea;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-top: 0.5rem;
 }
 
 /* Services Grid */
@@ -155,18 +194,42 @@
     font-size: 1.2rem;
 }
 
+/* Card Actions */
+.cardActions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: auto;
+}
+
+.btnDetail {
+    flex: 1;
+    padding: 0.75rem;
+    background: white;
+    color: #667eea;
+    border: 2px solid #667eea;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btnDetail:hover {
+    background: #f0f4ff;
+    transform: scale(1.02);
+}
+
 .btnBook {
-    width: 100%;
+    flex: 1;
     padding: 0.75rem;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border: none;
     border-radius: 8px;
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 600;
     cursor: pointer;
     transition: transform 0.2s;
-    margin-top: auto;
 }
 
 .btnBook:hover {
@@ -215,5 +278,9 @@
     .priceTag {
         margin-left: 0;
         align-self: flex-start;
+    }
+
+    .cardActions {
+        flex-direction: column;
     }
 }

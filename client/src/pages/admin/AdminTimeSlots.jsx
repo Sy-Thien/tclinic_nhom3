@@ -1,31 +1,111 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import api from '../../utils/api';
 import styles from './AdminTimeSlots.module.css';
 
 export default function AdminTimeSlots() {
     const [doctors, setDoctors] = useState([]);
-    const [timeSlots, setTimeSlots] = useState([]);
+    const [specialties, setSpecialties] = useState([]);
     const [loading, setLoading] = useState(false);
     const [selectedDoctor, setSelectedDoctor] = useState('');
-    const [selectedDate, setSelectedDate] = useState('');
+    const [selectedSpecialty, setSelectedSpecialty] = useState('all');
     const [searchDoctor, setSearchDoctor] = useState('');
-    const [showGenerateModal, setShowGenerateModal] = useState(false);
-    const [generateForm, setGenerateForm] = useState({
-        doctor_id: '',
-        start_date: '',
-        end_date: '',
-        slot_duration: 30
-    });
+    const [currentWeekStart, setCurrentWeekStart] = useState(getMonday(new Date()));
+
+    // Doctor schedule (lịch định kỳ)
+    const [doctorSchedule, setDoctorSchedule] = useState([]);
+
+    // Computed slots (tính từ schedule + bookings)
+    const [weekData, setWeekData] = useState({});
+
+    // Locked slots (chỉ lưu những slot bị khóa đặc biệt)
+    const [lockedSlots, setLockedSlots] = useState({});
+
+    const dayNames = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+    const dayOptions = [
+        { value: 'Thứ 2', index: 1 },
+        { value: 'Thứ 3', index: 2 },
+        { value: 'Thứ 4', index: 3 },
+        { value: 'Thứ 5', index: 4 },
+        { value: 'Thứ 6', index: 5 },
+        { value: 'Thứ 7', index: 6 },
+        { value: 'Chủ nhật', index: 0 }
+    ];
+
+    function getMonday(date) {
+        const d = new Date(date);
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+        d.setDate(diff);
+        d.setHours(0, 0, 0, 0);
+        return d;
+    }
+
+    function getWeekDates(startDate) {
+        const dates = [];
+        for (let i = 0; i < 7; i++) {
+            const d = new Date(startDate);
+            d.setDate(startDate.getDate() + i);
+            dates.push(d);
+        }
+        return dates;
+    }
+
+    function generateSlotsFromSchedule(schedule, slotDuration = 30) {
+        if (!schedule) return [];
+
+        const slots = [];
+        const [startHour, startMin] = schedule.start_time.split(':').map(Number);
+        const [endHour, endMin] = schedule.end_time.split(':').map(Number);
+
+        let breakStart = null, breakEnd = null;
+        if (schedule.break_start && schedule.break_end) {
+            const [bsH, bsM] = schedule.break_start.split(':').map(Number);
+            const [beH, beM] = schedule.break_end.split(':').map(Number);
+            breakStart = bsH * 60 + bsM;
+            breakEnd = beH * 60 + beM;
+        }
+
+        let current = startHour * 60 + startMin;
+        const end = endHour * 60 + endMin;
+
+        while (current + slotDuration <= end) {
+            const slotStart = current;
+            const slotEnd = current + slotDuration;
+
+            // Skip break time
+            if (breakStart !== null && breakEnd !== null) {
+                if (slotStart < breakEnd && slotEnd > breakStart) {
+                    current += slotDuration;
+                    continue;
+                }
+            }
+
+            const startStr = `${String(Math.floor(slotStart / 60)).padStart(2, '0')}:${String(slotStart % 60).padStart(2, '0')}`;
+            const endStr = `${String(Math.floor(slotEnd / 60)).padStart(2, '0')}:${String(slotEnd % 60).padStart(2, '0')}`;
+
+            slots.push({ start: startStr, end: endStr });
+            current += slotDuration;
+        }
+
+        return slots;
+    }
 
     useEffect(() => {
         fetchDoctors();
+        fetchSpecialties();
     }, []);
 
     useEffect(() => {
-        if (selectedDoctor && selectedDate) {
-            fetchTimeSlots();
+        if (selectedDoctor) {
+            fetchDoctorSchedule();
         }
-    }, [selectedDoctor, selectedDate]);
+    }, [selectedDoctor]);
+
+    useEffect(() => {
+        if (selectedDoctor && doctorSchedule.length > 0) {
+            fetchWeekData();
+        }
+    }, [selectedDoctor, currentWeekStart, doctorSchedule]);
 
     const fetchDoctors = async () => {
         try {
@@ -36,317 +116,490 @@ export default function AdminTimeSlots() {
         }
     };
 
-    const fetchTimeSlots = async () => {
+    const fetchSpecialties = async () => {
+        try {
+            const response = await api.get('/api/public/specialties');
+            setSpecialties(response.data);
+        } catch (error) {
+            console.error('Lỗi lấy chuyên khoa:', error);
+        }
+    };
+
+    const fetchDoctorSchedule = async () => {
+        try {
+            const response = await api.get(`/api/admin/doctor-schedules/${selectedDoctor}`);
+            setDoctorSchedule(response.data || []);
+        } catch (error) {
+            console.error('Lỗi lấy lịch bác sĩ:', error);
+            setDoctorSchedule([]);
+        }
+    };
+
+    const fetchWeekData = async () => {
+        if (!selectedDoctor) return;
+
         try {
             setLoading(true);
-            const response = await api.get('/api/admin/time-slots', {
-                params: {
-                    doctor_id: selectedDoctor,
-                    date: selectedDate
+            const weekDates = getWeekDates(currentWeekStart);
+            const data = {};
+            const locked = {};
+
+            // Map schedule by day
+            const scheduleByDay = {};
+            doctorSchedule.forEach(s => {
+                const dayIndex = dayOptions.find(d => d.value === s.day_of_week)?.index;
+                if (dayIndex !== undefined) {
+                    scheduleByDay[dayIndex] = s;
                 }
             });
-            setTimeSlots(response.data.data || response.data || []);
+
+            await Promise.all(weekDates.map(async (date) => {
+                const dateStr = date.toISOString().split('T')[0];
+                const dayIndex = date.getDay();
+                const schedule = scheduleByDay[dayIndex];
+
+                if (!schedule || !schedule.is_active) {
+                    data[dateStr] = { hasSchedule: false, slots: [], bookings: [] };
+                    return;
+                }
+
+                // Generate slots từ schedule
+                const generatedSlots = generateSlotsFromSchedule(schedule);
+
+                // Lấy bookings của ngày này
+                try {
+                    const bookingsRes = await api.get('/api/admin/bookings', {
+                        params: {
+                            doctor_id: selectedDoctor,
+                            appointment_date: dateStr,
+                            status: 'pending,confirmed'
+                        }
+                    });
+                    const bookings = bookingsRes.data?.data || bookingsRes.data || [];
+
+                    // Lấy locked slots nếu có
+                    try {
+                        const lockedRes = await api.get('/api/admin/time-slots', {
+                            params: { doctor_id: selectedDoctor, date: dateStr }
+                        });
+                        const lockedData = lockedRes.data?.data || lockedRes.data || [];
+                        lockedData.forEach(slot => {
+                            if (!slot.is_available) {
+                                const key = `${dateStr}_${slot.start_time.substring(0, 5)}`;
+                                locked[key] = { id: slot.id, reason: slot.note || 'Đã khóa' };
+                            }
+                        });
+                    } catch (err) {
+                        // Ignore - no locked slots
+                    }
+
+                    // Merge slots với booking info
+                    const slotsWithStatus = generatedSlots.map(slot => {
+                        const booking = bookings.find(b =>
+                            b.appointment_time && b.appointment_time.substring(0, 5) === slot.start
+                        );
+                        const lockedKey = `${dateStr}_${slot.start}`;
+                        const isLocked = !!locked[lockedKey];
+
+                        return {
+                            ...slot,
+                            isBooked: !!booking,
+                            booking: booking || null,
+                            isLocked,
+                            lockedInfo: locked[lockedKey] || null
+                        };
+                    });
+
+                    data[dateStr] = {
+                        hasSchedule: true,
+                        schedule,
+                        slots: slotsWithStatus,
+                        bookings
+                    };
+                } catch (err) {
+                    data[dateStr] = {
+                        hasSchedule: true,
+                        schedule,
+                        slots: generatedSlots.map(s => ({ ...s, isBooked: false, isLocked: false })),
+                        bookings: []
+                    };
+                }
+            }));
+
+            setWeekData(data);
+            setLockedSlots(locked);
         } catch (error) {
-            console.error('Lỗi lấy khung giờ:', error);
-            setTimeSlots([]);
+            console.error('Lỗi lấy dữ liệu tuần:', error);
         } finally {
             setLoading(false);
         }
     };
 
-    const handleGenerateSlots = async (e) => {
-        e.preventDefault();
-        if (!generateForm.doctor_id || !generateForm.start_date || !generateForm.end_date) {
-            alert('Vui lòng điền đầy đủ thông tin');
-            return;
+    const handleLockSlot = async (dateStr, slot) => {
+        if (slot.isLocked && slot.lockedInfo?.id) {
+            // Unlock
+            try {
+                await api.put(`/api/admin/time-slots/${slot.lockedInfo.id}`, { is_available: true });
+                fetchWeekData();
+            } catch (error) {
+                alert('❌ Lỗi mở khóa slot');
+            }
+        } else {
+            // Lock - create time slot record với is_available = false
+            try {
+                await api.post('/api/admin/time-slots', {
+                    doctor_id: selectedDoctor,
+                    date: dateStr,
+                    start_time: slot.start + ':00',
+                    end_time: slot.end + ':00',
+                    is_available: false,
+                    max_patients: 1,
+                    note: 'Khóa thủ công'
+                });
+                fetchWeekData();
+            } catch (error) {
+                // Nếu slot đã tồn tại, cập nhật
+                try {
+                    const existingRes = await api.get('/api/admin/time-slots', {
+                        params: { doctor_id: selectedDoctor, date: dateStr }
+                    });
+                    const existing = (existingRes.data?.data || existingRes.data || [])
+                        .find(s => s.start_time.substring(0, 5) === slot.start);
+                    if (existing) {
+                        await api.put(`/api/admin/time-slots/${existing.id}`, { is_available: false });
+                        fetchWeekData();
+                    }
+                } catch (err2) {
+                    alert('❌ Lỗi khóa slot');
+                }
+            }
         }
+    };
+
+    const handleLockDay = async (dateStr, lock = true) => {
+        const dayData = weekData[dateStr];
+        if (!dayData || !dayData.hasSchedule) return;
+
+        const action = lock ? 'Khóa' : 'Mở khóa';
+        if (!window.confirm(`${action} TẤT CẢ khung giờ ngày ${new Date(dateStr).toLocaleDateString('vi-VN')}?`)) return;
 
         try {
             setLoading(true);
-            const response = await api.post('/api/admin/time-slots/generate', generateForm);
-            alert(`✅ ${response.data.message}`);
-            setShowGenerateModal(false);
-            if (selectedDoctor && selectedDate) {
-                fetchTimeSlots();
+            for (const slot of dayData.slots) {
+                if (slot.isBooked) continue; // Không khóa slot đã có lịch
+
+                if (lock && !slot.isLocked) {
+                    await api.post('/api/admin/time-slots', {
+                        doctor_id: selectedDoctor,
+                        date: dateStr,
+                        start_time: slot.start + ':00',
+                        end_time: slot.end + ':00',
+                        is_available: false,
+                        max_patients: 1,
+                        note: 'Khóa cả ngày'
+                    }).catch(() => { }); // Ignore if exists
+                } else if (!lock && slot.isLocked && slot.lockedInfo?.id) {
+                    await api.put(`/api/admin/time-slots/${slot.lockedInfo.id}`, { is_available: true });
+                }
             }
+            fetchWeekData();
         } catch (error) {
-            alert('❌ ' + (error.response?.data?.message || 'Lỗi tạo khung giờ'));
+            alert('❌ Lỗi thao tác');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleToggleSlot = async (slotId, currentStatus) => {
-        try {
-            await api.put(`/api/admin/time-slots/${slotId}`, {
-                is_available: !currentStatus
-            });
-            fetchTimeSlots();
-        } catch (error) {
-            alert('❌ Lỗi khi thay đổi trạng thái');
-        }
+    const goToPreviousWeek = () => {
+        const newStart = new Date(currentWeekStart);
+        newStart.setDate(newStart.getDate() - 7);
+        setCurrentWeekStart(newStart);
     };
 
-    const handleDeleteSlot = async (slotId) => {
-        if (!window.confirm('Bạn có chắc muốn xóa khung giờ này?')) return;
-        try {
-            await api.delete(`/api/admin/time-slots/${slotId}`);
-            fetchTimeSlots();
-        } catch (error) {
-            alert('❌ ' + (error.response?.data?.message || 'Lỗi xóa khung giờ'));
-        }
+    const goToNextWeek = () => {
+        const newStart = new Date(currentWeekStart);
+        newStart.setDate(newStart.getDate() + 7);
+        setCurrentWeekStart(newStart);
     };
 
-    const handleDeleteAllSlots = async () => {
-        if (!selectedDoctor || !selectedDate) return;
-        if (!window.confirm(`Bạn có chắc muốn xóa TẤT CẢ khung giờ của ngày ${selectedDate}?`)) return;
-
-        try {
-            await api.delete('/api/admin/time-slots/bulk', {
-                data: { doctor_id: selectedDoctor, date: selectedDate }
-            });
-            alert('✅ Đã xóa tất cả khung giờ');
-            fetchTimeSlots();
-        } catch (error) {
-            alert('❌ ' + (error.response?.data?.message || 'Lỗi xóa khung giờ'));
-        }
+    const goToCurrentWeek = () => {
+        setCurrentWeekStart(getMonday(new Date()));
     };
 
-    // Lọc bác sĩ theo tìm kiếm
-    const filteredDoctors = doctors.filter(doc =>
-        doc.full_name.toLowerCase().includes(searchDoctor.toLowerCase()) ||
-        doc.specialty?.name?.toLowerCase().includes(searchDoctor.toLowerCase())
-    );
+    const filteredDoctors = doctors.filter(doc => {
+        const matchesSearch = doc.full_name.toLowerCase().includes(searchDoctor.toLowerCase()) ||
+            doc.specialty?.name?.toLowerCase().includes(searchDoctor.toLowerCase());
+        const matchesSpecialty = selectedSpecialty === 'all' || doc.specialty_id === parseInt(selectedSpecialty);
+        return matchesSearch && matchesSpecialty;
+    });
+
+    const specialtyCounts = useMemo(() => {
+        const counts = {};
+        doctors.forEach(doc => {
+            const specId = doc.specialty_id || 0;
+            counts[specId] = (counts[specId] || 0) + 1;
+        });
+        return counts;
+    }, [doctors]);
 
     const selectedDoctorInfo = doctors.find(d => d.id === selectedDoctor);
-
-    // Format time
-    const formatTime = (time) => {
-        if (!time) return '';
-        return time.substring(0, 5);
-    };
-
-    // Get today's date
+    const weekDates = getWeekDates(currentWeekStart);
     const today = new Date().toISOString().split('T')[0];
+
+    // Tính toán thống kê schedule
+    const scheduleStats = useMemo(() => {
+        if (!doctorSchedule.length) return null;
+
+        const activeDays = doctorSchedule.filter(s => s.is_active).length;
+        const workHours = doctorSchedule.filter(s => s.is_active).map(s => {
+            const [sh, sm] = s.start_time.split(':').map(Number);
+            const [eh, em] = s.end_time.split(':').map(Number);
+            return (eh * 60 + em - sh * 60 - sm) / 60;
+        }).reduce((a, b) => a + b, 0);
+
+        return { activeDays, workHours: workHours.toFixed(1) };
+    }, [doctorSchedule]);
 
     return (
         <div className={styles.container}>
             <div className={styles.header}>
                 <div>
-                    <h1>⏰ Quản Lý Khung Giờ</h1>
-                    <p>Tạo và quản lý các khung giờ khám bệnh cụ thể cho từng ngày</p>
+                    <h1>⏰ Quản Lý Khung Giờ Khám</h1>
+                    <p>Lịch làm việc định kỳ hàng tuần. Khóa/mở từng khung giờ khi cần thiết.</p>
                 </div>
+            </div>
+
+            {/* Info Banner */}
+            <div className={styles.infoBanner}>
+                <span>💡</span>
+                <div>
+                    <strong>Cách hoạt động:</strong> Lịch làm việc của bác sĩ được thiết lập định kỳ theo tuần (ví dụ: Thứ 2-6, 8h-17h).
+                    Hệ thống tự động tạo khung giờ khám cho tất cả các tuần. Bạn chỉ cần khóa những slot đặc biệt khi bác sĩ nghỉ.
+                </div>
+            </div>
+
+            {/* Specialty Tabs */}
+            <div className={styles.specialtyTabs}>
                 <button
-                    className={styles.btnGenerate}
-                    onClick={() => setShowGenerateModal(true)}
+                    className={`${styles.tabBtn} ${selectedSpecialty === 'all' ? styles.activeTab : ''}`}
+                    onClick={() => setSelectedSpecialty('all')}
                 >
-                    ➕ Tạo khung giờ tự động
+                    Tất cả ({doctors.length})
                 </button>
+                {specialties.map(spec => (
+                    <button
+                        key={spec.id}
+                        className={`${styles.tabBtn} ${selectedSpecialty === String(spec.id) ? styles.activeTab : ''}`}
+                        onClick={() => setSelectedSpecialty(String(spec.id))}
+                    >
+                        {spec.name} ({specialtyCounts[spec.id] || 0})
+                    </button>
+                ))}
             </div>
 
-            <div className={styles.content}>
-                {/* Bộ lọc */}
-                <div className={styles.filters}>
-                    <div className={styles.filterGroup}>
-                        <label>👨‍⚕️ Chọn bác sĩ</label>
-                        <input
-                            type="text"
-                            placeholder="🔍 Tìm bác sĩ..."
-                            value={searchDoctor}
-                            onChange={(e) => setSearchDoctor(e.target.value)}
-                            className={styles.searchInput}
-                        />
-                        <div className={styles.doctorsList}>
-                            {filteredDoctors.slice(0, 10).map(doctor => (
-                                <button
-                                    key={doctor.id}
-                                    className={`${styles.doctorBtn} ${selectedDoctor === doctor.id ? styles.selected : ''}`}
-                                    onClick={() => setSelectedDoctor(doctor.id)}
-                                >
-                                    <span className={styles.doctorName}>{doctor.full_name}</span>
-                                    <span className={styles.doctorSpecialty}>{doctor.specialty?.name}</span>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className={styles.filterGroup}>
-                        <label>📅 Chọn ngày</label>
-                        <input
-                            type="date"
-                            value={selectedDate}
-                            onChange={(e) => setSelectedDate(e.target.value)}
-                            min={today}
-                            className={styles.dateInput}
-                        />
+            <div className={styles.mainContent}>
+                {/* Sidebar: Doctor Selection */}
+                <div className={styles.sidebar}>
+                    <h3>👨‍⚕️ Chọn Bác Sĩ</h3>
+                    <input
+                        type="text"
+                        placeholder="🔍 Tìm bác sĩ..."
+                        value={searchDoctor}
+                        onChange={(e) => setSearchDoctor(e.target.value)}
+                        className={styles.searchInput}
+                    />
+                    <div className={styles.doctorsList}>
+                        {filteredDoctors.map(doctor => (
+                            <button
+                                key={doctor.id}
+                                className={`${styles.doctorBtn} ${selectedDoctor === doctor.id ? styles.selected : ''}`}
+                                onClick={() => setSelectedDoctor(doctor.id)}
+                            >
+                                <span className={styles.doctorName}>{doctor.full_name}</span>
+                                <span className={styles.doctorSpecialty}>{doctor.specialty?.name}</span>
+                            </button>
+                        ))}
+                        {filteredDoctors.length === 0 && <p className={styles.noData}>Không tìm thấy bác sĩ</p>}
                     </div>
                 </div>
 
-                {/* Hiển thị thông tin đang chọn */}
-                {selectedDoctor && selectedDate && (
-                    <div className={styles.selectedInfo}>
-                        <span>📋 Khung giờ của <strong>{selectedDoctorInfo?.full_name}</strong></span>
-                        <span>ngày <strong>{new Date(selectedDate).toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</strong></span>
-                        {timeSlots.length > 0 && (
-                            <button
-                                className={styles.btnDeleteAll}
-                                onClick={handleDeleteAllSlots}
-                            >
-                                🗑️ Xóa tất cả
-                            </button>
-                        )}
-                    </div>
-                )}
+                {/* Content */}
+                <div className={styles.content}>
+                    {selectedDoctor ? (
+                        <>
+                            {/* Doctor Info Header */}
+                            <div className={styles.contentHeader}>
+                                <div className={styles.doctorInfo}>
+                                    <span>📋 <strong>{selectedDoctorInfo?.full_name}</strong></span>
+                                    <span className={styles.specialty}>({selectedDoctorInfo?.specialty?.name})</span>
+                                </div>
+                                <button className={styles.btnSchedule} onClick={() => window.location.href = '/admin/doctor-schedules'}>
+                                    ⚙️ Sửa lịch định kỳ
+                                </button>
+                            </div>
 
-                {/* Danh sách khung giờ */}
-                {selectedDoctor && selectedDate ? (
-                    loading ? (
-                        <div className={styles.loading}>⏳ Đang tải...</div>
-                    ) : timeSlots.length > 0 ? (
-                        <div className={styles.slotsGrid}>
-                            {timeSlots.map(slot => (
-                                <div
-                                    key={slot.id}
-                                    className={`${styles.slotCard} ${!slot.is_available ? styles.unavailable : ''} ${slot.current_patients >= slot.max_patients ? styles.full : ''}`}
-                                >
-                                    <div className={styles.slotTime}>
-                                        {formatTime(slot.start_time)} - {formatTime(slot.end_time)}
+                            {/* Schedule Summary */}
+                            {doctorSchedule.length > 0 ? (
+                                <div className={styles.scheduleSummary}>
+                                    <h4>📅 Lịch làm việc định kỳ:</h4>
+                                    <div className={styles.scheduleGrid}>
+                                        {dayOptions.map(day => {
+                                            const schedule = doctorSchedule.find(s => s.day_of_week === day.value);
+                                            const isActive = schedule?.is_active;
+                                            return (
+                                                <div key={day.value} className={`${styles.scheduleDay} ${isActive ? styles.active : styles.inactive}`}>
+                                                    <span className={styles.dayLabel}>{day.value}</span>
+                                                    {isActive ? (
+                                                        <span className={styles.dayTime}>
+                                                            {schedule.start_time.substring(0, 5)} - {schedule.end_time.substring(0, 5)}
+                                                        </span>
+                                                    ) : (
+                                                        <span className={styles.dayOffText}>Nghỉ</span>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
                                     </div>
-                                    <div className={styles.slotInfo}>
-                                        <span className={styles.slotPatients}>
-                                            👥 {slot.current_patients || 0}/{slot.max_patients || 1}
+                                    {scheduleStats && (
+                                        <p className={styles.scheduleNote}>
+                                            ✅ Làm việc {scheduleStats.activeDays} ngày/tuần, tổng ~{scheduleStats.workHours}h/tuần
+                                        </p>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className={styles.noSchedule}>
+                                    <p>⚠️ Bác sĩ chưa có lịch làm việc định kỳ</p>
+                                    <button className={styles.btnSchedule} onClick={() => window.location.href = '/admin/doctor-schedules'}>
+                                        ➕ Tạo lịch làm việc
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Week View */}
+                            {doctorSchedule.length > 0 && (
+                                <>
+                                    <div className={styles.weekNavigation}>
+                                        <button onClick={goToPreviousWeek}>◀ Tuần trước</button>
+                                        <button onClick={goToCurrentWeek} className={styles.btnToday}>Tuần này</button>
+                                        <span className={styles.weekRange}>
+                                            {weekDates[0].toLocaleDateString('vi-VN')} - {weekDates[6].toLocaleDateString('vi-VN')}
                                         </span>
-                                        {slot.room && (
-                                            <span className={styles.slotRoom}>🏥 {slot.room}</span>
-                                        )}
+                                        <button onClick={goToNextWeek}>Tuần sau ▶</button>
                                     </div>
-                                    <div className={styles.slotStatus}>
-                                        {!slot.is_available ? (
-                                            <span className={styles.statusOff}>Đã tắt</span>
-                                        ) : slot.current_patients >= slot.max_patients ? (
-                                            <span className={styles.statusFull}>Đã đầy</span>
-                                        ) : (
-                                            <span className={styles.statusAvailable}>Còn chỗ</span>
-                                        )}
-                                    </div>
-                                    <div className={styles.slotActions}>
-                                        <button
-                                            className={`${styles.btnToggle} ${!slot.is_available ? styles.toggleOn : ''}`}
-                                            onClick={() => handleToggleSlot(slot.id, slot.is_available)}
-                                            title={slot.is_available ? 'Tắt khung giờ' : 'Bật khung giờ'}
-                                        >
-                                            {slot.is_available ? '🔒' : '🔓'}
-                                        </button>
-                                        <button
-                                            className={styles.btnDelete}
-                                            onClick={() => handleDeleteSlot(slot.id)}
-                                            title="Xóa khung giờ"
-                                        >
-                                            🗑️
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className={styles.empty}>
-                            <div className={styles.emptyIcon}>📭</div>
-                            <p>Chưa có khung giờ nào cho ngày này</p>
-                            <button
-                                className={styles.btnGenerate}
-                                onClick={() => {
-                                    setGenerateForm(prev => ({
-                                        ...prev,
-                                        doctor_id: selectedDoctor,
-                                        start_date: selectedDate,
-                                        end_date: selectedDate
-                                    }));
-                                    setShowGenerateModal(true);
-                                }}
-                            >
-                                ➕ Tạo khung giờ cho ngày này
-                            </button>
-                        </div>
-                    )
-                ) : (
-                    <div className={styles.placeholder}>
-                        <div className={styles.placeholderIcon}>👆</div>
-                        <p>Vui lòng chọn bác sĩ và ngày để xem khung giờ</p>
-                    </div>
-                )}
-            </div>
 
-            {/* Modal tạo khung giờ tự động */}
-            {showGenerateModal && (
-                <div className={styles.modalOverlay} onClick={() => setShowGenerateModal(false)}>
-                    <div className={styles.modal} onClick={e => e.stopPropagation()}>
-                        <div className={styles.modalHeader}>
-                            <h2>➕ Tạo Khung Giờ Tự Động</h2>
-                            <button className={styles.btnClose} onClick={() => setShowGenerateModal(false)}>✕</button>
+                                    {loading ? (
+                                        <div className={styles.loading}>⏳ Đang tải...</div>
+                                    ) : (
+                                        <div className={styles.weekGrid}>
+                                            {weekDates.map((date) => {
+                                                const dateStr = date.toISOString().split('T')[0];
+                                                const dayData = weekData[dateStr] || { hasSchedule: false, slots: [] };
+                                                const isToday = dateStr === today;
+                                                const isPast = dateStr < today;
+
+                                                const lockedCount = dayData.slots?.filter(s => s.isLocked).length || 0;
+                                                const bookedCount = dayData.slots?.filter(s => s.isBooked).length || 0;
+                                                const availableCount = dayData.slots?.filter(s => !s.isLocked && !s.isBooked).length || 0;
+
+                                                return (
+                                                    <div key={dateStr} className={`${styles.dayColumn} ${isToday ? styles.today : ''} ${isPast ? styles.past : ''} ${!dayData.hasSchedule ? styles.noWork : ''}`}>
+                                                        <div className={styles.dayHeader}>
+                                                            <div className={styles.dayName}>{dayNames[date.getDay()]}</div>
+                                                            <div className={styles.dayDate}>{date.getDate()}/{date.getMonth() + 1}</div>
+                                                            {isToday && <span className={styles.todayBadge}>Hôm nay</span>}
+                                                        </div>
+
+                                                        {dayData.hasSchedule ? (
+                                                            <>
+                                                                <div className={styles.dayStats}>
+                                                                    <span title="Còn trống" className={styles.available}>✅ {availableCount}</span>
+                                                                    {bookedCount > 0 && <span title="Có lịch hẹn" className={styles.booked}>👥 {bookedCount}</span>}
+                                                                    {lockedCount > 0 && <span title="Đã khóa" className={styles.locked}>🔒 {lockedCount}</span>}
+                                                                </div>
+
+                                                                <div className={styles.daySlots}>
+                                                                    {dayData.slots.map((slot, idx) => (
+                                                                        <div
+                                                                            key={idx}
+                                                                            className={`${styles.slotItem} ${slot.isLocked ? styles.disabled : ''} ${slot.isBooked ? styles.hasBooking : ''}`}
+                                                                            title={slot.isBooked ? `Đã đặt: ${slot.booking?.patient?.full_name || 'Khách'}` : slot.isLocked ? 'Đã khóa' : 'Còn trống'}
+                                                                        >
+                                                                            <span className={styles.slotTime}>{slot.start}</span>
+                                                                            {!isPast && !slot.isBooked && (
+                                                                                <button
+                                                                                    className={styles.slotLockBtn}
+                                                                                    onClick={() => handleLockSlot(dateStr, slot)}
+                                                                                    title={slot.isLocked ? 'Mở khóa' : 'Khóa'}
+                                                                                >
+                                                                                    {slot.isLocked ? '🔓' : '🔒'}
+                                                                                </button>
+                                                                            )}
+                                                                            {slot.isBooked && <span className={styles.bookedIcon}>👤</span>}
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+
+                                                                {!isPast && (
+                                                                    <div className={styles.dayActions}>
+                                                                        <button
+                                                                            className={styles.btnDayAction}
+                                                                            onClick={() => handleLockDay(dateStr, true)}
+                                                                            title="Khóa cả ngày"
+                                                                        >
+                                                                            🔒 Khóa ngày
+                                                                        </button>
+                                                                        <button
+                                                                            className={styles.btnDayAction}
+                                                                            onClick={() => handleLockDay(dateStr, false)}
+                                                                            title="Mở khóa cả ngày"
+                                                                        >
+                                                                            🔓 Mở
+                                                                        </button>
+                                                                    </div>
+                                                                )}
+                                                            </>
+                                                        ) : (
+                                                            <div className={styles.dayOffContent}>
+                                                                <span>😴</span>
+                                                                <span>Không làm việc</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+
+                                    {/* Legend */}
+                                    <div className={styles.legend}>
+                                        <div className={styles.legendItem}>
+                                            <span className={`${styles.legendColor} ${styles.legendAvailable}`}></span>
+                                            <span>Còn trống</span>
+                                        </div>
+                                        <div className={styles.legendItem}>
+                                            <span className={`${styles.legendColor} ${styles.legendBooked}`}></span>
+                                            <span>Đã đặt lịch</span>
+                                        </div>
+                                        <div className={styles.legendItem}>
+                                            <span className={`${styles.legendColor} ${styles.legendLocked}`}></span>
+                                            <span>Đã khóa</span>
+                                        </div>
+                                        <div className={styles.legendItem}>
+                                            <span className={`${styles.legendColor} ${styles.legendOff}`}></span>
+                                            <span>Ngày nghỉ</span>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </>
+                    ) : (
+                        <div className={styles.placeholder}>
+                            <div className={styles.placeholderIcon}>👈</div>
+                            <p>Vui lòng chọn bác sĩ để xem và quản lý khung giờ</p>
                         </div>
-                        <form onSubmit={handleGenerateSlots} className={styles.modalBody}>
-                            <div className={styles.formGroup}>
-                                <label>Chọn bác sĩ <span className={styles.required}>*</span></label>
-                                <select
-                                    value={generateForm.doctor_id}
-                                    onChange={(e) => setGenerateForm(prev => ({ ...prev, doctor_id: e.target.value }))}
-                                    required
-                                >
-                                    <option value="">-- Chọn bác sĩ --</option>
-                                    {doctors.map(doc => (
-                                        <option key={doc.id} value={doc.id}>{doc.full_name} - {doc.specialty?.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className={styles.formRow}>
-                                <div className={styles.formGroup}>
-                                    <label>Từ ngày <span className={styles.required}>*</span></label>
-                                    <input
-                                        type="date"
-                                        value={generateForm.start_date}
-                                        onChange={(e) => setGenerateForm(prev => ({ ...prev, start_date: e.target.value }))}
-                                        min={today}
-                                        required
-                                    />
-                                </div>
-                                <div className={styles.formGroup}>
-                                    <label>Đến ngày <span className={styles.required}>*</span></label>
-                                    <input
-                                        type="date"
-                                        value={generateForm.end_date}
-                                        onChange={(e) => setGenerateForm(prev => ({ ...prev, end_date: e.target.value }))}
-                                        min={generateForm.start_date || today}
-                                        required
-                                    />
-                                </div>
-                            </div>
-                            <div className={styles.formGroup}>
-                                <label>Thời lượng mỗi slot (phút)</label>
-                                <select
-                                    value={generateForm.slot_duration}
-                                    onChange={(e) => setGenerateForm(prev => ({ ...prev, slot_duration: parseInt(e.target.value) }))}
-                                >
-                                    <option value={15}>15 phút</option>
-                                    <option value={30}>30 phút</option>
-                                    <option value={45}>45 phút</option>
-                                    <option value={60}>60 phút</option>
-                                </select>
-                            </div>
-                            <p className={styles.note}>
-                                💡 Hệ thống sẽ tự động tạo khung giờ dựa theo lịch làm việc của bác sĩ (đã cấu hình ở phần "Lịch làm việc")
-                            </p>
-                            <div className={styles.modalFooter}>
-                                <button type="button" className={styles.btnCancel} onClick={() => setShowGenerateModal(false)}>
-                                    Hủy
-                                </button>
-                                <button type="submit" className={styles.btnSubmit} disabled={loading}>
-                                    {loading ? '⏳ Đang tạo...' : '✅ Tạo khung giờ'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                    )}
                 </div>
-            )}
+            </div>
         </div>
     );
 }

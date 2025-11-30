@@ -11,6 +11,28 @@ export default function ServiceList() {
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
 
+    // Map specialty id to icon
+    const getSpecialtyIcon = (specialtyId) => {
+        const icons = {
+            1: '💊', // Nội khoa
+            2: '🔪', // Ngoại khoa
+            3: '🤰', // Sản phụ khoa
+            4: '👶', // Nhi khoa
+            5: '❤️', // Tim mạch
+            6: '🧠', // Thần kinh
+            7: '🫁', // Tiêu hóa
+            8: '😮‍💨', // Hô hấp
+            9: '👂', // Tai mũi họng
+            10: '👁️', // Mắt
+            11: '🧴', // Da liễu
+            12: '🦷', // Răng hàm mặt
+            13: '🦴', // Chấn thương chỉnh hình
+            14: '🎗️', // Ung bướu
+            15: '🧘', // Tâm thần
+        };
+        return icons[specialtyId] || '💡';
+    };
+
     useEffect(() => {
         fetchData();
     }, []);
@@ -64,7 +86,25 @@ export default function ServiceList() {
         <div className={styles.container}>
             <div className={styles.header}>
                 <h1>🏥 Dịch Vụ Khám Chữa Bệnh</h1>
-                <p>Danh sách dịch vụ y tế với bảng giá chi tiết</p>
+                <p>Danh sách {services.length} dịch vụ y tế với bảng giá chi tiết</p>
+            </div>
+
+            {/* Stats */}
+            <div className={styles.statsBar}>
+                <div className={styles.statItem}>
+                    <span className={styles.statValue}>{services.length}</span>
+                    <span className={styles.statLabel}>Dịch vụ</span>
+                </div>
+                <div className={styles.statItem}>
+                    <span className={styles.statValue}>{specialties.length}</span>
+                    <span className={styles.statLabel}>Chuyên khoa</span>
+                </div>
+                <div className={styles.statItem}>
+                    <span className={styles.statValue}>
+                        {Math.min(...services.filter(s => s.price).map(s => Number(s.price))).toLocaleString()}đ
+                    </span>
+                    <span className={styles.statLabel}>Giá từ</span>
+                </div>
             </div>
 
             {/* Filter Section */}
@@ -110,10 +150,11 @@ export default function ServiceList() {
                 return (
                     <div key={specialty.id} className={styles.specialtySection}>
                         <div className={styles.specialtyHeader}>
-                            <h2>{specialty.name}</h2>
+                            <h2>{getSpecialtyIcon(specialty.id)} {specialty.name}</h2>
                             {specialty.description && (
                                 <p>{specialty.description}</p>
                             )}
+                            <span className={styles.serviceCount}>{specialtyServices.length} dịch vụ</span>
                         </div>
 
                         <div className={styles.servicesGrid}>
@@ -145,12 +186,20 @@ export default function ServiceList() {
                                         </div>
                                     </div>
 
-                                    <button
-                                        className={styles.btnBook}
-                                        onClick={() => handleBookService(service)}
-                                    >
-                                        📅 Đặt lịch ngay
-                                    </button>
+                                    <div className={styles.cardActions}>
+                                        <button
+                                            className={styles.btnDetail}
+                                            onClick={() => navigate(`/services/${service.id}`)}
+                                        >
+                                            👨‍⚕️ Xem bác sĩ
+                                        </button>
+                                        <button
+                                            className={styles.btnBook}
+                                            onClick={() => handleBookService(service)}
+                                        >
+                                            📅 Đặt lịch
+                                        </button>
+                                    </div>
                                 </div>
                             ))}
                         </div>

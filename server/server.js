@@ -41,6 +41,7 @@ const bookingAvailabilityRoutes = require('./routes/bookingAvailabilityRoutes');
 const adminDoctorScheduleRoutes = require('./routes/adminDoctorScheduleRoutes');
 const adminDrugRoutes = require('./routes/adminDrugRoutes');  // ✅ NEW
 const adminTimeSlotRoutes = require('./routes/adminTimeSlotRoutes');  // ✅ NEW: Admin time slot management
+const adminServiceRoutes = require('./routes/adminServiceRoutes');  // ✅ NEW: Admin service management
 const doctorPrescriptionRoutes = require('./routes/doctorPrescriptionRoutes');  // ✅ NEW
 const doctorProfileRoutes = require('./routes/doctorProfileRoutes');  // ✅ NEW
 const patientProfileRoutes = require('./routes/patientProfileRoutes');  // ✅ NEW
@@ -72,6 +73,7 @@ app.use('/api/bookings', bookingAvailabilityRoutes);
 app.use('/api/admin', adminDoctorScheduleRoutes);
 app.use('/api/admin', adminDrugRoutes);  // ✅ NEW: Drug management
 app.use('/api/admin/time-slots', adminTimeSlotRoutes);  // ✅ NEW: Admin time slot management
+app.use('/api/admin/services', adminServiceRoutes);  // ✅ NEW: Admin service management
 app.use('/api/doctor/prescriptions', doctorPrescriptionRoutes);  // ✅ NEW: Prescription management
 app.use('/api/doctor', doctorProfileRoutes);  // ✅ NEW: Doctor profile management
 app.use('/api/medical-records', medicalRecordRoutes);  // ✅ NEW: Medical history

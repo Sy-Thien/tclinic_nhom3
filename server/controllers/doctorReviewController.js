@@ -1,4 +1,4 @@
-const { Review, Patient, Doctor, Booking } = require('../models');
+const { Review, Patient, Doctor } = require('../models');
 const { Op } = require('sequelize');
 const sequelize = require('../config/database');
 
@@ -23,11 +23,6 @@ exports.getDoctorReviews = async (req, res) => {
                     model: Patient,
                     as: 'patient',
                     attributes: ['id', 'full_name', 'phone']
-                },
-                {
-                    model: Booking,
-                    as: 'booking',
-                    attributes: ['id', 'booking_code', 'appointment_date']
                 }
             ],
             order: [['created_at', 'DESC']],

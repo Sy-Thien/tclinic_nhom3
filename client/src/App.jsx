@@ -13,6 +13,8 @@ import DoctorDetail from './pages/customer/DoctorDetail';
 import PublicDoctorList from './pages/public/DoctorList';
 import PublicDoctorDetail from './pages/public/DoctorDetail';
 import PublicServiceList from './pages/public/ServiceList';
+import PublicServiceDetail from './pages/public/ServiceDetail';
+import BookingSuccess from './pages/public/BookingSuccess';
 import About from './pages/customer/About';
 import Contact from './pages/customer/Contact';
 import Login from './pages/Login';
@@ -57,6 +59,8 @@ export default function App() {
                     <Route path="booking" element={<Booking />} />
                     <Route path="my-appointments" element={<MyAppointments />} />
                     <Route path="services" element={<PublicServiceList />} />
+                    <Route path="services/:id" element={<PublicServiceDetail />} />
+                    <Route path="booking-success" element={<BookingSuccess />} />
                     <Route path="doctors" element={<PublicDoctorList />} />
                     <Route path="doctors/:id" element={<PublicDoctorDetail />} />
                     <Route path="profile" element={<PatientProfile />} />

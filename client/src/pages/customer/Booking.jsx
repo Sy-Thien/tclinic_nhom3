@@ -7,6 +7,11 @@ export default function Booking() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
 
+    // Lấy params từ URL
+    const doctorIdFromUrl = searchParams.get('doctor');
+    const doctorNameFromUrl = searchParams.get('doctor_name');
+    const serviceIdFromUrl = searchParams.get('service');
+
     const [formData, setFormData] = useState({
         patient_name: '',
         patient_email: '',
@@ -17,12 +22,14 @@ export default function Booking() {
         specialty_id: searchParams.get('specialty') || '',
         appointment_date: searchParams.get('date') || '',
         appointment_time: searchParams.get('time') || '',
-        doctor_id: searchParams.get('doctor') ? Number(searchParams.get('doctor')) : null, // null = không chỉ định, admin sẽ gán
+        doctor_id: doctorIdFromUrl ? Number(doctorIdFromUrl) : null, // null = không chỉ định, admin sẽ gán
+        service_id: serviceIdFromUrl ? Number(serviceIdFromUrl) : null,
         symptoms: searchParams.get('symptoms') || '',
         note: ''
     });
 
-    const [bookingType, setBookingType] = useState('instant'); // 'instant' hoặc 'with_doctor'
+    // Tự động chọn chế độ "with_doctor" nếu có doctor từ URL
+    const [bookingType, setBookingType] = useState(doctorIdFromUrl ? 'with_doctor' : 'instant');
     const [specialties, setSpecialties] = useState([]);
     const [doctors, setDoctors] = useState([]);
     const [availableSlots, setAvailableSlots] = useState([]);
@@ -47,6 +54,8 @@ export default function Booking() {
     useEffect(() => {
         if (formData.doctor_id) {
             setSelectedDoctor(formData.doctor_id);
+            // Nếu có doctor từ URL, chuyển sang chế độ with_doctor
+            setBookingType('with_doctor');
         }
         // If both doctor and date provided, try load slots
         if (formData.doctor_id && formData.appointment_date) {
@@ -87,8 +96,11 @@ export default function Booking() {
                 params: { specialtyId }
             });
             setDoctors(response.data);
-            setSelectedDoctor(null);
-            setFormData(prev => ({ ...prev, doctor_id: null }));
+            // ✅ Chỉ reset doctor nếu KHÔNG có doctor từ URL
+            if (!doctorIdFromUrl) {
+                setSelectedDoctor(null);
+                setFormData(prev => ({ ...prev, doctor_id: null }));
+            }
         } catch (error) {
             console.error('Error fetching doctors:', error);
             setDoctors([]);
@@ -241,8 +253,16 @@ export default function Booking() {
     const handleChange = (e) => {
         const { name, value } = e.target;
 
-        // ✅ Kiểm tra ngày quá khứ ngay khi chọn
+        // ✅ Kiểm tra ngày quá khứ ngay khi chọn - CHỈ cho appointment_date
         if (name === 'appointment_date' && value) {
+            // Kiểm tra format ngày hợp lệ (YYYY-MM-DD) và năm >= 2020
+            const dateMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            if (!dateMatch || parseInt(dateMatch[1]) < 2020) {
+                // Ngày chưa nhập đầy đủ hoặc năm không hợp lệ, chỉ cập nhật state
+                setFormData(prev => ({ ...prev, [name]: value }));
+                return;
+            }
+
             const selectedDate = new Date(value + 'T00:00:00');
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -502,44 +522,74 @@ export default function Booking() {
                 <section className={styles.section}>
                     <h2 className={styles.sectionTitle}>🏥 Thông tin lịch khám</h2>
 
-                    {/* Chọn kiểu đặt lịch */}
-                    <div className={styles.bookingTypeSelector}>
-                        <div
-                            className={`${styles.typeOption} ${bookingType === 'instant' ? styles.active : ''}`}
-                            onClick={() => {
-                                setBookingType('instant');
-                                setSelectedDoctor(null);
-                                setDoctorTimeSlots(null);
-                                setFormData(prev => ({
-                                    ...prev,
-                                    doctor_id: null,
-                                    appointment_time: ''
-                                }));
-                                // Nếu đã chọn ngày, load default slots
-                                if (formData.appointment_date) {
-                                    fetchDefaultSlots(formData.appointment_date);
-                                }
-                            }}
-                        >
-                            <h3>⚡ Đặt luôn</h3>
-                            <p>Chúng tôi sẽ sắp xếp bác sĩ phù hợp cho bạn</p>
+                    {/* Hiển thị thông tin bác sĩ đã chọn từ URL */}
+                    {doctorIdFromUrl && doctorNameFromUrl && (
+                        <div className={styles.selectedDoctorInfo}>
+                            <div className={styles.doctorBadge}>
+                                <span className={styles.doctorIcon}>👨‍⚕️</span>
+                                <div className={styles.doctorDetails}>
+                                    <strong>Bác sĩ đã chọn:</strong>
+                                    <span className={styles.doctorName}>{decodeURIComponent(doctorNameFromUrl)}</span>
+                                </div>
+                                <button
+                                    type="button"
+                                    className={styles.changeDoctorBtn}
+                                    onClick={() => {
+                                        setSelectedDoctor(null);
+                                        setFormData(prev => ({ ...prev, doctor_id: null }));
+                                        setBookingType('instant');
+                                        navigate('/booking?specialty=' + formData.specialty_id, { replace: true });
+                                    }}
+                                >
+                                    Đổi bác sĩ
+                                </button>
+                            </div>
+                            <p className={styles.doctorNote}>
+                                ✨ Bạn chỉ cần chọn <strong>ngày khám</strong> và <strong>khung giờ</strong> phù hợp
+                            </p>
                         </div>
-                        <div
-                            className={`${styles.typeOption} ${bookingType === 'with_doctor' ? styles.active : ''}`}
-                            onClick={() => {
-                                setBookingType('with_doctor');
-                                setAvailableSlots([]);
-                                setDoctorTimeSlots(null);
-                                setFormData(prev => ({
-                                    ...prev,
-                                    appointment_time: ''
-                                }));
-                            }}
-                        >
-                            <h3>👨‍⚕️ Chọn bác sĩ</h3>
-                            <p>Bạn chọn bác sĩ và khung giờ mong muốn</p>
+                    )}
+
+                    {/* Chọn kiểu đặt lịch - ẩn nếu đã chọn bác sĩ từ URL */}
+                    {!doctorIdFromUrl && (
+                        <div className={styles.bookingTypeSelector}>
+                            <div
+                                className={`${styles.typeOption} ${bookingType === 'instant' ? styles.active : ''}`}
+                                onClick={() => {
+                                    setBookingType('instant');
+                                    setSelectedDoctor(null);
+                                    setDoctorTimeSlots(null);
+                                    setFormData(prev => ({
+                                        ...prev,
+                                        doctor_id: null,
+                                        appointment_time: ''
+                                    }));
+                                    // Nếu đã chọn ngày, load default slots
+                                    if (formData.appointment_date) {
+                                        fetchDefaultSlots(formData.appointment_date);
+                                    }
+                                }}
+                            >
+                                <h3>⚡ Đặt luôn</h3>
+                                <p>Chúng tôi sẽ sắp xếp bác sĩ phù hợp cho bạn</p>
+                            </div>
+                            <div
+                                className={`${styles.typeOption} ${bookingType === 'with_doctor' ? styles.active : ''}`}
+                                onClick={() => {
+                                    setBookingType('with_doctor');
+                                    setAvailableSlots([]);
+                                    setDoctorTimeSlots(null);
+                                    setFormData(prev => ({
+                                        ...prev,
+                                        appointment_time: ''
+                                    }));
+                                }}
+                            >
+                                <h3>👨‍⚕️ Chọn bác sĩ</h3>
+                                <p>Bạn chọn bác sĩ và khung giờ mong muốn</p>
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     <div className={styles.formGrid}>
                         {/* Chuyên khoa - Bắt buộc */}
@@ -573,8 +623,8 @@ export default function Booking() {
                             {errors.appointment_date && <span className={styles.error}>{errors.appointment_date}</span>}
                         </div>
 
-                        {/* Chọn bác sĩ - CHỈ hiển thị khi chọn 'with_doctor' */}
-                        {bookingType === 'with_doctor' && formData.specialty_id && (
+                        {/* Chọn bác sĩ - CHỈ hiển thị khi chọn 'with_doctor' VÀ không có doctor từ URL */}
+                        {bookingType === 'with_doctor' && formData.specialty_id && !doctorIdFromUrl && (
                             <div style={{ gridColumn: '1 / -1' }} className={styles.formGroup}>
                                 <label>👨‍⚕️ Chọn bác sĩ <span className={styles.required}>*</span></label>
                                 {loading ? (

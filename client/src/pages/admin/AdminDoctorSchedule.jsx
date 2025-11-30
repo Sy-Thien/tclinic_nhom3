@@ -4,9 +4,11 @@ import styles from './AdminDoctorSchedule.module.css';
 
 export default function AdminDoctorSchedule() {
     const [doctors, setDoctors] = useState([]);
+    const [specialties, setSpecialties] = useState([]);
     const [schedules, setSchedules] = useState([]);
     const [loading, setLoading] = useState(false);
     const [selectedDoctor, setSelectedDoctor] = useState('');
+    const [selectedSpecialty, setSelectedSpecialty] = useState('all');
     const [editingId, setEditingId] = useState(null);
     const [searchDoctor, setSearchDoctor] = useState('');
 
@@ -26,6 +28,7 @@ export default function AdminDoctorSchedule() {
 
     useEffect(() => {
         fetchDoctors();
+        fetchSpecialties();
     }, []);
 
     const fetchDoctors = async () => {
@@ -34,6 +37,15 @@ export default function AdminDoctorSchedule() {
             setDoctors(response.data);
         } catch (error) {
             console.error('Lỗi lấy danh sách bác sĩ:', error);
+        }
+    };
+
+    const fetchSpecialties = async () => {
+        try {
+            const response = await api.get('/api/public/specialties');
+            setSpecialties(response.data);
+        } catch (error) {
+            console.error('Lỗi lấy chuyên khoa:', error);
         }
     };
 
@@ -153,11 +165,30 @@ export default function AdminDoctorSchedule() {
         });
     };
 
-    // Lọc bác sĩ theo tìm kiếm
-    const filteredDoctors = doctors.filter(doc =>
-        doc.full_name.toLowerCase().includes(searchDoctor.toLowerCase()) ||
-        doc.specialty?.name?.toLowerCase().includes(searchDoctor.toLowerCase())
-    );
+    // Lọc bác sĩ theo tìm kiếm và chuyên khoa
+    const filteredDoctors = doctors.filter(doc => {
+        const matchesSearch = doc.full_name.toLowerCase().includes(searchDoctor.toLowerCase()) ||
+            doc.specialty?.name?.toLowerCase().includes(searchDoctor.toLowerCase());
+        const matchesSpecialty = selectedSpecialty === 'all' || doc.specialty_id === parseInt(selectedSpecialty);
+        return matchesSearch && matchesSpecialty;
+    });
+
+    // Nhóm bác sĩ theo chuyên khoa
+    const doctorsBySpecialty = {};
+    filteredDoctors.forEach(doc => {
+        const specName = doc.specialty?.name || 'Chưa phân khoa';
+        if (!doctorsBySpecialty[specName]) {
+            doctorsBySpecialty[specName] = [];
+        }
+        doctorsBySpecialty[specName].push(doc);
+    });
+
+    // Đếm số bác sĩ theo chuyên khoa
+    const specialtyCounts = {};
+    doctors.forEach(doc => {
+        const specId = doc.specialty_id || 0;
+        specialtyCounts[specId] = (specialtyCounts[specId] || 0) + 1;
+    });
 
     const selectedDoctorInfo = doctors.find(d => d.id === selectedDoctor);
 
@@ -169,6 +200,25 @@ export default function AdminDoctorSchedule() {
             </div>
 
             <div className={styles.content}>
+                {/* Tabs chuyên khoa */}
+                <div className={styles.specialtyTabs}>
+                    <button
+                        className={`${styles.tabBtn} ${selectedSpecialty === 'all' ? styles.activeTab : ''}`}
+                        onClick={() => setSelectedSpecialty('all')}
+                    >
+                        Tất cả ({doctors.length})
+                    </button>
+                    {specialties.map(spec => (
+                        <button
+                            key={spec.id}
+                            className={`${styles.tabBtn} ${selectedSpecialty === String(spec.id) ? styles.activeTab : ''}`}
+                            onClick={() => setSelectedSpecialty(String(spec.id))}
+                        >
+                            {spec.name} ({specialtyCounts[spec.id] || 0})
+                        </button>
+                    ))}
+                </div>
+
                 {/* Chọn bác sĩ */}
                 <div className={styles.section}>
                     <h2>👨‍⚕️ Chọn Bác Sĩ</h2>
@@ -179,21 +229,52 @@ export default function AdminDoctorSchedule() {
                         onChange={(e) => setSearchDoctor(e.target.value)}
                         className={styles.searchInput}
                     />
-                    <div className={styles.doctorsList}>
-                        {filteredDoctors.map(doctor => (
-                            <button
-                                key={doctor.id}
-                                className={`${styles.doctorBtn} ${selectedDoctor === doctor.id ? styles.selected : ''}`}
-                                onClick={() => handleSelectDoctor(doctor.id)}
-                            >
-                                <div className={styles.doctorName}>{doctor.full_name}</div>
-                                <div className={styles.doctorSpecialty}>{doctor.specialty?.name || 'Chưa có chuyên khoa'}</div>
-                            </button>
-                        ))}
-                        {filteredDoctors.length === 0 && (
+
+                    {/* Hiển thị bác sĩ theo nhóm chuyên khoa */}
+                    {selectedSpecialty === 'all' ? (
+                        // Hiển thị theo nhóm khi chọn "Tất cả"
+                        Object.keys(doctorsBySpecialty).length > 0 ? (
+                            Object.entries(doctorsBySpecialty).map(([specName, docs]) => (
+                                <div key={specName} className={styles.specialtyGroup}>
+                                    <h3 className={styles.groupTitle}>
+                                        🏥 {specName}
+                                        <span className={styles.groupCount}>({docs.length} bác sĩ)</span>
+                                    </h3>
+                                    <div className={styles.doctorsList}>
+                                        {docs.map(doctor => (
+                                            <button
+                                                key={doctor.id}
+                                                className={`${styles.doctorBtn} ${selectedDoctor === doctor.id ? styles.selected : ''}`}
+                                                onClick={() => handleSelectDoctor(doctor.id)}
+                                            >
+                                                <div className={styles.doctorName}>{doctor.full_name}</div>
+                                                <div className={styles.doctorSpecialty}>{doctor.specialty?.name || 'Chưa có chuyên khoa'}</div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
                             <p className={styles.noData}>Không tìm thấy bác sĩ</p>
-                        )}
-                    </div>
+                        )
+                    ) : (
+                        // Hiển thị danh sách khi chọn chuyên khoa cụ thể
+                        <div className={styles.doctorsList}>
+                            {filteredDoctors.map(doctor => (
+                                <button
+                                    key={doctor.id}
+                                    className={`${styles.doctorBtn} ${selectedDoctor === doctor.id ? styles.selected : ''}`}
+                                    onClick={() => handleSelectDoctor(doctor.id)}
+                                >
+                                    <div className={styles.doctorName}>{doctor.full_name}</div>
+                                    <div className={styles.doctorSpecialty}>{doctor.specialty?.name || 'Chưa có chuyên khoa'}</div>
+                                </button>
+                            ))}
+                            {filteredDoctors.length === 0 && (
+                                <p className={styles.noData}>Không có bác sĩ trong chuyên khoa này</p>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {selectedDoctor && (

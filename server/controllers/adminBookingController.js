@@ -1,4 +1,4 @@
-const { Booking, Patient, Doctor, Specialty } = require('../models');
+const { Booking, Patient, Doctor, Specialty, DoctorSchedule } = require('../models');
 const { Op } = require('sequelize');
 
 // Admin - Lấy tất cả booking
@@ -316,13 +316,22 @@ exports.getAvailableDoctorsForAssignment = async (req, res) => {
             return res.status(404).json({ message: 'Không tìm thấy lịch hẹn' });
         }
 
-        // Tìm tất cả bác sĩ trong chuyên khoa
+        const bookingDate = new Date(booking.appointment_date);
+        const dayOfWeek = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'][bookingDate.getDay()];
+
+        // Tìm tất cả bác sĩ trong chuyên khoa kèm lịch làm việc
         const doctors = await Doctor.findAll({
             where: {
                 specialty_id: booking.specialty_id,
                 is_active: true
             },
-            attributes: ['id', 'full_name', 'phone', 'email']
+            attributes: ['id', 'full_name', 'phone', 'email'],
+            include: [{
+                model: DoctorSchedule,
+                as: 'schedules',
+                attributes: ['day_of_week', 'start_time', 'end_time'],
+                required: false
+            }]
         });
 
         // Lọc bác sĩ đã có booking trùng giờ
@@ -338,19 +347,78 @@ exports.getAvailableDoctorsForAssignment = async (req, res) => {
             attributes: ['doctor_id']
         }).then(bookings => bookings.map(b => b.doctor_id));
 
-        // Lọc ra bác sĩ còn trống
-        const availableDoctors = doctors.filter(doc => !busyDoctorIds.includes(doc.id));
+        // Kiểm tra bác sĩ có lịch làm việc vào ngày đặt hay không
+        const bookingTimeStr = booking.appointment_time?.substring(0, 5) || '08:00';
+
+        const doctorsWithStatus = doctors.map(doc => {
+            const docJson = doc.toJSON();
+            const isBusy = busyDoctorIds.includes(doc.id);
+
+            // Kiểm tra có lịch làm việc vào ngày này không
+            const scheduleForDay = docJson.schedules?.find(s => s.day_of_week === dayOfWeek);
+            const hasScheduleForDay = !!scheduleForDay;
+
+            // Kiểm tra giờ khám có trong khung giờ làm việc không
+            let isWithinWorkingHours = false;
+            if (scheduleForDay && booking.appointment_time) {
+                const startTime = scheduleForDay.start_time?.substring(0, 5);
+                const endTime = scheduleForDay.end_time?.substring(0, 5);
+                isWithinWorkingHours = bookingTimeStr >= startTime && bookingTimeStr < endTime;
+            }
+
+            // Trạng thái khả dụng
+            let status = 'available';
+            let statusText = '✓ Còn trống';
+            let disabled = false;
+
+            if (isBusy) {
+                status = 'busy';
+                statusText = '🔴 Đã có lịch khám khác';
+                disabled = true;
+            } else if (!hasScheduleForDay) {
+                status = 'no_schedule';
+                statusText = `⚠️ Không làm việc ${dayOfWeek}`;
+                disabled = true;
+            } else if (!isWithinWorkingHours) {
+                status = 'outside_hours';
+                statusText = `⚠️ Ngoài giờ làm việc (${scheduleForDay.start_time?.substring(0, 5)} - ${scheduleForDay.end_time?.substring(0, 5)})`;
+                disabled = true;
+            }
+
+            return {
+                ...docJson,
+                isBusy,
+                hasScheduleForDay,
+                isWithinWorkingHours,
+                scheduleForDay,
+                status,
+                statusText,
+                disabled,
+                workingDays: docJson.schedules?.map(s => s.day_of_week).join(', ') || 'Chưa có lịch'
+            };
+        });
+
+        // Sắp xếp: available trước, rồi đến disabled
+        doctorsWithStatus.sort((a, b) => {
+            if (a.disabled === b.disabled) return 0;
+            return a.disabled ? 1 : -1;
+        });
+
+        const availableCount = doctorsWithStatus.filter(d => !d.disabled).length;
 
         res.json({
             booking: {
                 id: booking.id,
                 booking_code: booking.booking_code,
-                specialty: booking.specialty.name,
+                specialty: booking.specialty?.name,
                 date: booking.appointment_date,
-                time: booking.appointment_time
+                time: booking.appointment_time,
+                dayOfWeek
             },
-            availableDoctors,
-            busyDoctors: doctors.filter(doc => busyDoctorIds.includes(doc.id))
+            availableDoctors: doctorsWithStatus,
+            availableCount,
+            totalDoctors: doctorsWithStatus.length,
+            noAvailableDoctor: availableCount === 0
         });
 
     } catch (error) {

@@ -1,6 +1,33 @@
-const { Doctor, Specialty } = require('../models');
+const { Doctor, Specialty, DoctorSchedule } = require('../models');
 const bcrypt = require('bcrypt');
 const { Op } = require('sequelize');
+
+// Các ngày trong tuần
+const WEEK_DAYS = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật'];
+
+// Hàm tạo lịch làm việc mặc định cho bác sĩ mới
+async function createDefaultScheduleForDoctor(doctorId) {
+    const schedules = [];
+
+    for (const day of WEEK_DAYS) {
+        // Thứ 7 & CN: Làm nửa ngày (sáng)
+        const isWeekend = day === 'Thứ 7' || day === 'Chủ nhật';
+
+        schedules.push({
+            doctor_id: doctorId,
+            day_of_week: day,
+            start_time: '08:00:00',
+            end_time: isWeekend ? '12:00:00' : '17:00:00',
+            break_start: isWeekend ? null : '12:00:00',
+            break_end: isWeekend ? null : '13:30:00',
+            is_active: true,
+            room: null
+        });
+    }
+
+    await DoctorSchedule.bulkCreate(schedules);
+    console.log(`📅 Đã tạo ${schedules.length} lịch làm việc mặc định cho bác sĩ ID ${doctorId}`);
+}
 
 // GET - Lấy danh sách tất cả bác sĩ
 exports.getAllDoctors = async (req, res) => {
@@ -150,10 +177,18 @@ exports.createDoctor = async (req, res) => {
             attributes: { exclude: ['password', 'recovery_token'] }
         });
 
+        // ✅ Tự động tạo lịch làm việc mặc định cho bác sĩ mới
+        try {
+            await createDefaultScheduleForDoctor(doctor.id);
+        } catch (scheduleError) {
+            console.error('⚠️ Lỗi tạo lịch mặc định:', scheduleError.message);
+            // Không throw lỗi, vẫn trả về thành công vì bác sĩ đã được tạo
+        }
+
         console.log('✅ Doctor created:', doctor.id);
 
         res.status(201).json({
-            message: 'Thêm bác sĩ thành công',
+            message: 'Thêm bác sĩ thành công (đã tạo lịch làm việc mặc định)',
             doctor: doctorWithSpecialty
         });
     } catch (error) {

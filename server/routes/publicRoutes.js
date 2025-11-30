@@ -53,24 +53,34 @@ router.get('/specialties', async (req, res) => {
     }
 });
 
-// ✅ GET - Danh sách dịch vụ (tất cả hoặc theo chuyên khoa)
-router.get('/services/:specialtyId?', async (req, res) => {
+// ✅ GET - Danh sách dịch vụ (tất cả)
+router.get('/services', async (req, res) => {
     try {
-        const { specialtyId } = req.params;
-        console.log(`📋 GET /api/public/services${specialtyId ? '/' + specialtyId : ''}`);
+        const { specialty_id, search } = req.query;
+        console.log(`📋 GET /api/public/services`, { specialty_id, search });
 
         if (!Service) {
             return res.status(500).json({ message: 'Models not loaded' });
         }
 
         let whereClause = {};
-        if (specialtyId && specialtyId !== 'undefined') {
-            whereClause.specialty_id = specialtyId;
+        if (specialty_id) {
+            whereClause.specialty_id = specialty_id;
+        }
+        if (search) {
+            whereClause.name = { [Op.like]: `%${search}%` };
         }
 
         const services = await Service.findAll({
             where: whereClause,
-            attributes: ['id', 'name', 'description', 'price', 'duration'],
+            include: [
+                {
+                    model: Specialty,
+                    as: 'specialty',
+                    attributes: ['id', 'name']
+                }
+            ],
+            attributes: ['id', 'name', 'description', 'price', 'duration', 'specialty_id'],
             order: [['name', 'ASC']]
         });
 
@@ -78,6 +88,42 @@ router.get('/services/:specialtyId?', async (req, res) => {
         res.json(services);
     } catch (error) {
         console.error('❌ Error fetching services:', error);
+        res.status(500).json({
+            message: 'Lỗi server',
+            error: error.message
+        });
+    }
+});
+
+// ✅ GET - Chi tiết dịch vụ
+router.get('/services/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log(`📋 GET /api/public/services/${id}`);
+
+        if (!Service) {
+            return res.status(500).json({ message: 'Models not loaded' });
+        }
+
+        const service = await Service.findByPk(id, {
+            include: [
+                {
+                    model: Specialty,
+                    as: 'specialty',
+                    attributes: ['id', 'name', 'description']
+                }
+            ],
+            attributes: ['id', 'name', 'description', 'price', 'duration', 'specialty_id']
+        });
+
+        if (!service) {
+            return res.status(404).json({ message: 'Không tìm thấy dịch vụ' });
+        }
+
+        console.log(`✅ Found service: ${service.name}`);
+        res.json(service);
+    } catch (error) {
+        console.error('❌ Error fetching service:', error);
         res.status(500).json({
             message: 'Lỗi server',
             error: error.message

@@ -1,5 +1,57 @@
-const { TimeSlot, Booking, Doctor, sequelize } = require('../models');
+const { TimeSlot, Booking, Doctor, DoctorSchedule, Specialty, sequelize } = require('../models');
 const { Op } = require('sequelize');
+
+// Helper: Generate slots từ schedule
+function generateSlotsFromSchedule(schedule, slotDuration = 30) {
+    if (!schedule) return [];
+
+    const slots = [];
+    const [startHour, startMin] = schedule.start_time.split(':').map(Number);
+    const [endHour, endMin] = schedule.end_time.split(':').map(Number);
+
+    let breakStart = null, breakEnd = null;
+    if (schedule.break_start && schedule.break_end) {
+        const [bsH, bsM] = schedule.break_start.split(':').map(Number);
+        const [beH, beM] = schedule.break_end.split(':').map(Number);
+        breakStart = bsH * 60 + bsM;
+        breakEnd = beH * 60 + beM;
+    }
+
+    let current = startHour * 60 + startMin;
+    const end = endHour * 60 + endMin;
+
+    while (current + slotDuration <= end) {
+        const slotStart = current;
+        const slotEnd = current + slotDuration;
+
+        // Skip break time
+        if (breakStart !== null && breakEnd !== null) {
+            if (slotStart < breakEnd && slotEnd > breakStart) {
+                current += slotDuration;
+                continue;
+            }
+        }
+
+        const startStr = `${String(Math.floor(slotStart / 60)).padStart(2, '0')}:${String(slotStart % 60).padStart(2, '0')}:00`;
+        const endStr = `${String(Math.floor(slotEnd / 60)).padStart(2, '0')}:${String(slotEnd % 60).padStart(2, '0')}:00`;
+
+        slots.push({ start_time: startStr, end_time: endStr });
+        current += slotDuration;
+    }
+
+    return slots;
+}
+
+// Helper: Map day of week
+const dayMapping = {
+    0: 'Chủ nhật',
+    1: 'Thứ 2',
+    2: 'Thứ 3',
+    3: 'Thứ 4',
+    4: 'Thứ 5',
+    5: 'Thứ 6',
+    6: 'Thứ 7'
+};
 
 // GET - Lấy danh sách khung giờ khả dụng cho ngày cụ thể
 exports.getAvailableTimeSlots = async (req, res) => {
@@ -13,49 +65,101 @@ exports.getAvailableTimeSlots = async (req, res) => {
             });
         }
 
-        // Lấy tất cả khung giờ đang hoạt động
-        const timeSlots = await TimeSlot.findAll({
-            where: { is_active: true },
-            order: [['start_time', 'ASC']]
-        });
+        const dateObj = new Date(date);
+        const dayOfWeek = dayMapping[dateObj.getDay()];
 
-        // Đếm số booking cho mỗi khung giờ trong ngày đã chọn
-        const bookingCounts = await Booking.count({
-            where: {
-                appointment_date: date,
-                doctor_id: doctor_id || { [Op.ne]: null },
-                status: {
-                    [Op.in]: ['pending', 'confirmed']
+        // Nếu có doctor_id, lấy schedule của bác sĩ đó
+        if (doctor_id) {
+            const schedule = await DoctorSchedule.findOne({
+                where: {
+                    doctor_id,
+                    day_of_week: dayOfWeek,
+                    is_active: true
                 }
+            });
+
+            if (!schedule) {
+                return res.json([]);
+            }
+
+            // Generate slots từ schedule
+            const generatedSlots = generateSlotsFromSchedule(schedule);
+
+            // Lấy các booking đã có
+            const existingBookings = await Booking.findAll({
+                where: {
+                    doctor_id,
+                    appointment_date: date,
+                    status: { [Op.in]: ['pending', 'confirmed'] }
+                },
+                attributes: ['appointment_time']
+            });
+
+            const bookedTimes = existingBookings.map(b => b.appointment_time);
+
+            // Lấy các slot bị khóa
+            const lockedSlots = await TimeSlot.findAll({
+                where: {
+                    doctor_id,
+                    date,
+                    is_available: false
+                },
+                attributes: ['start_time']
+            });
+
+            const lockedTimes = lockedSlots.map(s => s.start_time);
+
+            // Tính toán available slots
+            const availableSlots = generatedSlots.map(slot => {
+                const isBooked = bookedTimes.includes(slot.start_time);
+                const isLocked = lockedTimes.includes(slot.start_time);
+
+                return {
+                    start_time: slot.start_time,
+                    end_time: slot.end_time,
+                    is_available: !isBooked && !isLocked,
+                    is_booked: isBooked,
+                    is_locked: isLocked
+                };
+            });
+
+            console.log(`✅ Found ${availableSlots.length} time slots for doctor ${doctor_id}`);
+            return res.json(availableSlots);
+        }
+
+        // Nếu không có doctor_id, lấy tất cả bác sĩ có lịch làm ngày đó
+        const schedules = await DoctorSchedule.findAll({
+            where: {
+                day_of_week: dayOfWeek,
+                is_active: true
             },
-            group: ['appointment_time'],
-            raw: true
+            include: [{
+                model: Doctor,
+                as: 'doctor',
+                attributes: ['id', 'full_name'],
+                include: [{
+                    model: Specialty,
+                    as: 'specialty',
+                    attributes: ['id', 'name']
+                }]
+            }]
         });
 
-        // Map booking counts
-        const bookingMap = {};
-        bookingCounts.forEach(item => {
-            bookingMap[item.appointment_time] = parseInt(item.count);
+        // Tổng hợp tất cả các slot unique
+        const allSlots = new Set();
+        schedules.forEach(schedule => {
+            const slots = generateSlotsFromSchedule(schedule);
+            slots.forEach(s => allSlots.add(s.start_time));
         });
 
-        // Tính toán số chỗ còn trống cho mỗi khung giờ
-        const availableSlots = timeSlots.map(slot => {
-            const bookedCount = bookingMap[slot.start_time] || 0;
-            const availableCount = slot.max_bookings - bookedCount;
+        const result = Array.from(allSlots).sort().map(time => ({
+            start_time: time,
+            end_time: time, // Will be calculated properly
+            is_available: true
+        }));
 
-            return {
-                id: slot.id,
-                start_time: slot.start_time,
-                end_time: slot.end_time,
-                max_bookings: slot.max_bookings,
-                booked_count: bookedCount,
-                available_count: availableCount,
-                is_available: availableCount > 0
-            };
-        });
-
-        console.log(`✅ Found ${availableSlots.length} time slots`);
-        res.json(availableSlots);
+        console.log(`✅ Found ${result.length} unique time slots`);
+        res.json(result);
     } catch (error) {
         console.error('❌ Error fetching available time slots:', error);
         res.status(500).json({

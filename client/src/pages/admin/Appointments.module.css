@@ -504,3 +504,145 @@
     color: #e53e3e;
     margin-left: 4px;
 }
+
+/* ===== BOOKING INFO ===== */
+.bookingInfo {
+    background: #f0f9ff;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    border-left: 4px solid #3b82f6;
+    margin-bottom: 1rem;
+}
+
+.bookingInfo p {
+    margin: 0.5rem 0;
+}
+
+/* ===== WARNING BOX ===== */
+.warningBox {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border: 2px solid #f59e0b;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+}
+
+.warningBox h4 {
+    color: #b45309;
+    margin: 0 0 1rem;
+    font-size: 1.1rem;
+}
+
+.warningBox p {
+    color: #92400e;
+    margin: 0.5rem 0;
+}
+
+.warningBox ul {
+    margin: 0.5rem 0 0.5rem 1.5rem;
+    color: #92400e;
+}
+
+.warningBox ul li {
+    margin: 0.5rem 0;
+}
+
+/* ===== DOCTOR GRID ===== */
+.doctorGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 0.5rem;
+}
+
+.doctorCard {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.doctorCard:hover:not(.doctorDisabled) {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    transform: translateY(-2px);
+}
+
+.doctorCard.doctorSelected {
+    border-color: #10b981;
+    background: #ecfdf5;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.doctorCard.doctorDisabled {
+    background: #f8f8f8;
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.doctorCardHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.doctorAvatar {
+    font-size: 2rem;
+    background: #ede9fe;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.doctorCardHeader strong {
+    display: block;
+    color: #1a202c;
+    font-size: 1rem;
+}
+
+.doctorCardBody {
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.doctorCardBody p {
+    margin: 0.3rem 0;
+}
+
+/* ===== STATUS BADGE ===== */
+.statusBadge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 0.25rem;
+}
+
+.statusBadge.available {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.statusBadge.busy {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.statusBadge.no_schedule {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.statusBadge.outside_hours {
+    background: #fef3c7;
+    color: #92400e;
+}

@@ -34,7 +34,14 @@ export default function DoctorDetail() {
             navigate('/login');
             return;
         }
-        navigate(`/booking?doctor=${id}`);
+        // Navigate đến trang booking với params
+        const params = new URLSearchParams();
+        params.set('doctor', id);
+        params.set('doctor_name', doctor.name || doctor.full_name);
+        if (doctor.specialty?.id || doctor.specialty_id) {
+            params.set('specialty', doctor.specialty?.id || doctor.specialty_id);
+        }
+        navigate(`/booking?${params.toString()}`);
     };
 
     if (loading) {

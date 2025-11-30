@@ -82,8 +82,19 @@ export default function DoctorDetail() {
         });
     };
 
-    const handleBooking = () => {
-        navigate('/booking', { state: { doctorId: doctor.id, doctorName: doctor.full_name } });
+    const handleBooking = (slot = null) => {
+        // Navigate đến trang booking với params
+        const params = new URLSearchParams();
+        params.set('doctor', doctor.id);
+        params.set('doctor_name', doctor.full_name);
+        if (doctor.specialty_id) {
+            params.set('specialty', doctor.specialty_id);
+        }
+        if (slot && selectedDate) {
+            params.set('date', selectedDate);
+            params.set('time', slot.start_time?.substring(0, 5));
+        }
+        navigate(`/booking?${params.toString()}`);
     };
 
     if (loading) {
@@ -182,7 +193,7 @@ export default function DoctorDetail() {
                                             <button
                                                 key={idx}
                                                 className={styles.timeSlotButton}
-                                                onClick={() => handleBooking()}
+                                                onClick={() => handleBooking(slot)}
                                             >
                                                 {slot.start_time?.substring(0, 5)} - {slot.end_time?.substring(0, 5)}
                                             </button>

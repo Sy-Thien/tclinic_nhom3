@@ -22,6 +22,8 @@ export default function Appointments() {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [selectedDoctor, setSelectedDoctor] = useState('');
     const [availableDoctorsForAssignment, setAvailableDoctorsForAssignment] = useState([]);
+    const [noAvailableDoctor, setNoAvailableDoctor] = useState(false);
+    const [bookingDayOfWeek, setBookingDayOfWeek] = useState('');
     const [doctorTimeSlots, setDoctorTimeSlots] = useState(null);
     const [selectedTimeSlot, setSelectedTimeSlot] = useState('');
     const [cancelReason, setCancelReason] = useState('');
@@ -186,10 +188,13 @@ export default function Appointments() {
             setLoadingDoctors(true);
             const response = await api.get(`/api/admin/bookings/${bookingId}/available-doctors-for-assignment`);
             setAvailableDoctorsForAssignment(response.data.availableDoctors || []);
+            setNoAvailableDoctor(response.data.noAvailableDoctor || false);
+            setBookingDayOfWeek(response.data.booking?.dayOfWeek || '');
         } catch (error) {
             console.error('Error:', error);
             alert(error.response?.data?.message || '❌ Lỗi khi tải danh sách bác sĩ!');
             setAvailableDoctorsForAssignment([]);
+            setNoAvailableDoctor(true);
         } finally {
             setLoadingDoctors(false);
         }
@@ -198,7 +203,7 @@ export default function Appointments() {
     // ✅ NEW: Lấy time slots của bác sĩ theo ngày
     const fetchDoctorTimeSlots = async (doctorId, date) => {
         try {
-            const response = await api.get(`/api/admin/doctor-schedule/doctor-time-slots/${doctorId}`, {
+            const response = await api.get(`/api/admin/doctor-time-slots/${doctorId}`, {
                 params: { date }
             });
             if (response.data.success) {
@@ -217,7 +222,10 @@ export default function Appointments() {
             return;
         }
 
-        if (!selectedTimeSlot) {
+        // Nếu booking đã có giờ khám thì dùng giờ đó, không cần chọn time slot
+        const timeToUse = selectedAppointment.appointment_time || selectedTimeSlot;
+
+        if (!timeToUse) {
             alert('Vui lòng chọn khung giờ!');
             return;
         }
@@ -225,7 +233,7 @@ export default function Appointments() {
         try {
             await api.put(`/api/admin/bookings/${selectedAppointment.id}/assign-doctor-new`, {
                 doctor_id: selectedDoctor,
-                time_slot: selectedTimeSlot
+                time_slot: timeToUse
             });
             alert('✅ Gán bác sĩ thành công! Đang chờ bác sĩ xác nhận.');
             setShowAssignNewModal(false);
@@ -724,50 +732,85 @@ export default function Appointments() {
             {/* ASSIGN DOCTOR NEW MODAL - Cho booking chưa có bác sĩ */}
             {showAssignNewModal && (
                 <div className={styles.modal}>
-                    <div className={styles.modalContent} style={{ maxWidth: '800px' }}>
+                    <div className={styles.modalContent} style={{ maxWidth: '900px' }}>
                         <h2>🔔 Gán bác sĩ cho lịch khám</h2>
                         <div className={styles.modalBody}>
                             {selectedAppointment && (
                                 <>
-                                    <p><strong>Mã booking:</strong> {selectedAppointment.booking_code}</p>
-                                    <p><strong>Bệnh nhân:</strong> {selectedAppointment.patient_name}</p>
-                                    <p><strong>Chuyên khoa:</strong> {selectedAppointment.specialty?.name}</p>
-                                    <p><strong>Ngày khám:</strong> {new Date(selectedAppointment.appointment_date).toLocaleDateString('vi-VN')}</p>
-                                    <p><strong>Giờ khám:</strong> {selectedAppointment.appointment_time}</p>
+                                    <div className={styles.bookingInfo}>
+                                        <p><strong>Mã booking:</strong> {selectedAppointment.booking_code}</p>
+                                        <p><strong>Bệnh nhân:</strong> {selectedAppointment.patient_name}</p>
+                                        <p><strong>Chuyên khoa:</strong> {selectedAppointment.specialty?.name}</p>
+                                        <p><strong>Ngày khám:</strong> {new Date(selectedAppointment.appointment_date).toLocaleDateString('vi-VN')} ({bookingDayOfWeek})</p>
+                                        <p><strong>Giờ khám:</strong> {selectedAppointment.appointment_time || 'Chưa chọn'}</p>
+                                    </div>
+
+                                    {/* Cảnh báo khi không có bác sĩ rảnh */}
+                                    {noAvailableDoctor && (
+                                        <div className={styles.warningBox}>
+                                            <h4>⚠️ Không có bác sĩ nào rảnh trong khung giờ này!</h4>
+                                            <p>Vui lòng liên hệ khách hàng để:</p>
+                                            <ul>
+                                                <li>📞 Đổi sang ngày/giờ khác có bác sĩ trống</li>
+                                                <li>📧 Gửi email thông báo cho khách hàng</li>
+                                                <li>❌ Hoặc hủy lịch hẹn nếu không thể sắp xếp</li>
+                                            </ul>
+                                            <p style={{ marginTop: '1rem' }}>
+                                                <strong>SĐT khách:</strong> {selectedAppointment.patient_phone || 'N/A'}<br />
+                                                <strong>Email:</strong> {selectedAppointment.patient_email || 'N/A'}
+                                            </p>
+                                        </div>
+                                    )}
 
                                     <div className={styles.formGroup} style={{ marginTop: '1.5rem' }}>
                                         <label>Chọn bác sĩ <span className={styles.required}>*</span></label>
+                                        <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: '0.5rem' }}>
+                                            Bác sĩ màu xanh có thể gán, màu đỏ/vàng đã bận hoặc không làm việc
+                                        </p>
                                         {loadingDoctors ? (
                                             <p>⏳ Đang tải danh sách bác sĩ...</p>
                                         ) : availableDoctorsForAssignment.length > 0 ? (
-                                            <select
-                                                value={selectedDoctor}
-                                                onChange={(e) => {
-                                                    const docId = e.target.value;
-                                                    setSelectedDoctor(docId);
-                                                    setSelectedTimeSlot('');
-                                                    if (docId && selectedAppointment.appointment_date) {
-                                                        fetchDoctorTimeSlots(docId, selectedAppointment.appointment_date);
-                                                    } else {
-                                                        setDoctorTimeSlots(null);
-                                                    }
-                                                }}
-                                                className={styles.select}
-                                            >
-                                                <option value="">-- Chọn bác sĩ còn trống --</option>
+                                            <div className={styles.doctorGrid}>
                                                 {availableDoctorsForAssignment.map(doc => (
-                                                    <option key={doc.id} value={doc.id}>
-                                                        {doc.full_name} - {doc.phone}
-                                                    </option>
+                                                    <div
+                                                        key={doc.id}
+                                                        className={`${styles.doctorCard} ${doc.disabled ? styles.doctorDisabled : ''} ${selectedDoctor === String(doc.id) ? styles.doctorSelected : ''}`}
+                                                        onClick={() => {
+                                                            if (!doc.disabled) {
+                                                                setSelectedDoctor(String(doc.id));
+                                                                setSelectedTimeSlot('');
+                                                                if (selectedAppointment.appointment_date) {
+                                                                    fetchDoctorTimeSlots(doc.id, selectedAppointment.appointment_date);
+                                                                }
+                                                            }
+                                                        }}
+                                                    >
+                                                        <div className={styles.doctorCardHeader}>
+                                                            <span className={styles.doctorAvatar}>👨‍⚕️</span>
+                                                            <div>
+                                                                <strong>{doc.full_name}</strong>
+                                                                <span className={`${styles.statusBadge} ${styles[doc.status]}`}>
+                                                                    {doc.statusText}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div className={styles.doctorCardBody}>
+                                                            <p>📞 {doc.phone || 'N/A'}</p>
+                                                            <p>📅 Ngày làm: {doc.workingDays}</p>
+                                                            {doc.scheduleForDay && (
+                                                                <p>🕐 {bookingDayOfWeek}: {doc.scheduleForDay.start_time?.substring(0, 5)} - {doc.scheduleForDay.end_time?.substring(0, 5)}</p>
+                                                            )}
+                                                        </div>
+                                                    </div>
                                                 ))}
-                                            </select>
+                                            </div>
                                         ) : (
-                                            <p style={{ color: '#ef4444' }}>❌ Không có bác sĩ nào còn trống trong khung giờ này</p>
+                                            <p style={{ color: '#ef4444' }}>❌ Không có bác sĩ nào trong chuyên khoa này</p>
                                         )}
                                     </div>
 
-                                    {/* Time Slots Grid */}
-                                    {selectedDoctor && doctorTimeSlots && (
+                                    {/* Time Slots Grid - CHỈ hiển thị nếu booking CHƯA CÓ giờ khám */}
+                                    {!selectedAppointment.appointment_time && selectedDoctor && doctorTimeSlots && (
                                         <div className={styles.timeSlotsSection}>
                                             <label>Chọn khung giờ <span className={styles.required}>*</span></label>
                                             {!doctorTimeSlots.isWorking ? (
@@ -779,12 +822,12 @@ export default function Appointments() {
                                                             key={index}
                                                             type="button"
                                                             className={`${styles.timeSlotBtn} ${slot.isBreakTime
-                                                                    ? styles.breakTime
-                                                                    : slot.bookingCount > 0
-                                                                        ? styles.bookedSlot
-                                                                        : selectedTimeSlot === slot.time
-                                                                            ? styles.selectedSlot
-                                                                            : styles.availableSlot
+                                                                ? styles.breakTime
+                                                                : slot.bookingCount > 0
+                                                                    ? styles.bookedSlot
+                                                                    : selectedTimeSlot === slot.time
+                                                                        ? styles.selectedSlot
+                                                                        : styles.availableSlot
                                                                 }`}
                                                             onClick={() => {
                                                                 if (!slot.isBreakTime && slot.bookingCount === 0) {
@@ -819,6 +862,8 @@ export default function Appointments() {
                                     setSelectedTimeSlot('');
                                     setAvailableDoctorsForAssignment([]);
                                     setDoctorTimeSlots(null);
+                                    setNoAvailableDoctor(false);
+                                    setBookingDayOfWeek('');
                                 }}
                             >
                                 Hủy
@@ -826,7 +871,7 @@ export default function Appointments() {
                             <button
                                 className={styles.btnModalConfirm}
                                 onClick={handleAssignDoctorNew}
-                                disabled={!selectedDoctor || !selectedTimeSlot || loadingDoctors}
+                                disabled={!selectedDoctor || loadingDoctors}
                             >
                                 Gán bác sĩ
                             </button>

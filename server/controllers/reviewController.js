@@ -40,29 +40,27 @@ exports.createReview = async (req, res) => {
                     message: 'Không tìm thấy lịch khám hoặc lịch khám chưa hoàn thành'
                 });
             }
-
-            // Kiểm tra đã đánh giá chưa
-            const existingReview = await Review.findOne({
-                where: {
-                    patient_id,
-                    doctor_id,
-                    booking_id
-                }
-            });
-
-            if (existingReview) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Bạn đã đánh giá lịch khám này rồi'
-                });
-            }
         }
 
-        // Tạo review
+        // Kiểm tra đã đánh giá bác sĩ này chưa (1 patient chỉ được đánh giá 1 doctor 1 lần)
+        const existingReview = await Review.findOne({
+            where: {
+                patient_id,
+                doctor_id
+            }
+        });
+
+        if (existingReview) {
+            return res.status(400).json({
+                success: false,
+                message: 'Bạn đã đánh giá bác sĩ này rồi'
+            });
+        }
+
+        // Tạo review (không lưu booking_id vì database không có column này)
         const review = await Review.create({
             patient_id,
             doctor_id,
-            booking_id: booking_id || null,
             rating,
             comment: comment || ''
         });
@@ -274,12 +272,11 @@ exports.checkReviewEligibility = async (req, res) => {
             });
         }
 
-        // Kiểm tra đã đánh giá chưa
+        // Kiểm tra đã đánh giá bác sĩ chưa
         const existingReview = await Review.findOne({
             where: {
                 patient_id,
-                doctor_id: booking.doctor_id,
-                booking_id
+                doctor_id: booking.doctor_id
             }
         });
 

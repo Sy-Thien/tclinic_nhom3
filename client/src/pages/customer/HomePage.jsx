@@ -82,7 +82,8 @@ export default function HomePage() {
 
             // Set services (public route returns raw array)
             if (Array.isArray(servicesRes.data)) {
-                setServices(servicesRes.data.slice(0, 6));
+                // Lấy 8 dịch vụ phổ biến
+                setServices(servicesRes.data.slice(0, 8));
             }
 
             // Set specialties with doctors
@@ -167,6 +168,28 @@ export default function HomePage() {
         };
         loadSlots();
     }, [qbDoctor, qbDate]);
+
+    // Map specialty id to icon
+    const getSpecialtyIcon = (specialtyId) => {
+        const icons = {
+            1: '💊', // Nội khoa
+            2: '🔪', // Ngoại khoa
+            3: '🤰', // Sản phụ khoa
+            4: '👶', // Nhi khoa
+            5: '❤️', // Tim mạch
+            6: '🧠', // Thần kinh
+            7: '🫁', // Tiêu hóa
+            8: '😮‍💨', // Hô hấp
+            9: '👂', // Tai mũi họng
+            10: '👁️', // Mắt
+            11: '🧴', // Da liễu
+            12: '🦷', // Răng hàm mặt
+            13: '🦴', // Chấn thương chỉnh hình
+            14: '🎗️', // Ung bướu
+            15: '🧘', // Tâm thần
+        };
+        return icons[specialtyId] || '💡';
+    };
 
     const features = [
         {
@@ -360,23 +383,37 @@ export default function HomePage() {
                 <section className={styles.services}>
                     <div className={styles.container}>
                         <h2 className={styles.sectionTitle}>Dịch vụ nổi bật</h2>
-                        <p className={styles.sectionSubtitle}>Một số dịch vụ được lựa chọn nhiều</p>
+                        <p className={styles.sectionSubtitle}>Các dịch vụ được lựa chọn nhiều nhất</p>
                         <div className={styles.serviceGrid}>
                             {services.map((svc) => (
-                                <div key={svc.id} className={styles.serviceCard}>
-                                    <div className={styles.serviceIcon}>💡</div>
+                                <div
+                                    key={svc.id}
+                                    className={styles.serviceCard}
+                                    onClick={() => navigate(`/services/${svc.id}`)}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    <div className={styles.serviceIcon}>{getSpecialtyIcon(svc.specialty_id)}</div>
                                     <h3 className={styles.serviceName}>{svc.name}</h3>
                                     <p className={styles.serviceDesc}>{svc.description || 'Dịch vụ chất lượng, quy trình nhanh gọn'}</p>
                                     <div className={styles.serviceMeta}>
                                         {svc.price != null && <span>💵 {Number(svc.price).toLocaleString()}đ</span>}
                                         {svc.duration && <span>⏱️ {svc.duration} phút</span>}
                                     </div>
+                                    <button
+                                        className={styles.serviceBtn}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            navigate(`/services/${svc.id}`);
+                                        }}
+                                    >
+                                        👨‍⚕️ Xem bác sĩ & Đặt lịch
+                                    </button>
                                 </div>
                             ))}
                         </div>
                         <div className={styles.sectionFooter}>
                             <button className={styles.btnViewAll} onClick={() => navigate('/services')}>
-                                Xem tất cả dịch vụ
+                                Xem tất cả {stats.totalServices}+ dịch vụ
                             </button>
                         </div>
                     </div>

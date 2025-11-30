@@ -1,0 +1,150 @@
+# GitHub Actions workflow để chạy API tests tự động
+# Mỗi khi push code hoặc tạo Pull Request → test sẽ tự động chạy
+
+name: 🧪 API Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  api-tests:
+    name: Run Postman API Tests
+    runs-on: ubuntu-latest
+    
+    # Dùng MySQL service container
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: tn_clinic
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      # 1. Checkout code
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Setup Node.js
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+
+      # 3. Install server dependencies
+      - name: 📦 Install server dependencies
+        working-directory: ./server
+        run: npm ci
+
+      # 4. Wait for MySQL to be ready
+      - name: ⏳ Wait for MySQL
+        run: |
+          until mysqladmin ping -h"127.0.0.1" --silent; do
+            echo "Waiting for MySQL..."
+            sleep 2
+          done
+
+      # 5. Setup database
+      - name: 🗄️ Setup database
+        working-directory: ./server
+        env:
+          DB_HOST: 127.0.0.1
+          DB_USER: root
+          DB_PASSWORD: root
+          DB_NAME: tn_clinic
+        run: |
+          npx sequelize-cli db:migrate
+
+      # 6. Start server in background
+      - name: 🚀 Start server
+        working-directory: ./server
+        env:
+          DB_HOST: 127.0.0.1
+          DB_USER: root
+          DB_PASSWORD: root
+          DB_NAME: tn_clinic
+          JWT_SECRET: test-secret-key
+          PORT: 5000
+        run: |
+          npm start &
+          sleep 10  # Wait for server to start
+
+      # 7. Check server health
+      - name: ❤️ Health check
+        run: |
+          curl -f http://localhost:5000/health || exit 1
+
+      # 8. Install Newman (Postman CLI)
+      - name: 📦 Install Newman
+        run: |
+          npm install -g newman
+          npm install -g newman-reporter-htmlextra
+
+      # 9. Run API tests
+      - name: 🧪 Run API Tests
+        run: |
+          newman run postman/TClinic_API_Collection.postman_collection.json \
+            -e postman/TClinic_Environment.postman_environment.json \
+            --reporters cli,htmlextra,json \
+            --reporter-htmlextra-export ./test-results/report.html \
+            --reporter-json-export ./test-results/results.json \
+            --delay-request 100
+
+      # 10. Upload test results
+      - name: 📊 Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: api-test-results
+          path: test-results/
+          retention-days: 30
+
+      # 11. Comment on PR with test results
+      - name: 💬 Comment PR with results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let results = {};
+            try {
+              results = JSON.parse(fs.readFileSync('./test-results/results.json', 'utf8'));
+            } catch (e) {
+              results = { run: { stats: { assertions: { total: 0, failed: 0 } } } };
+            }
+            
+            const stats = results.run?.stats || {};
+            const total = stats.assertions?.total || 0;
+            const failed = stats.assertions?.failed || 0;
+            const passed = total - failed;
+            
+            const status = failed === 0 ? '✅ PASSED' : '❌ FAILED';
+            
+            const comment = `## 🧪 API Test Results ${status}
+            
+            | Metric | Count |
+            |--------|-------|
+            | Total Tests | ${total} |
+            | ✅ Passed | ${passed} |
+            | ❌ Failed | ${failed} |
+            
+            📊 [Download detailed report](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID})
+            `;
+            
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });

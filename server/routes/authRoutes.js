@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const { Op } = require('sequelize');
 const { verifyToken } = require('../middleware/authMiddleware');
 
@@ -134,6 +135,14 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ message: 'Tài khoản không tồn tại' });
         }
 
+        // ✅ Kiểm tra tài khoản có bị vô hiệu hóa không
+        if (user.is_active === false || user.is_active === 0) {
+            console.log('❌ Account disabled:', username);
+            return res.status(403).json({
+                message: 'Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.'
+            });
+        }
+
         console.log('✅ User found:', user.email || user.username, 'Type:', userType);
 
         // Verify password
@@ -144,13 +153,21 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ message: 'Mật khẩu không đúng' });
         }
 
-        // Create token
+        // ✅ Tạo session_token duy nhất để single session
+        const sessionToken = crypto.randomBytes(32).toString('hex');
+
+        // Lưu session_token vào database
+        await user.update({ session_token: sessionToken });
+        console.log('✅ Session token saved for user:', user.id);
+
+        // Create token với session_token
         const token = jwt.sign(
             {
                 id: user.id,
                 email: user.email || user.username,
                 role: userType,
-                doctor_id: userType === 'doctor' ? user.id : null
+                doctor_id: userType === 'doctor' ? user.id : null,
+                sessionToken: sessionToken // ✅ Include session token in JWT
             },
             process.env.JWT_SECRET || 'your-secret-key',
             { expiresIn: '7d' }
@@ -182,6 +199,74 @@ router.post('/login', async (req, res) => {
 router.get('/verify', verifyToken, (req, res) => {
     console.log('🔍 Token verified:', req.user);
     res.json({ valid: true, user: req.user });
+});
+
+// ✅ GET - Verify session (kiểm tra single session)
+router.get('/verify-session', verifyToken, async (req, res) => {
+    try {
+        const { id, role, sessionToken } = req.user;
+
+        if (!sessionToken) {
+            return res.json({ valid: false, reason: 'no_session_token' });
+        }
+
+        let user = null;
+
+        // Tìm user theo role
+        if (role === 'admin' && Admin) {
+            user = await Admin.findByPk(id);
+        } else if (role === 'doctor' && Doctor) {
+            user = await Doctor.findByPk(id);
+        } else if (role === 'patient' && Patient) {
+            user = await Patient.findByPk(id);
+        }
+
+        if (!user) {
+            return res.json({ valid: false, reason: 'user_not_found' });
+        }
+
+        // ✅ So sánh session_token trong JWT với DB
+        if (user.session_token !== sessionToken) {
+            console.log('⚠️ Session invalid - đã đăng nhập từ nơi khác');
+            return res.json({
+                valid: false,
+                reason: 'session_expired',
+                message: 'Tài khoản đã đăng nhập từ thiết bị khác'
+            });
+        }
+
+        res.json({ valid: true });
+    } catch (error) {
+        console.error('❌ Verify session error:', error);
+        res.json({ valid: false, reason: 'error' });
+    }
+});
+
+// ✅ POST - Logout (xóa session_token)
+router.post('/logout', verifyToken, async (req, res) => {
+    try {
+        const { id, role } = req.user;
+
+        let user = null;
+
+        if (role === 'admin' && Admin) {
+            user = await Admin.findByPk(id);
+        } else if (role === 'doctor' && Doctor) {
+            user = await Doctor.findByPk(id);
+        } else if (role === 'patient' && Patient) {
+            user = await Patient.findByPk(id);
+        }
+
+        if (user) {
+            await user.update({ session_token: null });
+            console.log('✅ Logged out user:', id);
+        }
+
+        res.json({ success: true, message: 'Đăng xuất thành công' });
+    } catch (error) {
+        console.error('❌ Logout error:', error);
+        res.status(500).json({ message: 'Lỗi server' });
+    }
 });
 
 module.exports = router;

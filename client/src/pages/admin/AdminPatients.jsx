@@ -190,7 +190,7 @@ export default function AdminPatients() {
             <div className={styles.filters}>
                 <input
                     type="text"
-                    placeholder="🔍 Tìm theo tên, số điện thoại, email..."
+                    placeholder="Tìm theo tên, số điện thoại, email..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className={styles.searchInput}
@@ -258,28 +258,28 @@ export default function AdminPatients() {
                                             className={styles.btnView}
                                             title="Xem chi tiết"
                                         >
-                                            👁️
+                                            Xem
                                         </button>
                                         <button
                                             onClick={() => handleEdit(patient)}
                                             className={styles.btnEdit}
                                             title="Chỉnh sửa"
                                         >
-                                            ✏️
+                                            Sửa
                                         </button>
                                         <button
                                             onClick={() => handleToggleStatus(patient)}
                                             className={styles.btnToggle}
                                             title={patient.is_active ? 'Khóa tài khoản' : 'Kích hoạt'}
                                         >
-                                            {patient.is_active ? '🔒' : '🔓'}
+                                            {patient.is_active ? 'Khóa' : 'Mở'}
                                         </button>
                                         <button
                                             onClick={() => handleDelete(patient)}
                                             className={styles.btnDelete}
                                             title="Xóa"
                                         >
-                                            🗑️
+                                            Xóa
                                         </button>
                                     </td>
                                 </tr>
@@ -296,7 +296,7 @@ export default function AdminPatients() {
                         <div className={styles.modalHeader}>
                             <h2>Thông tin bệnh nhân</h2>
                             <button onClick={() => setShowDetailModal(false)} className={styles.closeBtn}>
-                                ✕
+                                Đóng
                             </button>
                         </div>
 
@@ -384,7 +384,7 @@ export default function AdminPatients() {
                         <div className={styles.modalHeader}>
                             <h2>Chỉnh sửa thông tin bệnh nhân</h2>
                             <button onClick={() => setShowEditModal(false)} className={styles.closeBtn}>
-                                ✕
+                                Đóng
                             </button>
                         </div>
 
@@ -472,14 +472,14 @@ export default function AdminPatients() {
                         <div className={styles.modalHeader}>
                             <h2>Xác nhận xóa</h2>
                             <button onClick={() => setShowDeleteModal(false)} className={styles.closeBtn}>
-                                ✕
+                                Đóng
                             </button>
                         </div>
 
                         <div className={styles.deleteConfirm}>
                             <p>Bạn có chắc chắn muốn xóa bệnh nhân:</p>
                             <p className={styles.patientName}>{selectedPatient.full_name}</p>
-                            <p className={styles.warning}>⚠️ Không thể khôi phục sau khi xóa!</p>
+                            <p className={styles.warning}>Cảnh báo: Không thể khôi phục sau khi xóa!</p>
                         </div>
 
                         <div className={styles.formActions}>

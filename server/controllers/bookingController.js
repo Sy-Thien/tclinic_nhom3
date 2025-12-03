@@ -12,6 +12,7 @@ exports.createBooking = async (req, res) => {
             patient_dob,
             patient_address,
             specialty_id,
+            service_id,  // ✅ NEW: Service ID from URL
             doctor_id,
             appointment_date,
             appointment_time,
@@ -67,6 +68,17 @@ exports.createBooking = async (req, res) => {
             }
         }
 
+        // ✅ Get service price if service_id provided
+        let servicePrice = 0;
+        let actualServiceId = service_id || null;
+
+        if (service_id) {
+            const service = await Service.findByPk(service_id);
+            if (service) {
+                servicePrice = service.price || 0;
+            }
+        }
+
         // Create booking
         const booking = await Booking.create({
             patient_id,
@@ -78,7 +90,7 @@ exports.createBooking = async (req, res) => {
             patient_dob,
             patient_address,
             specialty_id,
-            service_id: 1, // Default service
+            service_id: actualServiceId,
             doctor_id: doctor_id || null,
             appointment_date,
             appointment_time,
@@ -86,7 +98,7 @@ exports.createBooking = async (req, res) => {
             symptoms,
             note,
             status: status,
-            price: 0
+            price: servicePrice  // ✅ Save service price
         });
 
         console.log('✅ Booking created:', booking.id, 'Status:', status);

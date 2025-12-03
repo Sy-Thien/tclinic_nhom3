@@ -9,37 +9,23 @@ export default function CustomerLayout() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        checkAuth();
-    }, []);
-
-    const checkAuth = async () => {
+        // ✅ Đọc user từ localStorage ngay lập tức (không cần chờ API)
         const token = localStorage.getItem('token');
+        const userData = localStorage.getItem('user');
 
-        if (!token) {
-            setLoading(false);
-            setUser(null); // ✅ Đảm bảo user = null
-            return;
-        }
-
-        try {
-            const response = await api.get('/api/auth/verify');
-
-            if (response.data.valid) {
-                setUser(response.data.user);
-            } else {
+        if (token && userData) {
+            try {
+                const parsedUser = JSON.parse(userData);
+                setUser(parsedUser);
+                console.log('✅ User loaded from localStorage:', parsedUser.name);
+            } catch (error) {
+                console.error('❌ Parse user error:', error);
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
-                setUser(null);
             }
-        } catch (error) {
-            console.error('Token verification failed:', error);
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            setUser(null);
-        } finally {
-            setLoading(false);
         }
-    };
+        setLoading(false);
+    }, []);
 
     const handleLogout = () => {
         // Clear all auth data
@@ -69,9 +55,7 @@ export default function CustomerLayout() {
                     <div className={styles.logo}>
                         <Link to="/">
                             <div className={styles.logoIcon}>
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-                                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z" fill="currentColor" />
-                                </svg>
+                                <img src="/logo.png" alt="TClinic Logo" />
                             </div>
                             <div>
                                 <div className={styles.logoText}>Phòng Khám Tclinic</div>
@@ -84,9 +68,12 @@ export default function CustomerLayout() {
                         <Link to="/">Trang chủ</Link>
                         <Link to="/booking">Đặt lịch</Link>
                         <Link to="/my-appointments">Lịch của tôi</Link>
+                        <Link to="/my-consultations">Lịch sử tư vấn</Link>
                         <Link to="/medical-history">Lịch sử khám</Link>
+                        <Link to="/reviews">Đánh giá</Link>
                         <Link to="/services">Dịch vụ</Link>
                         <Link to="/doctors">Bác sĩ</Link>
+                        <Link to="/news">Tin tức</Link>
                         <Link to="/about">Giới thiệu</Link> {/* ✅ Thêm */}
                         <Link to="/contact">Liên hệ</Link> {/* ✅ Thêm */}
                     </nav>

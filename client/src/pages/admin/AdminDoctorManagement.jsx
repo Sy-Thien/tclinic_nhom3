@@ -310,9 +310,9 @@ export default function AdminDoctorManagement() {
     return (
         <div className={styles.container}>
             <div className={styles.header}>
-                <h1>👨‍⚕️ Quản Lý Bác Sĩ & Lịch Làm Việc</h1>
+                <h1>Quản Lý Bác Sĩ & Lịch Làm Việc</h1>
                 <button className={styles.btnAdd} onClick={() => handleOpenModal()}>
-                    ➕ Thêm bác sĩ
+                    Thêm bác sĩ
                 </button>
             </div>
 
@@ -321,7 +321,7 @@ export default function AdminDoctorManagement() {
                 <input
                     type="text"
                     name="search"
-                    placeholder="🔍 Tìm kiếm (tên, email, số điện thoại)..."
+                    placeholder="Tìm kiếm (tên, email, số điện thoại)..."
                     value={filters.search}
                     onChange={handleFilterChange}
                     className={styles.searchInput}
@@ -350,7 +350,7 @@ export default function AdminDoctorManagement() {
             </div>
 
             {/* Table */}
-            {loading && <div className={styles.loading}>⏳ Đang tải...</div>}
+            {loading && <div className={styles.loading}>Đang tải...</div>}
 
             {!loading && doctors.length === 0 && (
                 <div className={styles.noData}>Không có dữ liệu</div>
@@ -401,21 +401,21 @@ export default function AdminDoctorManagement() {
                                                 onClick={() => handleOpenModal(doctor)}
                                                 title="Sửa"
                                             >
-                                                ✏️
+                                                Sửa
                                             </button>
                                             <button
                                                 className={styles.btnToggle}
                                                 onClick={() => handleToggleStatus(doctor)}
                                                 title={doctor.is_active ? 'Vô hiệu hóa' : 'Kích hoạt'}
                                             >
-                                                {doctor.is_active ? '🔒' : '🔓'}
+                                                {doctor.is_active ? 'Khóa' : 'Mở khóa'}
                                             </button>
                                             <button
                                                 className={styles.btnDelete}
                                                 onClick={() => handleDeleteConfirm(doctor)}
                                                 title="Xóa"
                                             >
-                                                🗑️
+                                                Xóa
                                             </button>
                                         </div>
                                     </td>
@@ -431,8 +431,8 @@ export default function AdminDoctorManagement() {
                 <div className={styles.modalOverlay} onClick={() => setShowDoctorModal(false)}>
                     <div className={styles.modalLarge} onClick={(e) => e.stopPropagation()}>
                         <div className={styles.modalHeader}>
-                            <h2>👨‍⚕️ {selectedDoctor.full_name}</h2>
-                            <button className={styles.btnClose} onClick={() => setShowDoctorModal(false)}>✕</button>
+                            <h2>{selectedDoctor.full_name}</h2>
+                            <button className={styles.btnClose} onClick={() => setShowDoctorModal(false)}>Đóng</button>
                         </div>
 
                         {/* Tab Navigation */}
@@ -441,13 +441,13 @@ export default function AdminDoctorManagement() {
                                 className={`${styles.tabBtn} ${selectedTab === 'info' ? styles.active : ''}`}
                                 onClick={() => handleTabChange('info')}
                             >
-                                📋 Thông tin chi tiết
+                                Thông tin chi tiết
                             </button>
                             <button
                                 className={`${styles.tabBtn} ${selectedTab === 'schedule' ? styles.active : ''}`}
                                 onClick={() => handleTabChange('schedule')}
                             >
-                                📅 Lịch làm việc
+                                Lịch làm việc
                             </button>
                         </div>
 
@@ -494,7 +494,7 @@ export default function AdminDoctorManagement() {
                                                 handleOpenModal(selectedDoctor);
                                             }}
                                         >
-                                            ✏️ Chỉnh sửa
+                                            Chỉnh sửa
                                         </button>
                                     </div>
                                 </div>
@@ -504,16 +504,16 @@ export default function AdminDoctorManagement() {
                             {selectedTab === 'schedule' && (
                                 <div className={styles.scheduleTab}>
                                     <div className={styles.scheduleHeader}>
-                                        <h3>📅 Quản lý lịch làm việc</h3>
+                                        <h3>Quản lý lịch làm việc</h3>
                                         <button
                                             className={styles.btnAddSchedule}
                                             onClick={() => handleOpenScheduleModal()}
                                         >
-                                            ➕ Thêm lịch
+                                            Thêm lịch
                                         </button>
                                     </div>
                                     {loading ? (
-                                        <p>⏳ Đang tải lịch làm việc...</p>
+                                        <p>Đang tải lịch làm việc...</p>
                                     ) : doctorSchedule && doctorSchedule.length > 0 ? (
                                         <div className={styles.scheduleGrid}>
                                             {doctorSchedule.map(schedule => (
@@ -522,19 +522,19 @@ export default function AdminDoctorManagement() {
                                                     className={`${styles.scheduleCard} ${!schedule.is_active ? styles.scheduleInactive : ''}`}
                                                 >
                                                     <div className={styles.scheduleDay}>
-                                                        <strong>📅 {schedule.day_of_week}</strong>
+                                                        <strong>{schedule.day_of_week}</strong>
                                                         {!schedule.is_active && <span className={styles.offBadge}>NGHỈ</span>}
                                                     </div>
                                                     <div className={styles.scheduleTime}>
-                                                        <span>⏰ {schedule.start_time?.substring(0, 5)} - {schedule.end_time?.substring(0, 5)}</span>
+                                                        <span>Giờ: {schedule.start_time?.substring(0, 5)} - {schedule.end_time?.substring(0, 5)}</span>
                                                     </div>
                                                     {schedule.break_start && schedule.break_end && (
                                                         <div className={styles.scheduleBreak}>
-                                                            <span>☕ Nghỉ: {schedule.break_start?.substring(0, 5)} - {schedule.break_end?.substring(0, 5)}</span>
+                                                            <span>Nghỉ: {schedule.break_start?.substring(0, 5)} - {schedule.break_end?.substring(0, 5)}</span>
                                                         </div>
                                                     )}
                                                     <div className={styles.scheduleRoom}>
-                                                        <span>🏥 {schedule.room || 'Phòng khám'}</span>
+                                                        <span>Phòng: {schedule.room || 'Phòng khám'}</span>
                                                     </div>
                                                     <div className={styles.scheduleActions}>
                                                         <button
@@ -542,21 +542,21 @@ export default function AdminDoctorManagement() {
                                                             onClick={() => handleOpenScheduleModal(schedule)}
                                                             title="Sửa"
                                                         >
-                                                            ✏️
+                                                            Sửa
                                                         </button>
                                                         <button
                                                             className={`${styles.btnScheduleToggle} ${!schedule.is_active ? styles.inactive : ''}`}
                                                             onClick={() => handleToggleScheduleActive(schedule)}
                                                             title={schedule.is_active ? 'Cho nghỉ' : 'Mở lại'}
                                                         >
-                                                            {schedule.is_active ? '🔒' : '🔓'}
+                                                            {schedule.is_active ? 'Nghỉ' : 'Mở'}
                                                         </button>
                                                         <button
                                                             className={styles.btnScheduleDelete}
                                                             onClick={() => handleDeleteSchedule(schedule.id)}
                                                             title="Xóa"
                                                         >
-                                                            🗑️
+                                                            Xóa
                                                         </button>
                                                     </div>
                                                 </div>
@@ -588,7 +588,7 @@ export default function AdminDoctorManagement() {
                     <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
                         <div className={styles.modalHeader}>
                             <h2>{selectedDoctor ? 'Sửa thông tin bác sĩ' : 'Thêm bác sĩ mới'}</h2>
-                            <button className={styles.btnClose} onClick={handleCloseModal}>✕</button>
+                            <button className={styles.btnClose} onClick={handleCloseModal}>Đóng</button>
                         </div>
                         <form onSubmit={handleSubmit} className={styles.form}>
                             <div className={styles.formGrid}>
@@ -688,7 +688,7 @@ export default function AdminDoctorManagement() {
                                     Hủy
                                 </button>
                                 <button type="submit" className={styles.btnSubmit} disabled={loading}>
-                                    {loading ? '⏳ Đang xử lý...' : selectedDoctor ? 'Cập nhật' : 'Thêm mới'}
+                                    {loading ? 'Đang xử lý...' : selectedDoctor ? 'Cập nhật' : 'Thêm mới'}
                                 </button>
                             </div>
                         </form>
@@ -707,7 +707,7 @@ export default function AdminDoctorManagement() {
                                 Hủy
                             </button>
                             <button className={styles.btnDelete} onClick={handleDelete} disabled={loading}>
-                                {loading ? '⏳ Đang xóa...' : 'Xóa'}
+                                {loading ? 'Đang xóa...' : 'Xóa'}
                             </button>
                         </div>
                     </div>
@@ -719,8 +719,8 @@ export default function AdminDoctorManagement() {
                 <div className={styles.modalOverlay} onClick={() => setShowScheduleModal(false)}>
                     <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
                         <div className={styles.modalHeader}>
-                            <h2>{editingSchedule ? '✏️ Sửa lịch làm việc' : '➕ Thêm lịch làm việc'}</h2>
-                            <button className={styles.btnClose} onClick={() => setShowScheduleModal(false)}>✕</button>
+                            <h2>{editingSchedule ? 'Sửa lịch làm việc' : 'Thêm lịch làm việc'}</h2>
+                            <button className={styles.btnClose} onClick={() => setShowScheduleModal(false)}>Đóng</button>
                         </div>
                         <form onSubmit={handleSaveSchedule} className={styles.form}>
                             <div className={styles.formGrid}>
@@ -802,7 +802,7 @@ export default function AdminDoctorManagement() {
                                     Hủy
                                 </button>
                                 <button type="submit" className={styles.btnSubmit} disabled={loading}>
-                                    {loading ? '⏳ Đang xử lý...' : editingSchedule ? 'Cập nhật' : 'Thêm mới'}
+                                    {loading ? 'Đang xử lý...' : editingSchedule ? 'Cập nhật' : 'Thêm mới'}
                                 </button>
                             </div>
                         </form>

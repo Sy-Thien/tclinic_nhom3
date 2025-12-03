@@ -39,11 +39,11 @@ export default function Dashboard() {
 
     return (
         <div className={styles.container}>
-            <h1 className={styles.title}>📊 Tổng Quan</h1>
+            <h1 className={styles.title}>Tổng Quan</h1>
 
             <div className={styles.statsGrid}>
                 <div className={styles.statCard} style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-                    <div className={styles.statIcon}>📅</div>
+                    <div className={styles.statIcon}></div>
                     <div className={styles.statContent}>
                         <div className={styles.statValue}>{stats.todayAppointments}</div>
                         <div className={styles.statLabel}>Lịch hẹn hôm nay</div>
@@ -51,7 +51,7 @@ export default function Dashboard() {
                 </div>
 
                 <div className={styles.statCard} style={{ background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }}>
-                    <div className={styles.statIcon}>✅</div>
+                    <div className={styles.statIcon}></div>
                     <div className={styles.statContent}>
                         <div className={styles.statValue}>{stats.completedToday}</div>
                         <div className={styles.statLabel}>Đã khám hôm nay</div>
@@ -59,7 +59,7 @@ export default function Dashboard() {
                 </div>
 
                 <div className={styles.statCard} style={{ background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' }}>
-                    <div className={styles.statIcon}>⏰</div>
+                    <div className={styles.statIcon}></div>
                     <div className={styles.statContent}>
                         <div className={styles.statValue}>{stats.upcomingAppointments}</div>
                         <div className={styles.statLabel}>Lịch sắp tới</div>
@@ -67,7 +67,7 @@ export default function Dashboard() {
                 </div>
 
                 <div className={styles.statCard} style={{ background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)' }}>
-                    <div className={styles.statIcon}>👥</div>
+                    <div className={styles.statIcon}></div>
                     <div className={styles.statContent}>
                         <div className={styles.statValue}>{stats.totalPatients}</div>
                         <div className={styles.statLabel}>Tổng bệnh nhân</div>
@@ -76,7 +76,7 @@ export default function Dashboard() {
             </div>
 
             <div className={styles.welcomeCard}>
-                <h2>Chào mừng trở lại! 👋</h2>
+                <h2>Chào mừng trở lại!</h2>
                 <p>Hôm nay bạn có {stats.todayAppointments} lịch hẹn. Chúc bạn làm việc hiệu quả!</p>
             </div>
         </div>

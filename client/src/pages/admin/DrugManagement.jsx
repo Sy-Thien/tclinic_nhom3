@@ -136,7 +136,7 @@ export default function DrugManagement() {
     return (
         <div className={styles.container}>
             <div className={styles.header}>
-                <h1>💊 Quản lý kho thuốc</h1>
+                <h1>Quản lý kho thuốc</h1>
                 <button
                     className={styles.btnAdd}
                     onClick={() => {
@@ -153,19 +153,19 @@ export default function DrugManagement() {
                         });
                     }}
                 >
-                    ➕ Thêm thuốc
+                    Thêm thuốc
                 </button>
             </div>
 
             {/* Warnings */}
             {warnings.length > 0 && (
                 <div className={styles.warningsSection}>
-                    <h2>⚠️ Cảnh báo kho ({warnings.length})</h2>
+                    <h2>Cảnh báo kho ({warnings.length})</h2>
                     <div className={styles.warningsList}>
                         {warnings.map(warning => (
                             <div key={warning.id} className={styles.warningCard}>
                                 <span className={styles.warningType}>
-                                    {warning.warning_type === 'low_stock' ? '📉' : '📅'}
+                                    {warning.warning_type === 'low_stock' ? 'Tồn kho thấp' : 'Sắp hết hạn'}
                                 </span>
                                 <div className={styles.warningContent}>
                                     <h4>{warning.name}</h4>
@@ -180,7 +180,7 @@ export default function DrugManagement() {
             {/* Form */}
             {showForm && (
                 <div className={styles.formSection}>
-                    <h2>{editingId ? '✏️ Cập nhật thuốc' : '➕ Thêm thuốc mới'}</h2>
+                    <h2>{editingId ? 'Cập nhật thuốc' : 'Thêm thuốc mới'}</h2>
                     <form onSubmit={handleAddDrug} className={styles.form}>
                         <div className={styles.formRow}>
                             <input
@@ -249,7 +249,7 @@ export default function DrugManagement() {
 
                         <div className={styles.formActions}>
                             <button type="submit" className={styles.btnSave}>
-                                💾 {editingId ? 'Cập nhật' : 'Thêm'}
+                                {editingId ? 'Cập nhật' : 'Thêm'}
                             </button>
                             <button
                                 type="button"
@@ -259,7 +259,7 @@ export default function DrugManagement() {
                                     setEditingId(null);
                                 }}
                             >
-                                ✕ Hủy
+                                Hủy
                             </button>
                         </div>
                     </form>
@@ -270,7 +270,7 @@ export default function DrugManagement() {
             <div className={styles.filterBar}>
                 <input
                     type="text"
-                    placeholder="🔍 Tìm kiếm thuốc..."
+                    placeholder="Tìm kiếm thuốc..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className={styles.searchInput}
@@ -332,28 +332,28 @@ export default function DrugManagement() {
                                                 onClick={() => handleUpdateStock(drug.id, 'add')}
                                                 title="Thêm tồn"
                                             >
-                                                📥
+                                                Nhập
                                             </button>
                                             <button
                                                 className={styles.btnStock}
                                                 onClick={() => handleUpdateStock(drug.id, 'remove')}
                                                 title="Xóa tồn"
                                             >
-                                                📤
+                                                Xuất
                                             </button>
                                             <button
                                                 className={styles.btnEdit}
                                                 onClick={() => handleEditDrug(drug)}
                                                 title="Sửa"
                                             >
-                                                ✏️
+                                                Sửa
                                             </button>
                                             <button
                                                 className={styles.btnDelete}
                                                 onClick={() => handleDeleteDrug(drug.id)}
                                                 title="Xóa"
                                             >
-                                                🗑️
+                                                Xóa
                                             </button>
                                         </td>
                                     </tr>

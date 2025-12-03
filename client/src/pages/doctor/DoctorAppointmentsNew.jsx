@@ -72,10 +72,10 @@ export default function DoctorAppointmentsNew() {
 
         try {
             await api.put(`/api/doctor/appointments/${id}/confirm`);
-            alert('✅ Đã xác nhận tiếp nhận!');
+            alert('Đã xác nhận tiếp nhận!');
             fetchAppointments();
         } catch (error) {
-            alert(error.response?.data?.message || '❌ Lỗi khi xác nhận');
+            alert(error.response?.data?.message || 'Lỗi khi xác nhận');
         }
     };
 
@@ -86,10 +86,10 @@ export default function DoctorAppointmentsNew() {
 
         try {
             await api.put(`/api/doctor/appointments/${id}/reject`, { reason });
-            alert('✅ Đã từ chối lịch hẹn');
+            alert('Đã từ chối lịch hẹn');
             fetchAppointments();
         } catch (error) {
-            alert(error.response?.data?.message || '❌ Lỗi');
+            alert(error.response?.data?.message || 'Lỗi');
         }
     };
 
@@ -119,11 +119,11 @@ export default function DoctorAppointmentsNew() {
 
         try {
             await api.put(`/api/doctor/appointments/${selectedAppointment.id}/exam`, examData);
-            alert('✅ Đã lưu kết quả khám!');
+            alert('Đã lưu kết quả khám!');
             setShowExamModal(false);
             fetchAppointments();
         } catch (error) {
-            alert(error.response?.data?.message || '❌ Lỗi khi lưu');
+            alert(error.response?.data?.message || 'Lỗi khi lưu');
         }
     };
 
@@ -133,10 +133,10 @@ export default function DoctorAppointmentsNew() {
 
         try {
             await api.put(`/api/doctor/appointments/${id}/complete`);
-            alert('✅ Đã hoàn thành khám!');
+            alert('Đã hoàn thành khám!');
             fetchAppointments();
         } catch (error) {
-            alert(error.response?.data?.message || '❌ Lỗi');
+            alert(error.response?.data?.message || 'Lỗi');
         }
     };
 
@@ -186,7 +186,7 @@ export default function DoctorAppointmentsNew() {
                 items: prescriptionItems
             });
 
-            alert('✅ Đã lưu đơn thuốc thành công!');
+            alert('Đã lưu đơn thuốc thành công!');
 
             // Download PDF nếu có
             if (response.data.pdfUrl) {
@@ -196,7 +196,7 @@ export default function DoctorAppointmentsNew() {
             setShowPrescriptionModal(false);
             fetchAppointments();
         } catch (error) {
-            alert(error.response?.data?.message || '❌ Lỗi khi lưu đơn thuốc');
+            alert(error.response?.data?.message || 'Lỗi khi lưu đơn thuốc');
         }
     };
 
@@ -240,7 +240,7 @@ export default function DoctorAppointmentsNew() {
             {/* HEADER & STATS */}
             <div className={styles.header}>
                 <div>
-                    <h1>🩺 Lịch Khám Bệnh</h1>
+                    <h1>Lịch Khám Bệnh</h1>
                     <p>Quản lý lịch khám và tiếp nhận bệnh nhân</p>
                 </div>
             </div>
@@ -271,13 +271,13 @@ export default function DoctorAppointmentsNew() {
                         className={viewMode === 'day' ? styles.active : ''}
                         onClick={() => setViewMode('day')}
                     >
-                        📅 Theo ngày
+                        Theo ngày
                     </button>
                     <button
                         className={viewMode === 'week' ? styles.active : ''}
                         onClick={() => setViewMode('week')}
                     >
-                        📆 Theo tuần
+                        Theo tuần
                     </button>
                 </div>
 
@@ -303,7 +303,7 @@ export default function DoctorAppointmentsNew() {
             {/* APPOINTMENTS LIST */}
             {appointments.length === 0 ? (
                 <div className={styles.empty}>
-                    <span className={styles.emptyIcon}>📭</span>
+                    <span className={styles.emptyIcon}></span>
                     <h3>Không có lịch hẹn nào</h3>
                     <p>Chọn ngày khác để xem lịch khám</p>
                 </div>
@@ -321,19 +321,19 @@ export default function DoctorAppointmentsNew() {
 
                             <div className={styles.cardBody}>
                                 <div className={styles.infoRow}>
-                                    <span className={styles.label}>📅 Ngày khám:</span>
+                                    <span className={styles.label}>Ngày khám:</span>
                                     <span>{new Date(appointment.appointment_date).toLocaleDateString('vi-VN')}</span>
                                 </div>
                                 <div className={styles.infoRow}>
-                                    <span className={styles.label}>🕐 Giờ:</span>
+                                    <span className={styles.label}>Giờ:</span>
                                     <span>{appointment.appointment_time || 'Chưa xác định'}</span>
                                 </div>
                                 <div className={styles.infoRow}>
-                                    <span className={styles.label}>📞 SĐT:</span>
+                                    <span className={styles.label}>SĐT:</span>
                                     <span>{appointment.patient_phone}</span>
                                 </div>
                                 <div className={styles.infoRow}>
-                                    <span className={styles.label}>🩺 Triệu chứng:</span>
+                                    <span className={styles.label}>Triệu chứng:</span>
                                     <span className={styles.symptoms}>{appointment.symptoms}</span>
                                 </div>
                             </div>
@@ -343,7 +343,7 @@ export default function DoctorAppointmentsNew() {
                                     className={styles.btnInfo}
                                     onClick={() => handleViewDetail(appointment)}
                                 >
-                                    👁️ Chi tiết
+                                    Chi tiết
                                 </button>
 
                                 {appointment.status === 'waiting_doctor_confirmation' && (
@@ -352,13 +352,13 @@ export default function DoctorAppointmentsNew() {
                                             className={styles.btnConfirm}
                                             onClick={() => handleConfirm(appointment.id)}
                                         >
-                                            ✅ Xác nhận
+                                            Xác nhận
                                         </button>
                                         <button
                                             className={styles.btnReject}
                                             onClick={() => handleReject(appointment.id)}
                                         >
-                                            ❌ Từ chối
+                                            Từ chối
                                         </button>
                                     </>
                                 )}
@@ -369,19 +369,19 @@ export default function DoctorAppointmentsNew() {
                                             className={styles.btnExam}
                                             onClick={() => handleStartExam(appointment)}
                                         >
-                                            🩺 Khám bệnh
+                                            Khám bệnh
                                         </button>
                                         <button
                                             className={styles.btnPrescription}
                                             onClick={() => handleOpenPrescription(appointment)}
                                         >
-                                            💊 Kê đơn thuốc
+                                            Kê đơn thuốc
                                         </button>
                                         <button
                                             className={styles.btnComplete}
                                             onClick={() => handleComplete(appointment.id)}
                                         >
-                                            ✅ Hoàn thành
+                                            Hoàn thành
                                         </button>
                                     </>
                                 )}
@@ -391,7 +391,7 @@ export default function DoctorAppointmentsNew() {
                                         className={styles.btnPrescription}
                                         onClick={() => handleOpenPrescription(appointment)}
                                     >
-                                        💊 Xem đơn thuốc
+                                        Xem đơn thuốc
                                     </button>
                                 )}
                             </div>
@@ -405,8 +405,8 @@ export default function DoctorAppointmentsNew() {
                 <div className={styles.modal} onClick={() => setShowDetailModal(false)}>
                     <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
                         <div className={styles.modalHeader}>
-                            <h2>📋 Chi tiết lịch khám</h2>
-                            <button onClick={() => setShowDetailModal(false)}>✕</button>
+                            <h2>Chi tiết lịch khám</h2>
+                            <button onClick={() => setShowDetailModal(false)}>Đóng</button>
                         </div>
                         <div className={styles.modalBody}>
                             <div className={styles.detailSection}>
@@ -484,8 +484,8 @@ export default function DoctorAppointmentsNew() {
                 <div className={styles.modal} onClick={() => setShowExamModal(false)}>
                     <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
                         <div className={styles.modalHeader}>
-                            <h2>🩺 Khám bệnh - {selectedAppointment.patient_name}</h2>
-                            <button onClick={() => setShowExamModal(false)}>✕</button>
+                            <h2>Khám bệnh - {selectedAppointment.patient_name}</h2>
+                            <button onClick={() => setShowExamModal(false)}>Đóng</button>
                         </div>
                         <div className={styles.modalBody}>
                             <div className={styles.formGroup}>
@@ -526,7 +526,7 @@ export default function DoctorAppointmentsNew() {
                         <div className={styles.modalFooter}>
                             <button onClick={() => setShowExamModal(false)}>Hủy</button>
                             <button className={styles.btnPrimary} onClick={handleSaveExam}>
-                                💾 Lưu kết quả khám
+                                Lưu kết quả khám
                             </button>
                         </div>
                     </div>
@@ -538,8 +538,8 @@ export default function DoctorAppointmentsNew() {
                 <div className={styles.modal} onClick={() => setShowPrescriptionModal(false)}>
                     <div className={`${styles.modalContent} ${styles.large}`} onClick={(e) => e.stopPropagation()}>
                         <div className={styles.modalHeader}>
-                            <h2>💊 Kê đơn thuốc - {selectedAppointment.patient_name}</h2>
-                            <button onClick={() => setShowPrescriptionModal(false)}>✕</button>
+                            <h2>Kê đơn thuốc - {selectedAppointment.patient_name}</h2>
+                            <button onClick={() => setShowPrescriptionModal(false)}>Đóng</button>
                         </div>
                         <div className={styles.modalBody}>
                             {prescriptionItems.map((item, index) => (
@@ -598,20 +598,20 @@ export default function DoctorAppointmentsNew() {
                                             className={styles.btnRemove}
                                             onClick={() => removePrescriptionItem(index)}
                                         >
-                                            🗑️ Xóa thuốc này
+                                            Xóa thuốc này
                                         </button>
                                     )}
                                 </div>
                             ))}
 
                             <button className={styles.btnAdd} onClick={addPrescriptionItem}>
-                                ➕ Thêm thuốc
+                                Thêm thuốc
                             </button>
                         </div>
                         <div className={styles.modalFooter}>
                             <button onClick={() => setShowPrescriptionModal(false)}>Hủy</button>
                             <button className={styles.btnPrimary} onClick={handleSavePrescription}>
-                                💾 Lưu đơn thuốc
+                                Lưu đơn thuốc
                             </button>
                         </div>
                     </div>

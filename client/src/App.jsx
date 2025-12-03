@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
+import SessionChecker from './components/SessionChecker'; // ✅ NEW: Single session checker
 import CustomerLayout from './components/customer/CustomerLayout';
 import DoctorLayout from './components/doctor/DoctorLayout';
 import AdminLayout from './components/admin/AdminLayout';
@@ -27,8 +28,13 @@ import ExaminationPage from './pages/doctor/ExaminationPage';
 import DoctorProfile from './pages/doctor/DoctorProfile';
 import DoctorScheduleView from './pages/doctor/DoctorScheduleView';
 import PatientMedicalHistory from './pages/doctor/PatientMedicalHistory';
+import DoctorPatients from './pages/doctor/DoctorPatients';
 import PatientProfile from './pages/customer/PatientProfile';
 import MedicalHistory from './pages/customer/MedicalHistory';
+import Reviews from './pages/customer/Reviews';
+import News from './pages/customer/News';
+import NewsDetail from './pages/customer/NewsDetail';
+import MyConsultations from './pages/customer/MyConsultations';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/Dashboard';
@@ -43,14 +49,18 @@ import AdminReports from './pages/admin/AdminReports';
 import AdminDoctorSchedule from './pages/admin/AdminDoctorSchedule';
 import AdminTimeSlots from './pages/admin/AdminTimeSlots';
 import DrugManagement from './pages/admin/DrugManagement';  // ✅ NEW
+import ConsultationRequests from './pages/admin/ConsultationRequests';  // ✅ NEW
+import DoctorConsultations from './pages/doctor/DoctorConsultations';  // ✅ NEW
+import DoctorReviews from './pages/doctor/DoctorReviews';  // ✅ NEW: Doctor reviews management
 
 export default function App() {
     return (
         <Router>
+            <SessionChecker /> {/* ✅ Kiểm tra session định kỳ */}
             <Routes>
-                {/* ✅ Customer Routes - Public (guest + patient) */}
+                {/* ✅ Customer Routes - CHỈ Patient hoặc Guest */}
                 <Route path="/" element={
-                    <ProtectedRoute requiredRole="any">
+                    <ProtectedRoute requiredRole="public">
                         <CustomerLayout />
                     </ProtectedRoute>
                 }>
@@ -65,8 +75,12 @@ export default function App() {
                     <Route path="doctors/:id" element={<PublicDoctorDetail />} />
                     <Route path="profile" element={<PatientProfile />} />
                     <Route path="medical-history" element={<MedicalHistory />} />
+                    <Route path="reviews" element={<Reviews />} />
+                    <Route path="news" element={<News />} />
+                    <Route path="news/:slug" element={<NewsDetail />} />
                     <Route path="about" element={<About />} />
                     <Route path="contact" element={<Contact />} />
+                    <Route path="my-consultations" element={<MyConsultations />} />
                 </Route>
 
                 {/* ✅ Doctor Routes - CHỈ DOCTOR */}
@@ -80,7 +94,10 @@ export default function App() {
                     <Route path="examination" element={<ExaminationPage />} />
                     <Route path="schedule" element={<DoctorScheduleView />} />
                     <Route path="profile" element={<DoctorProfile />} />
+                    <Route path="patients" element={<DoctorPatients />} />
                     <Route path="patient-history/:patientId" element={<PatientMedicalHistory />} />
+                    <Route path="consultations" element={<DoctorConsultations />} />
+                    <Route path="reviews" element={<DoctorReviews />} />
                 </Route>
 
                 {/* ✅ Admin Routes - CHỈ ADMIN */}
@@ -100,6 +117,7 @@ export default function App() {
                     <Route path="services" element={<AdminServices />} />
                     <Route path="reports" element={<AdminReports />} />
                     <Route path="drugs" element={<DrugManagement />} />
+                    <Route path="consultations" element={<ConsultationRequests />} />
                 </Route>
 
                 {/* Auth Routes - Guest only */}

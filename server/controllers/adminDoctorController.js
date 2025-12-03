@@ -1,4 +1,4 @@
-const { Doctor, Specialty, DoctorSchedule } = require('../models');
+const { Doctor, Specialty, DoctorSchedule, TimeSlot } = require('../models');
 const bcrypt = require('bcrypt');
 const { Op } = require('sequelize');
 
@@ -296,7 +296,14 @@ exports.deleteDoctor = async (req, res) => {
             return res.status(404).json({ message: 'Không tìm thấy bác sĩ' });
         }
 
-        // Xóa bác sĩ
+        // ✅ Xóa dữ liệu liên quan theo thứ tự FK
+        // 1. Xóa TimeSlots trước
+        await TimeSlot.destroy({ where: { doctor_id: id } });
+
+        // 2. Xóa DoctorSchedule
+        await DoctorSchedule.destroy({ where: { doctor_id: id } });
+
+        // 3. Xóa bác sĩ
         await doctor.destroy();
 
         console.log('✅ Doctor deleted:', id);
@@ -363,10 +370,16 @@ exports.cleanupDoctor = async (req, res) => {
             return res.status(404).json({ message: 'Không tìm thấy bác sĩ' });
         }
 
-        // Xóa lịch làm việc của bác sĩ trước
-        await DoctorSchedule.destroy({ where: { doctor_id: doctor.id } });
+        // ✅ Xóa tất cả dữ liệu liên quan theo thứ tự FK
+        // 1. Xóa TimeSlots trước
+        await TimeSlot.destroy({ where: { doctor_id: doctor.id } });
+        console.log('  ✓ Deleted TimeSlots');
 
-        // Xóa bác sĩ
+        // 2. Xóa DoctorSchedule
+        await DoctorSchedule.destroy({ where: { doctor_id: doctor.id } });
+        console.log('  ✓ Deleted DoctorSchedules');
+
+        // 3. Xóa Doctor
         await doctor.destroy();
 
         console.log('✅ Test doctor cleaned up:', email);

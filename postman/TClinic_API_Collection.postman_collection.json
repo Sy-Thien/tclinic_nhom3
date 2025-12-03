@@ -398,10 +398,10 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"full_name\": \"Bac si Updated\",\n    \"experience_years\": 10\n}"
+                            "raw": "{\n    \"full_name\": \"Bac si Test API Updated\",\n    \"experience\": \"10 nam kinh nghiem\"\n}"
                         },
                         "url": {
-                            "raw": "{{base_url}}/api/admin/doctors/1",
+                            "raw": "{{base_url}}/api/admin/doctors/{{new_doctor_id}}",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -409,7 +409,7 @@
                                 "api",
                                 "admin",
                                 "doctors",
-                                "1"
+                                "{{new_doctor_id}}"
                             ]
                         }
                     }
@@ -621,10 +621,10 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"name\": \"Dich vu Updated\",\n    \"price\": 200000\n}"
+                            "raw": "{\n    \"name\": \"Dich vu Test API Updated\",\n    \"price\": 200000\n}"
                         },
                         "url": {
-                            "raw": "{{base_url}}/api/admin/services/1",
+                            "raw": "{{base_url}}/api/admin/services/{{new_service_id}}",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -632,7 +632,7 @@
                                 "api",
                                 "admin",
                                 "services",
-                                "1"
+                                "{{new_service_id}}"
                             ]
                         }
                     }

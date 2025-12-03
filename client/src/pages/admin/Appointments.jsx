@@ -98,7 +98,7 @@ export default function Appointments() {
             setAvailableDoctors(response.data.doctors || []);
         } catch (error) {
             console.error('Error fetching available doctors:', error);
-            alert(error.response?.data?.message || '❌ Lỗi khi tải danh sách bác sĩ!');
+            alert(error.response?.data?.message || 'Lỗi khi tải danh sách bác sĩ!');
             setAvailableDoctors([]);
         } finally {
             setLoadingDoctors(false);
@@ -109,7 +109,7 @@ export default function Appointments() {
         e.preventDefault();
         try {
             await api.post('/api/admin/bookings', formData);
-            alert('✅ Thêm lịch khám thành công!');
+            alert('Thêm lịch khám thành công!');
             setShowCreateModal(false);
             setFormData({
                 patient_name: '',
@@ -128,7 +128,7 @@ export default function Appointments() {
             fetchAppointments();
         } catch (error) {
             console.error('Error:', error);
-            alert(error.response?.data?.message || '❌ Lỗi khi thêm lịch khám!');
+            alert(error.response?.data?.message || 'Lỗi khi thêm lịch khám!');
         }
     };
 
@@ -141,13 +141,13 @@ export default function Appointments() {
                 updateData.doctor_id = selectedDoctor;
             }
             await api.put(`/api/admin/bookings/${selectedAppointment.id}`, updateData);
-            alert('✅ Xác nhận lịch khám thành công!');
+            alert('Xác nhận lịch khám thành công!');
             setShowConfirmModal(false);
             setSelectedDoctor('');
             fetchAppointments();
         } catch (error) {
             console.error('Error:', error);
-            alert(error.response?.data?.message || '❌ Lỗi khi xác nhận!');
+            alert(error.response?.data?.message || 'Lỗi khi xác nhận!');
         }
     };
 
@@ -156,13 +156,13 @@ export default function Appointments() {
             await api.put(`/api/admin/bookings/${selectedAppointment.id}/cancel`, {
                 cancel_reason: cancelReason
             });
-            alert('✅ Hủy lịch khám thành công!');
+            alert('Hủy lịch khám thành công!');
             setShowCancelModal(false);
             setCancelReason('');
             fetchAppointments();
         } catch (error) {
             console.error('Error:', error);
-            alert(error.response?.data?.message || '❌ Lỗi khi hủy!');
+            alert(error.response?.data?.message || 'Lỗi khi hủy!');
         }
     };
 
@@ -171,14 +171,14 @@ export default function Appointments() {
             const response = await api.put(`/api/admin/bookings/${selectedAppointment.id}/assign-doctor`, {
                 doctor_id: selectedDoctor
             });
-            alert('✅ Gán bác sĩ thành công!');
+            alert('Gán bác sĩ thành công!');
             setShowAssignModal(false);
             setSelectedDoctor('');
             setAvailableDoctors([]);
             fetchAppointments();
         } catch (error) {
             console.error('Error:', error);
-            alert(error.response?.data?.message || '❌ Lỗi khi gán bác sĩ!');
+            alert(error.response?.data?.message || 'Lỗi khi gán bác sĩ!');
         }
     };
 
@@ -192,7 +192,7 @@ export default function Appointments() {
             setBookingDayOfWeek(response.data.booking?.dayOfWeek || '');
         } catch (error) {
             console.error('Error:', error);
-            alert(error.response?.data?.message || '❌ Lỗi khi tải danh sách bác sĩ!');
+            alert(error.response?.data?.message || 'Lỗi khi tải danh sách bác sĩ!');
             setAvailableDoctorsForAssignment([]);
             setNoAvailableDoctor(true);
         } finally {
@@ -235,7 +235,7 @@ export default function Appointments() {
                 doctor_id: selectedDoctor,
                 time_slot: timeToUse
             });
-            alert('✅ Gán bác sĩ thành công! Đang chờ bác sĩ xác nhận.');
+            alert('Gán bác sĩ thành công! Đang chờ bác sĩ xác nhận.');
             setShowAssignNewModal(false);
             setSelectedDoctor('');
             setSelectedTimeSlot('');
@@ -244,7 +244,7 @@ export default function Appointments() {
             fetchAppointments();
         } catch (error) {
             console.error('Error:', error);
-            alert(error.response?.data?.message || '❌ Lỗi khi gán bác sĩ!');
+            alert(error.response?.data?.message || 'Lỗi khi gán bác sĩ!');
         }
     };
 
@@ -253,11 +253,11 @@ export default function Appointments() {
 
         try {
             await api.put(`/api/admin/bookings/${id}`, { status: newStatus });
-            alert('✅ Cập nhật thành công!');
+            alert('Cập nhật thành công!');
             fetchAppointments();
         } catch (error) {
             console.error('Error:', error);
-            alert('❌ Lỗi khi cập nhật!');
+            alert('Lỗi khi cập nhật!');
         }
     };
 
@@ -295,21 +295,21 @@ export default function Appointments() {
         <div className={styles.container}>
             <div className={styles.header}>
                 <div>
-                    <h1>📅 Quản Lý Lịch Khám</h1>
+                    <h1>Quản Lý Lịch Khám</h1>
                     <p>Tổng số: {appointments.length} lịch khám</p>
                 </div>
                 <button
                     className={styles.btnAdd}
                     onClick={() => setShowCreateModal(true)}
                 >
-                    ➕ Thêm lịch khám
+                    Thêm lịch khám
                 </button>
             </div>
 
             {/* FILTERS */}
             <div className={styles.filterBar}>
                 <div className={styles.filterGroup}>
-                    <label>🔍 Trạng thái:</label>
+                    <label>Trạng thái:</label>
                     <select
                         value={filter.status}
                         onChange={(e) => setFilter({ ...filter, status: e.target.value })}
@@ -324,7 +324,7 @@ export default function Appointments() {
                 </div>
 
                 <div className={styles.filterGroup}>
-                    <label>📅 Ngày:</label>
+                    <label>Ngày:</label>
                     <input
                         type="date"
                         value={filter.date}
@@ -333,7 +333,7 @@ export default function Appointments() {
                 </div>
 
                 <div className={styles.filterGroup}>
-                    <label>👨‍⚕️ Bác sĩ:</label>
+                    <label>Bác sĩ:</label>
                     <select
                         value={filter.doctor_id}
                         onChange={(e) => setFilter({ ...filter, doctor_id: e.target.value })}
@@ -349,7 +349,7 @@ export default function Appointments() {
                     className={styles.btnReset}
                     onClick={() => setFilter({ status: '', date: '', doctor_id: '' })}
                 >
-                    🔄 Reset
+                    Reset
                 </button>
             </div>
 
@@ -419,7 +419,7 @@ export default function Appointments() {
                                                     setShowAssignModal(true);
                                                 }}
                                             >
-                                                ➕ Gán bác sĩ
+                                                Gán bác sĩ
                                             </button>
                                         )}
                                     </td>
@@ -436,7 +436,7 @@ export default function Appointments() {
                                                         setShowConfirmModal(true);
                                                     }}
                                                 >
-                                                    ✅ Duyệt
+                                                    Duyệt
                                                 </button>
                                             )}
 
@@ -477,7 +477,7 @@ export default function Appointments() {
             {showConfirmModal && (
                 <div className={styles.modal}>
                     <div className={styles.modalContent}>
-                        <h2>✅ Xác nhận lịch hẹn</h2>
+                        <h2>Xác nhận lịch hẹn</h2>
                         <div className={styles.modalBody}>
                             <p><strong>Bệnh nhân:</strong> {selectedAppointment.patient_name}</p>
                             <p><strong>Dịch vụ:</strong> {selectedAppointment.service_name}</p>
@@ -543,7 +543,7 @@ export default function Appointments() {
             {showAssignModal && (
                 <div className={styles.modal}>
                     <div className={styles.modalContent}>
-                        <h2>👨‍⚕️ Gán bác sĩ</h2>
+                        <h2>Gán bác sĩ</h2>
                         <div className={styles.modalBody}>
                             <p><strong>Bệnh nhân:</strong> {selectedAppointment?.patient_name}</p>
                             <p><strong>Chuyên khoa:</strong> {selectedAppointment?.specialty?.name}</p>
@@ -551,7 +551,7 @@ export default function Appointments() {
                             <div className={styles.formGroup}>
                                 <label>Chọn bác sĩ (cùng chuyên khoa):</label>
                                 {loadingDoctors ? (
-                                    <p>⏳ Đang tải danh sách bác sĩ...</p>
+                                    <p>Đang tải danh sách bác sĩ...</p>
                                 ) : availableDoctors.length > 0 ? (
                                     <select
                                         value={selectedDoctor}
@@ -565,7 +565,7 @@ export default function Appointments() {
                                         ))}
                                     </select>
                                 ) : (
-                                    <p style={{ color: '#ef4444' }}>⚠️ Không có bác sĩ nào trong chuyên khoa này!</p>
+                                    <p style={{ color: '#ef4444' }}>Không có bác sĩ nào trong chuyên khoa này!</p>
                                 )}
                             </div>
                         </div>
@@ -592,7 +592,7 @@ export default function Appointments() {
             {showCreateModal && (
                 <div className={styles.modal}>
                     <div className={styles.modalContent} style={{ maxWidth: '700px' }}>
-                        <h2>➕ Thêm lịch khám mới</h2>
+                        <h2>Thêm lịch khám mới</h2>
                         <form onSubmit={handleCreateAppointment}>
                             <div className={styles.modalBody}>
                                 <div className={styles.formGrid}>
@@ -748,12 +748,12 @@ export default function Appointments() {
                                     {/* Cảnh báo khi không có bác sĩ rảnh */}
                                     {noAvailableDoctor && (
                                         <div className={styles.warningBox}>
-                                            <h4>⚠️ Không có bác sĩ nào rảnh trong khung giờ này!</h4>
+                                            <h4>Không có bác sĩ nào rảnh trong khung giờ này!</h4>
                                             <p>Vui lòng liên hệ khách hàng để:</p>
                                             <ul>
-                                                <li>📞 Đổi sang ngày/giờ khác có bác sĩ trống</li>
-                                                <li>📧 Gửi email thông báo cho khách hàng</li>
-                                                <li>❌ Hoặc hủy lịch hẹn nếu không thể sắp xếp</li>
+                                                <li>Đổi sang ngày/giờ khác có bác sĩ trống</li>
+                                                <li>Gửi email thông báo cho khách hàng</li>
+                                                <li>Hoặc hủy lịch hẹn nếu không thể sắp xếp</li>
                                             </ul>
                                             <p style={{ marginTop: '1rem' }}>
                                                 <strong>SĐT khách:</strong> {selectedAppointment.patient_phone || 'N/A'}<br />
@@ -768,7 +768,7 @@ export default function Appointments() {
                                             Bác sĩ màu xanh có thể gán, màu đỏ/vàng đã bận hoặc không làm việc
                                         </p>
                                         {loadingDoctors ? (
-                                            <p>⏳ Đang tải danh sách bác sĩ...</p>
+                                            <p>Đang tải danh sách bác sĩ...</p>
                                         ) : availableDoctorsForAssignment.length > 0 ? (
                                             <div className={styles.doctorGrid}>
                                                 {availableDoctorsForAssignment.map(doc => (
@@ -786,7 +786,7 @@ export default function Appointments() {
                                                         }}
                                                     >
                                                         <div className={styles.doctorCardHeader}>
-                                                            <span className={styles.doctorAvatar}>👨‍⚕️</span>
+                                                            <span className={styles.doctorAvatar}>BS</span>
                                                             <div>
                                                                 <strong>{doc.full_name}</strong>
                                                                 <span className={`${styles.statusBadge} ${styles[doc.status]}`}>
@@ -795,17 +795,17 @@ export default function Appointments() {
                                                             </div>
                                                         </div>
                                                         <div className={styles.doctorCardBody}>
-                                                            <p>📞 {doc.phone || 'N/A'}</p>
-                                                            <p>📅 Ngày làm: {doc.workingDays}</p>
+                                                            <p>SĐT: {doc.phone || 'N/A'}</p>
+                                                            <p>Ngày làm: {doc.workingDays}</p>
                                                             {doc.scheduleForDay && (
-                                                                <p>🕐 {bookingDayOfWeek}: {doc.scheduleForDay.start_time?.substring(0, 5)} - {doc.scheduleForDay.end_time?.substring(0, 5)}</p>
+                                                                <p>{bookingDayOfWeek}: {doc.scheduleForDay.start_time?.substring(0, 5)} - {doc.scheduleForDay.end_time?.substring(0, 5)}</p>
                                                             )}
                                                         </div>
                                                     </div>
                                                 ))}
                                             </div>
                                         ) : (
-                                            <p style={{ color: '#ef4444' }}>❌ Không có bác sĩ nào trong chuyên khoa này</p>
+                                            <p style={{ color: '#ef4444' }}>Không có bác sĩ nào trong chuyên khoa này</p>
                                         )}
                                     </div>
 
@@ -838,9 +838,9 @@ export default function Appointments() {
                                                         >
                                                             <div className={styles.slotTime}>{slot.time}</div>
                                                             {slot.isBreakTime ? (
-                                                                <div className={styles.slotStatus}>☕ Nghỉ</div>
+                                                                <div className={styles.slotStatus}>Nghỉ</div>
                                                             ) : slot.bookingCount > 0 ? (
-                                                                <div className={styles.slotStatus}>🔒 Đã đặt</div>
+                                                                <div className={styles.slotStatus}>Đã đặt</div>
                                                             ) : (
                                                                 <div className={styles.slotStatus}>✓ Trống</div>
                                                             )}

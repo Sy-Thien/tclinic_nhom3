@@ -1,0 +1,237 @@
+.container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+    padding: 40px 20px;
+}
+
+.header {
+    max-width: 1200px;
+    margin: 0 auto 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.header h1 {
+    font-size: 28px;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.btnNew {
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: transform 0.3s;
+}
+
+.btnNew:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.requestsList {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.requestCard {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.2s;
+}
+
+.requestCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.cardHeader {
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.cardHeader h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+}
+
+.meta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.category,
+.specialty {
+    padding: 4px 12px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    font-size: 0.85rem;
+}
+
+.cardBody {
+    padding: 20px;
+}
+
+.message {
+    margin-bottom: 20px;
+    padding: 16px;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.message strong {
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.message p {
+    margin: 0;
+    color: #555;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+.doctorInfo {
+    margin-bottom: 20px;
+    padding: 16px;
+    background: #e3f2fd;
+    border-radius: 8px;
+    border-left: 4px solid #2196f3;
+}
+
+.doctorInfo strong {
+    display: block;
+    margin-bottom: 8px;
+    color: #1976d2;
+}
+
+.doctorInfo p {
+    margin: 4px 0;
+    color: #1565c0;
+    font-weight: 600;
+}
+
+.doctorInfo small {
+    color: #42a5f5;
+    font-size: 13px;
+}
+
+.response {
+    margin-bottom: 20px;
+    padding: 16px;
+    background: #e8f5e9;
+    border-radius: 8px;
+    border-left: 4px solid #4caf50;
+}
+
+.response strong {
+    display: block;
+    margin-bottom: 8px;
+    color: #2e7d32;
+}
+
+.response p {
+    margin: 8px 0;
+    color: #1b5e20;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+.response small {
+    color: #66bb6a;
+    font-size: 12px;
+}
+
+.timestamps {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.timestamps small {
+    color: #999;
+    font-size: 12px;
+}
+
+/* Empty State */
+.empty {
+    max-width: 500px;
+    margin: 80px auto;
+    text-align: center;
+    padding: 40px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.emptyIcon {
+    font-size: 64px;
+    margin-bottom: 20px;
+}
+
+.empty p {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 24px;
+}
+
+.btnEmptyAction {
+    display: inline-block;
+    padding: 12px 32px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: transform 0.3s;
+}
+
+.btnEmptyAction:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* Loading */
+.loading {
+    text-align: center;
+    padding: 80px 20px;
+    color: #999;
+    font-size: 18px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btnNew {
+        width: 100%;
+        text-align: center;
+    }
+
+    .cardHeader {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

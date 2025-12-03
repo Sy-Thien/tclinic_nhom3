@@ -29,6 +29,13 @@ const TimeSlot = require('./TimeSlot')(sequelize, require('sequelize').DataTypes
 // Initialize Room model (factory function)
 const Room = require('./Room')(sequelize, require('sequelize').DataTypes);
 
+// Initialize Article models (factory functions)
+const Article = require('./Article')(sequelize, require('sequelize').DataTypes);
+const ArticleCategory = require('./ArticleCategory')(sequelize, require('sequelize').DataTypes);
+
+// Initialize ConsultationRequest model (factory function)
+const ConsultationRequest = require('./ConsultationRequest')(sequelize, require('sequelize').DataTypes);
+
 console.log('📦 Loading models...');
 
 try {
@@ -333,6 +340,63 @@ try {
         as: 'rooms'
     });
 
+    // ✅ ArticleCategory <-> Article
+    ArticleCategory.hasMany(Article, {
+        foreignKey: 'category_id',
+        as: 'articles'
+    });
+    Article.belongsTo(ArticleCategory, {
+        foreignKey: 'category_id',
+        as: 'category'
+    });
+
+    // ✅ Admin <-> Article (author)
+    Admin.hasMany(Article, {
+        foreignKey: 'author_id',
+        as: 'articles'
+    });
+    Article.belongsTo(Admin, {
+        foreignKey: 'author_id',
+        as: 'author'
+    });
+
+    // ✅ ConsultationRequest relationships
+    ConsultationRequest.belongsTo(Patient, {
+        foreignKey: 'patient_id',
+        as: 'patient'
+    });
+    Patient.hasMany(ConsultationRequest, {
+        foreignKey: 'patient_id',
+        as: 'consultationRequests'
+    });
+
+    ConsultationRequest.belongsTo(Specialty, {
+        foreignKey: 'specialty_id',
+        as: 'specialty'
+    });
+    Specialty.hasMany(ConsultationRequest, {
+        foreignKey: 'specialty_id',
+        as: 'consultationRequests'
+    });
+
+    ConsultationRequest.belongsTo(Doctor, {
+        foreignKey: 'assigned_doctor_id',
+        as: 'assignedDoctor'
+    });
+    Doctor.hasMany(ConsultationRequest, {
+        foreignKey: 'assigned_doctor_id',
+        as: 'consultationRequests'
+    });
+
+    ConsultationRequest.belongsTo(Admin, {
+        foreignKey: 'assigned_by_admin_id',
+        as: 'assignedByAdmin'
+    });
+    Admin.hasMany(ConsultationRequest, {
+        foreignKey: 'assigned_by_admin_id',
+        as: 'assignedConsultations'
+    });
+
     console.log('✅ All models and relationships loaded successfully');
 } catch (error) {
     console.error('❌ Error loading models:', error);
@@ -359,5 +423,8 @@ module.exports = {
     BookingPhoto,
     DoctorAndService,
     DoctorSchedule,
-    TimeSlot  // ✅ NEW
+    TimeSlot,  // ✅ NEW
+    Article,  // ✅ NEW
+    ArticleCategory,  // ✅ NEW
+    ConsultationRequest  // ✅ NEW: Support/Consultation system
 };

@@ -1,7 +1,18 @@
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 
-pdfMake.vfs = pdfFonts.pdfMake.vfs;
+// Khởi tạo fonts cho pdfMake - hỗ trợ nhiều phiên bản
+try {
+    if (pdfFonts.pdfMake) {
+        pdfMake.vfs = pdfFonts.pdfMake.vfs;
+    } else if (pdfFonts.vfs) {
+        pdfMake.vfs = pdfFonts.vfs;
+    } else {
+        pdfMake.vfs = pdfFonts;
+    }
+} catch (e) {
+    console.error('Error initializing pdfMake fonts:', e);
+}
 
 /**
  * Tạo PDF toa thuốc
@@ -12,234 +23,157 @@ pdfMake.vfs = pdfFonts.pdfMake.vfs;
 export const generatePrescriptionPDF = (prescription, appointment, doctor) => {
     const currentDate = new Date().toLocaleDateString('vi-VN');
 
-    // Tạo danh sách thuốc cho PDF
+    // Tạo danh sách thuốc cho PDF - compact
     const drugTableBody = [
         [
-            { text: 'STT', bold: true, alignment: 'center' },
-            { text: 'Tên Thuốc', bold: true, alignment: 'center' },
-            { text: 'Hoạt Chất', bold: true, alignment: 'center' },
-            { text: 'Số Lượng', bold: true, alignment: 'center' },
-            { text: 'Liều Lượng', bold: true, alignment: 'center' },
-            { text: 'Thời Gian Dùng', bold: true, alignment: 'center' },
-            { text: 'Ghi Chú', bold: true, alignment: 'center' }
+            { text: 'STT', bold: true, alignment: 'center', fontSize: 9 },
+            { text: 'Tên Thuốc', bold: true, fontSize: 9 },
+            { text: 'SL', bold: true, alignment: 'center', fontSize: 9 },
+            { text: 'Liều Dùng', bold: true, fontSize: 9 },
+            { text: 'Ghi Chú', bold: true, fontSize: 9 }
         ]
     ];
 
     // Thêm từng dòng thuốc
     prescription.PrescriptionDetails?.forEach((detail, index) => {
         drugTableBody.push([
-            { text: (index + 1).toString(), alignment: 'center' },
-            { text: detail.Drug?.name || '' },
-            { text: detail.Drug?.ingredient || '', fontSize: 9 },
-            { text: `${detail.quantity} ${detail.unit}`, alignment: 'center' },
-            { text: detail.dosage || '', alignment: 'center' },
-            { text: detail.duration || '', alignment: 'center' },
+            { text: (index + 1).toString(), alignment: 'center', fontSize: 9 },
+            { text: detail.Drug?.name || '', fontSize: 9 },
+            { text: `${detail.quantity} ${detail.unit || ''}`.trim(), alignment: 'center', fontSize: 9 },
+            { text: `${detail.dosage || ''} ${detail.duration ? `(${detail.duration})` : ''}`.trim(), fontSize: 9 },
             { text: detail.note || '', fontSize: 8 }
         ]);
     });
 
     const docDefinition = {
         pageSize: 'A4',
-        pageMargins: [40, 40, 40, 60],
-
-        header: {
-            text: 'PHÒNG KHÁM ĐA KHOA TNCLINIC',
-            alignment: 'center',
-            fontSize: 14,
-            bold: true,
-            margin: [0, 20, 0, 10]
-        },
+        pageMargins: [30, 30, 30, 40],
 
         content: [
-            // TIÊU ĐỀ
+            // HEADER
             {
-                text: 'TƠA THUỐC',
+                text: 'PHÒNG KHÁM ĐA KHOA TCLINIC',
+                alignment: 'center',
+                fontSize: 14,
+                bold: true,
+                margin: [0, 0, 0, 5]
+            },
+            {
+                text: 'ĐƠN THUỐC',
                 alignment: 'center',
                 fontSize: 16,
                 bold: true,
-                margin: [0, 10, 0, 20]
+                margin: [0, 5, 0, 10]
+            },
+            {
+                text: `Mã đơn: ${prescription.prescription_code || 'N/A'}`,
+                fontSize: 9,
+                alignment: 'right',
+                margin: [0, 0, 0, 10]
             },
 
-            // MÃ TƠA
-            {
-                text: `Mã tơa: ${prescription.prescription_code || 'N/A'}`,
-                fontSize: 10,
-                margin: [0, 0, 0, 15]
-            },
-
-            // THÔNG TIN BỆNH NHÂN
-            {
-                text: 'I. THÔNG TIN BỆNH NHÂN',
-                fontSize: 11,
-                bold: true,
-                margin: [0, 0, 0, 10],
-                decoration: 'underline'
-            },
+            // THÔNG TIN BỆNH NHÂN + KHÁM (gộp 2 cột)
             {
                 columns: [
                     {
                         width: '50%',
                         stack: [
-                            { text: `Họ tên: ${appointment?.patient_name || ''}`, fontSize: 10 },
-                            { text: `Ngày sinh: ${appointment?.patient_dob || ''}`, fontSize: 10, margin: [0, 5, 0, 0] },
-                            { text: `Giới tính: ${appointment?.patient_gender === 'male' ? 'Nam' : 'Nữ'}`, fontSize: 10, margin: [0, 5, 0, 0] }
+                            { text: 'THÔNG TIN BỆNH NHÂN', fontSize: 10, bold: true, decoration: 'underline', margin: [0, 0, 0, 5] },
+                            { text: `Họ tên: ${appointment?.patient_name || ''}`, fontSize: 9 },
+                            { text: `SĐT: ${appointment?.patient_phone || ''}`, fontSize: 9, margin: [0, 2, 0, 0] },
+                            { text: `Giới tính: ${appointment?.patient_gender === 'male' ? 'Nam' : 'Nữ'}`, fontSize: 9, margin: [0, 2, 0, 0] }
                         ]
                     },
                     {
                         width: '50%',
                         stack: [
-                            { text: `SĐT: ${appointment?.patient_phone || ''}`, fontSize: 10 },
-                            { text: `Email: ${appointment?.patient_email || ''}`, fontSize: 10, margin: [0, 5, 0, 0] },
-                            { text: `Địa chỉ: ${appointment?.patient_address || ''}`, fontSize: 10, margin: [0, 5, 0, 0] }
+                            { text: 'THÔNG TIN KHÁM', fontSize: 10, bold: true, decoration: 'underline', margin: [0, 0, 0, 5] },
+                            { text: `Ngày khám: ${appointment?.appointment_date || ''} ${appointment?.appointment_time || ''}`, fontSize: 9 },
+                            { text: `Chuyên khoa: ${appointment?.specialty?.name || ''}`, fontSize: 9, margin: [0, 2, 0, 0] },
+                            { text: `Bác sĩ: ${doctor?.full_name || appointment?.doctor_name || ''}`, fontSize: 9, margin: [0, 2, 0, 0] }
                         ]
                     }
                 ],
-                margin: [0, 0, 0, 15]
+                margin: [0, 0, 0, 10]
             },
 
-            // THÔNG TIN KHÁM
-            {
-                text: 'II. THÔNG TIN KHÁM',
-                fontSize: 11,
-                bold: true,
-                margin: [0, 0, 0, 10],
-                decoration: 'underline'
-            },
+            // TRIỆU CHỨNG + CHẨN ĐOÁN (gộp 1 dòng)
             {
                 columns: [
-                    {
-                        width: '50%',
-                        stack: [
-                            { text: `Ngày khám: ${appointment?.appointment_date || ''}`, fontSize: 10 },
-                            { text: `Giờ khám: ${appointment?.appointment_time || ''}`, fontSize: 10, margin: [0, 5, 0, 0] }
-                        ]
-                    },
-                    {
-                        width: '50%',
-                        stack: [
-                            { text: `Chuyên khoa: ${appointment?.specialty?.name || ''}`, fontSize: 10 },
-                            { text: `Bác sĩ: ${doctor?.full_name || appointment?.doctor_name || 'N/A'}`, fontSize: 10, margin: [0, 5, 0, 0] }
-                        ]
-                    }
+                    { width: '50%', text: [{ text: 'Triệu chứng: ', bold: true, fontSize: 9 }, { text: appointment?.symptoms || 'Không có', fontSize: 9 }] },
+                    { width: '50%', text: [{ text: 'Chẩn đoán: ', bold: true, fontSize: 9 }, { text: appointment?.diagnosis || 'Không có', fontSize: 9 }] }
                 ],
-                margin: [0, 0, 0, 15]
-            },
-
-            // TRIỆU CHỨNG
-            {
-                text: 'III. TRIỆU CHỨNG BAN ĐẦU',
-                fontSize: 11,
-                bold: true,
-                margin: [0, 0, 0, 10],
-                decoration: 'underline'
-            },
-            {
-                text: appointment?.symptoms || 'Không có',
-                fontSize: 10,
-                margin: [0, 0, 0, 15],
-                alignment: 'justify'
-            },
-
-            // CHẨN ĐOÁN
-            {
-                text: 'IV. CHẨN ĐOÁN',
-                fontSize: 11,
-                bold: true,
-                margin: [0, 0, 0, 10],
-                decoration: 'underline'
-            },
-            {
-                text: appointment?.diagnosis || 'Không có',
-                fontSize: 10,
-                margin: [0, 0, 0, 15],
-                alignment: 'justify'
+                margin: [0, 0, 0, 10]
             },
 
             // DANH SÁCH THUỐC
             {
-                text: 'V. TƠA THUỐC',
-                fontSize: 11,
+                text: 'DANH SÁCH THUỐC',
+                fontSize: 10,
                 bold: true,
-                margin: [0, 0, 0, 10],
-                decoration: 'underline'
+                decoration: 'underline',
+                margin: [0, 0, 0, 5]
             },
             {
                 table: {
                     headerRows: 1,
-                    widths: ['5%', '20%', '18%', '12%', '15%', '15%', '*'],
+                    widths: ['8%', '30%', '12%', '25%', '*'],
                     body: drugTableBody
                 },
                 layout: {
-                    fillColor: (rowIndex) => rowIndex === 0 ? '#E8EAED' : null,
-                    hLineColor: '#CCCCCC',
-                    vLineColor: '#CCCCCC',
-                    hLineWidth: 0.5,
-                    vLineWidth: 0.5,
-                    paddingLeft: 5,
-                    paddingRight: 5,
-                    paddingTop: 8,
-                    paddingBottom: 8
+                    fillColor: function (rowIndex) { return rowIndex === 0 ? '#f0f0f0' : null; },
+                    hLineColor: function () { return '#CCCCCC'; },
+                    vLineColor: function () { return '#CCCCCC'; },
+                    hLineWidth: function () { return 0.5; },
+                    vLineWidth: function () { return 0.5; },
+                    paddingLeft: function () { return 4; },
+                    paddingRight: function () { return 4; },
+                    paddingTop: function () { return 4; },
+                    paddingBottom: function () { return 4; }
                 },
-                margin: [0, 0, 0, 15]
+                margin: [0, 0, 0, 10]
             },
 
-            // HƯỚNG DẪN DÙNG THUỐC
+            // GHI CHÚ (nếu có)
+            prescription.note ? {
+                text: [{ text: 'Ghi chú: ', bold: true, fontSize: 9 }, { text: prescription.note, fontSize: 9, italics: true }],
+                margin: [0, 0, 0, 8]
+            } : { text: '' },
+
+            // HƯỚNG DẪN SỬ DỤNG (rút gọn)
             {
-                text: 'VI. HƯỚNG DẪN DÙNG THUỐC',
-                fontSize: 11,
+                text: 'HƯỚNG DẪN SỬ DỤNG THUỐC',
+                fontSize: 10,
                 bold: true,
-                margin: [0, 0, 0, 10],
-                decoration: 'underline'
+                decoration: 'underline',
+                margin: [0, 0, 0, 5]
             },
             {
                 ul: [
-                    'Uống thuốc đầy đủ theo đơn, không tự ý bỏ thuốc hoặc giảm liều',
-                    'Uống thuốc đúng giờ, đúng liều lượng theo hướng dẫn',
-                    'Uống thuốc cùng với nước lạnh, không uống với rượu bia',
-                    'Nếu có dị ứng hoặc tác dụng phụ, hãy liên hệ ngay phòng khám',
-                    'Bảo quản thuốc ở nơi thoáng, mát, tránh ánh sáng trực tiếp'
+                    'Uống thuốc đúng giờ, đúng liều lượng theo chỉ định',
+                    'Không tự ý ngừng thuốc hoặc thay đổi liều',
+                    'Liên hệ bác sĩ ngay nếu có phản ứng bất thường'
                 ],
-                fontSize: 9,
-                margin: [0, 0, 0, 20]
+                fontSize: 8,
+                margin: [0, 0, 0, 10]
             },
 
-            // GƯƠNG TUI CHUNG
-            prescription.note ? {
-                text: `Ghi Chú: ${prescription.note}`,
-                fontSize: 10,
-                margin: [0, 0, 0, 20],
-                italics: true,
-                color: '#666666'
-            } : { text: '', margin: 0 },
-
-            // KẾT LUẬN
-            {
-                text: 'VII. KẾT LUẬN',
-                fontSize: 11,
-                bold: true,
-                margin: [0, 0, 0, 10],
-                decoration: 'underline'
-            },
-            {
-                text: appointment?.conclusion || 'Không có',
-                fontSize: 10,
-                margin: [0, 0, 0, 30],
-                alignment: 'justify'
-            },
+            // KẾT LUẬN (nếu có)
+            appointment?.conclusion ? {
+                text: [{ text: 'Kết luận: ', bold: true, fontSize: 9 }, { text: appointment.conclusion, fontSize: 9 }],
+                margin: [0, 0, 0, 15]
+            } : { text: '', margin: [0, 0, 0, 15] },
 
             // CHỮ KÝ
             {
                 columns: [
-                    {
-                        width: '60%',
-                        text: ''
-                    },
+                    { width: '60%', text: '' },
                     {
                         width: '40%',
                         stack: [
-                            { text: 'Ngày: ' + currentDate, fontSize: 10, margin: [0, 0, 0, 30] },
-                            { text: 'Bác sĩ:', fontSize: 10, bold: true, margin: [0, 0, 0, 50] },
-                            { text: doctor?.full_name || appointment?.doctor_name || 'N/A', fontSize: 10, alignment: 'center' }
+                            { text: `Ngày ${currentDate}`, fontSize: 9, alignment: 'center' },
+                            { text: 'Bác sĩ khám bệnh', fontSize: 9, bold: true, alignment: 'center', margin: [0, 5, 0, 25] },
+                            { text: doctor?.full_name || appointment?.doctor_name || '', fontSize: 10, alignment: 'center', bold: true }
                         ]
                     }
                 ]
@@ -247,17 +181,24 @@ export const generatePrescriptionPDF = (prescription, appointment, doctor) => {
         ],
 
         footer: {
-            text: '© PHÒNG KHÁM ĐA KHOA TNCLINIC - Địa chỉ: Hà Nội, Việt Nam',
+            text: '© Phòng Khám Đa Khoa TClinic - ĐT: (028) 1234 5678',
             alignment: 'center',
             fontSize: 8,
-            color: '#999999',
+            color: '#888888',
             margin: [0, 10, 0, 0]
         }
     };
 
     // Tạo và download PDF
-    const fileName = `ToaThuoc_${prescription.prescription_code}_${new Date().getTime()}.pdf`;
-    pdfMake.createPdf(docDefinition).download(fileName);
+    try {
+        const fileName = `DonThuoc_${prescription.prescription_code || 'RX'}_${new Date().getTime()}.pdf`;
+        console.log('📄 Creating PDF:', fileName);
+        pdfMake.createPdf(docDefinition).download(fileName);
+        console.log('✅ PDF download initiated');
+    } catch (error) {
+        console.error('❌ Error creating PDF:', error);
+        throw error;
+    }
 };
 
 export default generatePrescriptionPDF;

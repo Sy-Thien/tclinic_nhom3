@@ -1,215 +1,289 @@
 .dashboard {
-    padding: 32px;
-    max-width: 100%;
-    background: #f3f4f6;
+    padding: 24px;
+    background: #f8fafc;
     min-height: 100vh;
 }
 
+/* Header */
 .header {
     margin-bottom: 32px;
 }
 
-.header h1 {
-    font-size: 32px;
+.headerContent h1 {
+    font-size: 28px;
     font-weight: 700;
-    color: #111827;
-    margin: 0 0 12px 0;
+    color: #1e293b;
+    margin: 0 0 8px 0;
 }
 
 .date {
-    font-size: 16px;
-    color: #6b7280;
+    font-size: 14px;
+    color: #64748b;
     margin: 0;
-    font-weight: 500;
 }
 
-/* Stats Grid */
-.statsGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 24px;
-    margin-bottom: 40px;
-}
-
-.statCard {
-    background: white;
-    border-radius: 16px;
-    padding: 28px;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    color: white;
-}
-
-.statCard:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-}
-
-.statIcon {
-    font-size: 48px;
-    line-height: 1;
-    flex-shrink: 0;
-}
-
-.primary .statIcon {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-}
-
-.success .statIcon {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
-}
-
-.info .statIcon {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    color: white;
-}
-
-.warning .statIcon {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    color: white;
-}
-
-.statContent {
-    flex: 1;
-    min-width: 0;
-}
-
-.statValue {
-    font-size: 42px;
-    font-weight: 700;
-    color: white;
-    margin: 0 0 6px 0;
-    line-height: 1.1;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.statLabel {
-    font-size: 15px;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.95);
-    line-height: 1.4;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
-}
-
-/* Doctor Status */
-.doctorStatus {
-    background: white;
-    border-radius: 12px;
-    padding: 24px;
+/* Sections */
+.section {
     margin-bottom: 32px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.doctorStatus h2 {
+.sectionTitle {
     font-size: 18px;
     font-weight: 600;
-    color: #111827;
-    margin: 0 0 20px 0;
-}
-
-.statusCards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-}
-
-.statusCard {
-    background: #f9fafb;
-    border-radius: 8px;
-    padding: 20px;
-}
-
-.statusHeader {
+    color: #334155;
+    margin: 0 0 16px 0;
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 12px;
 }
 
-.statusDot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
+.sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
 }
 
-.statusDot.busy {
-    background: #ef4444;
-    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+.sectionHeader .sectionTitle {
+    margin-bottom: 0;
 }
 
-.statusDot.available {
-    background: #10b981;
-    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
-}
-
-.statusHeader h3 {
-    font-size: 14px;
-    font-weight: 500;
-    color: #6b7280;
-    margin: 0;
-}
-
-.statusCount {
-    font-size: 32px;
-    font-weight: 700;
-    color: #111827;
-    margin: 0;
-}
-
-/* Quick Actions */
-.quickActions {
-    background: white;
-    border-radius: 16px;
-    padding: 32px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.quickActions h2 {
-    font-size: 24px;
-    font-weight: 700;
-    color: #111827;
-    margin: 0 0 24px 0;
-}
-
-.actionGrid {
+/* Stats Row */
+.statsRow {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px;
 }
 
-.actionBtn {
+@media (max-width: 1200px) {
+    .statsRow {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .statsRow {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Stat Cards */
+.statCard {
+    border-radius: 12px;
+    padding: 24px;
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.statCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.statNumber {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.statLabel {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+/* Card Colors */
+.cardPurple {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.cardGreen {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+
+.cardOrange {
+    background: linear-gradient(135deg, #f97316, #ea580c);
+}
+
+.cardBlue {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.cardCyan {
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+}
+
+.cardTeal {
+    background: linear-gradient(135deg, #14b8a6, #0d9488);
+}
+
+.cardIndigo {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+}
+
+.cardPink {
+    background: linear-gradient(135deg, #ec4899, #db2777);
+}
+
+/* Two Columns Layout */
+.twoColumns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+@media (max-width: 900px) {
+    .twoColumns {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Recent Section */
+.recentSection {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.viewAllBtn {
+    background: #f1f5f9;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #475569;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.viewAllBtn:hover {
+    background: #e2e8f0;
+}
+
+/* Recent List */
+.recentList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.recentItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border-left: 3px solid #3b82f6;
+}
+
+.recentInfo {
+    flex: 1;
+}
+
+.patientName {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 4px;
+}
+
+.bookingDetails {
+    font-size: 13px;
+    color: #64748b;
+}
+
+/* Status Badges */
+.statusBadge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.statusPending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.statusConfirmed {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.statusCompleted {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.statusCancelled {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 32px;
+    color: #94a3b8;
+}
+
+/* Quick Section */
+.quickSection {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.quickGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.quickBtn {
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 20px 24px;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
     border: none;
-    border-radius: 12px;
-    font-size: 16px;
+    border-radius: 10px;
+    font-size: 14px;
     font-weight: 600;
     color: white;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.quickBtn:hover {
+    transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.actionBtn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+/* Quick Button Colors */
+.btnPurple {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
 }
 
-.actionIcon {
-    font-size: 32px;
-    line-height: 1;
+.btnBlue {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
 }
 
-.actionText {
-    flex: 1;
-    text-align: left;
+.btnGreen {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+
+.btnOrange {
+    background: linear-gradient(135deg, #f97316, #ea580c);
+}
+
+.btnTeal {
+    background: linear-gradient(135deg, #14b8a6, #0d9488);
+}
+
+.btnPink {
+    background: linear-gradient(135deg, #ec4899, #db2777);
 }
 
 /* Loading */
@@ -220,12 +294,13 @@
     justify-content: center;
     min-height: 400px;
     gap: 16px;
+    color: #64748b;
 }
 
 .spinner {
-    width: 48px;
-    height: 48px;
-    border: 4px solid #e5e7eb;
+    width: 40px;
+    height: 40px;
+    border: 3px solid #e2e8f0;
     border-top-color: #3b82f6;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
@@ -237,17 +312,170 @@
     }
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .dashboard {
-        padding: 20px 16px;
-    }
+/* Doctor Status Section */
+.doctorSummary {
+    display: flex;
+    gap: 16px;
+}
 
-    .statsGrid {
+.summaryBusy {
+    background: #fee2e2;
+    color: #dc2626;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.summaryAvailable {
+    background: #dcfce7;
+    color: #16a34a;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.doctorGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+@media (max-width: 1200px) {
+    .doctorGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .doctorGrid {
         grid-template-columns: 1fr;
     }
+}
 
-    .statNumber {
-        font-size: 24px;
+.doctorCard {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.doctorCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.doctorBusy {
+    border-left: 4px solid #dc2626;
+    background: linear-gradient(135deg, #fff 0%, #fef2f2 100%);
+}
+
+.doctorAvailable {
+    border-left: 4px solid #16a34a;
+    background: linear-gradient(135deg, #fff 0%, #f0fdf4 100%);
+}
+
+.doctorAvatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.doctorInfo {
+    flex: 1;
+    min-width: 0;
+}
+
+.doctorName {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 14px;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.doctorSpecialty {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 4px;
+}
+
+.doctorPatient {
+    font-size: 11px;
+    color: #dc2626;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.doctorFree {
+    font-size: 11px;
+    color: #16a34a;
+    font-weight: 500;
+}
+
+.doctorStatusDot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.dotBusy {
+    background: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2);
+    animation: pulse 2s infinite;
+}
+
+.dotAvailable {
+    background: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2);
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
     }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.viewMoreBtn {
+    display: block;
+    width: 100%;
+    margin-top: 16px;
+    padding: 12px;
+    background: #f1f5f9;
+    border: none;
+    border-radius: 8px;
+    color: #475569;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.viewMoreBtn:hover {
+    background: #e2e8f0;
 }

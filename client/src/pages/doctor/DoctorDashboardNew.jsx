@@ -4,6 +4,14 @@ import api from '../../utils/api';
 import { useStorageSync } from '../../hooks/useStorageSync';
 import styles from './DoctorDashboardNew.module.css';
 
+// Hàm lấy ngày theo timezone local (tránh bug UTC)
+const getLocalDateString = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
 export default function DoctorDashboardNew() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
@@ -27,22 +35,30 @@ export default function DoctorDashboardNew() {
     const fetchDashboardData = async () => {
         try {
             setLoading(true);
-            const today = new Date().toISOString().split('T')[0];
+            const today = getLocalDateString(new Date());
+            console.log('📅 Today (local):', today);
 
             // Get date ranges
             const weekStart = getWeekStart();
             const weekEnd = getWeekEnd();
             const monthStart = getMonthStart();
             const monthEnd = getMonthEnd();
+            console.log('📅 Week:', weekStart, '-', weekEnd);
+            console.log('📅 Month:', monthStart, '-', monthEnd);
 
             // Fetch all appointments of the logged-in doctor (filtered by doctor_id on backend)
             const allResponse = await api.get('/api/doctor/appointments');
-            const allAppts = allResponse.data.bookings || [];
+            // API trả về appointments hoặc bookings
+            const allAppts = allResponse.data.appointments || allResponse.data.bookings || [];
+            console.log('📋 All appointments:', allAppts.length, allAppts);
 
             // Filter by date ranges
             const todayAppts = allAppts.filter(a => a.appointment_date === today);
             const weekAppts = allAppts.filter(a => a.appointment_date >= weekStart && a.appointment_date <= weekEnd);
             const monthAppts = allAppts.filter(a => a.appointment_date >= monthStart && a.appointment_date <= monthEnd);
+            console.log('📋 Today appointments:', todayAppts.length);
+            console.log('📋 Week appointments:', weekAppts.length);
+            console.log('📋 Month appointments:', monthAppts.length);
 
             // Calculate stats
             setStats({
@@ -117,26 +133,28 @@ export default function DoctorDashboardNew() {
         const today = new Date();
         const day = today.getDay();
         const diff = today.getDate() - day + (day === 0 ? -6 : 1);
-        const monday = new Date(today.setDate(diff));
-        return monday.toISOString().split('T')[0];
+        const monday = new Date(today);
+        monday.setDate(diff);
+        return getLocalDateString(monday);
     };
 
     const getWeekEnd = () => {
         const today = new Date();
         const day = today.getDay();
         const diff = today.getDate() - day + (day === 0 ? 0 : 7);
-        const sunday = new Date(today.setDate(diff));
-        return sunday.toISOString().split('T')[0];
+        const sunday = new Date(today);
+        sunday.setDate(diff);
+        return getLocalDateString(sunday);
     };
 
     const getMonthStart = () => {
         const today = new Date();
-        return new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+        return getLocalDateString(new Date(today.getFullYear(), today.getMonth(), 1));
     };
 
     const getMonthEnd = () => {
         const today = new Date();
-        return new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
+        return getLocalDateString(new Date(today.getFullYear(), today.getMonth() + 1, 0));
     };
 
     const formatTime = (time) => {
@@ -319,10 +337,10 @@ export default function DoctorDashboardNew() {
                                         </div>
                                     </div>
                                     <div className={styles.appointmentInfo}>
-                                        <h4>{apt.patient_name}</h4>
-                                        <p className={styles.symptoms}>{apt.symptoms}</p>
+                                        <h4>{apt.patient?.full_name || apt.patient_name || 'N/A'}</h4>
+                                        <p className={styles.symptoms}>{apt.symptoms || apt.specialty?.name || 'Khám tổng quát'}</p>
                                         <div className={styles.phone}>
-                                            <i className="fas fa-phone"></i> {apt.patient_phone}
+                                            <i className="fas fa-phone"></i> {apt.patient?.phone || apt.patient_phone || 'N/A'}
                                         </div>
                                     </div>
                                     <div className={styles.appointmentStatus}>
@@ -358,9 +376,9 @@ export default function DoctorDashboardNew() {
                                         <i className="fas fa-user"></i>
                                     </div>
                                     <div className={styles.patientInfo}>
-                                        <h4>{apt.patient_name}</h4>
+                                        <h4>{apt.patient?.full_name || apt.patient_name || 'N/A'}</h4>
                                         <p className={styles.diagnosis}>
-                                            {apt.diagnosis || 'Chưa có chẩn đoán'}
+                                            {apt.diagnosis || apt.specialty?.name || 'Khám tổng quát'}
                                         </p>
                                         <div className={styles.patientMeta}>
                                             <span>
@@ -373,6 +391,15 @@ export default function DoctorDashboardNew() {
                                             </span>
                                         </div>
                                     </div>
+                                    {(apt.patient?.id || apt.patient_id) && (
+                                        <button
+                                            className={styles.viewHistoryBtn}
+                                            onClick={() => navigate(`/doctor-portal/patient-history/${apt.patient?.id || apt.patient_id}`)}
+                                            title="Xem hồ sơ bệnh án"
+                                        >
+                                            📋 Hồ sơ
+                                        </button>
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -432,6 +459,20 @@ export default function DoctorDashboardNew() {
                     >
                         <i className="fas fa-calendar-check"></i>
                         <span>Xem Lịch Hẹn</span>
+                    </button>
+                    <button
+                        className={styles.actionBtn}
+                        onClick={() => navigate('/doctor-portal/patients')}
+                    >
+                        <i className="fas fa-users"></i>
+                        <span>Danh Sách BN</span>
+                    </button>
+                    <button
+                        className={styles.actionBtn}
+                        onClick={() => navigate('/doctor-portal/schedule')}
+                    >
+                        <i className="fas fa-calendar-alt"></i>
+                        <span>Lịch Làm Việc</span>
                     </button>
                 </div>
             </div>

@@ -4,10 +4,10 @@ import { Navigate, useLocation } from 'react-router-dom';
  * ProtectedRoute Component
  * Bảo vệ routes theo role người dùng
  * 
- * @param {string} requiredRole - Role yêu cầu: 'admin' | 'doctor' | 'patient' | 'any'
+ * @param {string} requiredRole - Role yêu cầu: 'admin' | 'doctor' | 'patient' | 'public' | 'patient-or-guest'
  * @param {JSX.Element} children - Component cần bảo vệ
  */
-export default function ProtectedRoute({ children, requiredRole = 'any' }) {
+export default function ProtectedRoute({ children, requiredRole = 'public' }) {
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
     const location = useLocation();
@@ -33,34 +33,53 @@ export default function ProtectedRoute({ children, requiredRole = 'any' }) {
         requiredRole
     });
 
-    // ✅ Case 1: Route không yêu cầu đăng nhập (requiredRole = 'any' hoặc 'guest')
-    // Cho phép tất cả user (kể cả admin/doctor) truy cập customer pages
-    if (requiredRole === 'any' || requiredRole === 'guest') {
+    // ✅ Case 1: Trang public - ai cũng vào được NHƯNG nếu đã đăng nhập thì redirect về trang của role đó
+    if (requiredRole === 'public') {
+        // Nếu đã đăng nhập và là admin/doctor → redirect về trang của họ
+        if (token && user) {
+            if (userRole === 'admin') {
+                console.log('🔄 Admin accessing public page - redirect to /admin');
+                return <Navigate to="/admin" replace />;
+            }
+            if (userRole === 'doctor') {
+                console.log('🔄 Doctor accessing public page - redirect to /doctor-portal');
+                return <Navigate to="/doctor-portal" replace />;
+            }
+            // Patient hoặc guest → cho phép ở trang customer
+        }
         return children;
     }
 
-    // ✅ Case 2: Route yêu cầu đăng nhập
+    // ✅ Case 2: Trang chỉ dành cho patient hoặc guest (chưa đăng nhập)
+    if (requiredRole === 'patient-or-guest') {
+        if (token && user) {
+            if (userRole === 'admin') {
+                return <Navigate to="/admin" replace />;
+            }
+            if (userRole === 'doctor') {
+                return <Navigate to="/doctor-portal" replace />;
+            }
+            // Patient → cho phép
+        }
+        return children;
+    }
+
+    // ✅ Case 3: Route yêu cầu đăng nhập với role cụ thể
     if (!token || !user) {
         console.log('❌ Not logged in - Redirect to /login');
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
-    // ✅ Case 3: Kiểm tra role phù hợp
+    // ✅ Case 4: Kiểm tra role phù hợp
     if (requiredRole !== userRole) {
         console.log('❌ Wrong role:', userRole, '!==', requiredRole);
-        console.log('📍 Current path:', location.pathname);
-        console.log('🔄 Will redirect to:',
-            userRole === 'admin' ? '/admin' :
-                userRole === 'doctor' ? '/doctor' :
-                    userRole === 'patient' ? '/' : '/login'
-        );
 
         // Redirect về trang phù hợp với role
         if (userRole === 'admin') {
             return <Navigate to="/admin" replace />;
         }
         if (userRole === 'doctor') {
-            return <Navigate to="/doctor" replace />;
+            return <Navigate to="/doctor-portal" replace />;
         }
         if (userRole === 'patient') {
             return <Navigate to="/" replace />;

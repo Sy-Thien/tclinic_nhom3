@@ -105,13 +105,13 @@ export default function AdminRooms() {
         e.preventDefault();
         try {
             await api.post('/api/admin/rooms', formData);
-            alert('✅ Thêm phòng khám thành công');
+            alert('Thêm phòng khám thành công');
             setShowCreateModal(false);
             fetchRooms();
             fetchStats();
         } catch (error) {
             console.error('Error creating room:', error);
-            alert('❌ ' + (error.response?.data?.message || 'Lỗi khi thêm phòng khám'));
+            alert('Lỗi: ' + (error.response?.data?.message || 'Lỗi khi thêm phòng khám'));
         }
     };
 
@@ -136,13 +136,13 @@ export default function AdminRooms() {
         e.preventDefault();
         try {
             await api.put(`/api/admin/rooms/${selectedRoom.id}`, formData);
-            alert('✅ Cập nhật phòng khám thành công');
+            alert('Cập nhật phòng khám thành công');
             setShowEditModal(false);
             fetchRooms();
             fetchStats();
         } catch (error) {
             console.error('Error updating room:', error);
-            alert('❌ ' + (error.response?.data?.message || 'Lỗi khi cập nhật phòng khám'));
+            alert('Lỗi: ' + (error.response?.data?.message || 'Lỗi khi cập nhật phòng khám'));
         }
     };
 
@@ -155,13 +155,13 @@ export default function AdminRooms() {
     const confirmDelete = async () => {
         try {
             await api.delete(`/api/admin/rooms/${selectedRoom.id}`);
-            alert('✅ Xóa phòng khám thành công');
+            alert('Xóa phòng khám thành công');
             setShowDeleteModal(false);
             fetchRooms();
             fetchStats();
         } catch (error) {
             console.error('Error deleting room:', error);
-            alert('❌ ' + (error.response?.data?.message || 'Lỗi khi xóa phòng khám'));
+            alert('Lỗi: ' + (error.response?.data?.message || 'Lỗi khi xóa phòng khám'));
         }
     };
 
@@ -169,11 +169,11 @@ export default function AdminRooms() {
     const getStatusBadge = (status) => {
         switch (status) {
             case 'active':
-                return <span className={`${styles.badge} ${styles.active}`}>🟢 Hoạt động</span>;
+                return <span className={`${styles.badge} ${styles.active}`}>Hoạt động</span>;
             case 'inactive':
-                return <span className={`${styles.badge} ${styles.inactive}`}>🔴 Tạm đóng</span>;
+                return <span className={`${styles.badge} ${styles.inactive}`}>Tạm đóng</span>;
             case 'maintenance':
-                return <span className={`${styles.badge} ${styles.maintenance}`}>🟡 Bảo trì</span>;
+                return <span className={`${styles.badge} ${styles.maintenance}`}>Bảo trì</span>;
             default:
                 return <span className={styles.badge}>{status}</span>;
         }
@@ -189,18 +189,18 @@ export default function AdminRooms() {
     };
 
     if (loading && rooms.length === 0) {
-        return <div className={styles.loading}>⏳ Đang tải dữ liệu...</div>;
+        return <div className={styles.loading}>Đang tải dữ liệu...</div>;
     }
 
     return (
         <div className={styles.container}>
             <div className={styles.header}>
                 <div>
-                    <h1>🏥 Quản Lý Phòng Khám</h1>
+                    <h1>Quản Lý Phòng Khám</h1>
                     <p>Quản lý phòng khám theo tầng và chuyên khoa</p>
                 </div>
                 <button onClick={() => handleCreate()} className={styles.btnCreate}>
-                    ➕ Thêm phòng khám
+                    Thêm phòng khám
                 </button>
             </div>
 
@@ -208,28 +208,28 @@ export default function AdminRooms() {
             {stats && (
                 <div className={styles.statsGrid}>
                     <div className={styles.statCard}>
-                        <div className={styles.statIcon}>🏠</div>
+                        <div className={styles.statIcon}>Tổng</div>
                         <div className={styles.statInfo}>
                             <span className={styles.statNumber}>{stats.total}</span>
                             <span className={styles.statLabel}>Tổng phòng</span>
                         </div>
                     </div>
                     <div className={`${styles.statCard} ${styles.success}`}>
-                        <div className={styles.statIcon}>🟢</div>
+                        <div className={styles.statIcon}>HĐ</div>
                         <div className={styles.statInfo}>
                             <span className={styles.statNumber}>{stats.byStatus?.active || 0}</span>
                             <span className={styles.statLabel}>Đang hoạt động</span>
                         </div>
                     </div>
                     <div className={`${styles.statCard} ${styles.warning}`}>
-                        <div className={styles.statIcon}>🟡</div>
+                        <div className={styles.statIcon}>BT</div>
                         <div className={styles.statInfo}>
                             <span className={styles.statNumber}>{stats.byStatus?.maintenance || 0}</span>
                             <span className={styles.statLabel}>Đang bảo trì</span>
                         </div>
                     </div>
                     <div className={`${styles.statCard} ${styles.danger}`}>
-                        <div className={styles.statIcon}>🔴</div>
+                        <div className={styles.statIcon}>Đ</div>
                         <div className={styles.statInfo}>
                             <span className={styles.statNumber}>{stats.byStatus?.inactive || 0}</span>
                             <span className={styles.statLabel}>Tạm đóng</span>
@@ -242,7 +242,7 @@ export default function AdminRooms() {
             <div className={styles.filters}>
                 <input
                     type="text"
-                    placeholder="🔍 Tìm phòng khám..."
+                    placeholder="Tìm phòng khám..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className={styles.searchInput}
@@ -253,7 +253,7 @@ export default function AdminRooms() {
                     onChange={(e) => setFilterFloor(e.target.value)}
                     className={styles.filterSelect}
                 >
-                    <option value="">📍 Tất cả tầng</option>
+                    <option value="">Tất cả tầng</option>
                     {[1, 2, 3, 4, 5].map(f => (
                         <option key={f} value={f}>Tầng {f}</option>
                     ))}
@@ -264,7 +264,7 @@ export default function AdminRooms() {
                     onChange={(e) => setFilterSpecialty(e.target.value)}
                     className={styles.filterSelect}
                 >
-                    <option value="">🏷️ Tất cả chuyên khoa</option>
+                    <option value="">Tất cả chuyên khoa</option>
                     {specialties.map(s => (
                         <option key={s.id} value={s.id}>{s.name}</option>
                     ))}
@@ -275,10 +275,10 @@ export default function AdminRooms() {
                     onChange={(e) => setFilterStatus(e.target.value)}
                     className={styles.filterSelect}
                 >
-                    <option value="">📊 Tất cả trạng thái</option>
-                    <option value="active">🟢 Hoạt động</option>
-                    <option value="maintenance">🟡 Bảo trì</option>
-                    <option value="inactive">🔴 Tạm đóng</option>
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="active">Hoạt động</option>
+                    <option value="maintenance">Bảo trì</option>
+                    <option value="inactive">Tạm đóng</option>
                 </select>
 
                 <div className={styles.viewToggle}>
@@ -286,13 +286,13 @@ export default function AdminRooms() {
                         className={`${styles.viewBtn} ${viewMode === 'floor' ? styles.active : ''}`}
                         onClick={() => setViewMode('floor')}
                     >
-                        🏢 Theo tầng
+                        Theo tầng
                     </button>
                     <button
                         className={`${styles.viewBtn} ${viewMode === 'list' ? styles.active : ''}`}
                         onClick={() => setViewMode('list')}
                     >
-                        📋 Danh sách
+                        Danh sách
                     </button>
                 </div>
             </div>
@@ -300,10 +300,10 @@ export default function AdminRooms() {
             {/* Content */}
             {rooms.length === 0 ? (
                 <div className={styles.noData}>
-                    <span className={styles.noDataIcon}>🏥</span>
+                    <span className={styles.noDataIcon}>Phòng</span>
                     <p>Chưa có phòng khám nào</p>
                     <button onClick={() => handleCreate()} className={styles.btnCreate}>
-                        ➕ Thêm phòng khám đầu tiên
+                        Thêm phòng khám đầu tiên
                     </button>
                 </div>
             ) : viewMode === 'floor' ? (
@@ -312,7 +312,7 @@ export default function AdminRooms() {
                     {Object.keys(roomsByFloor).sort((a, b) => a - b).map(floor => (
                         <div key={floor} className={styles.floorSection}>
                             <div className={styles.floorHeader}>
-                                <h2>🏢 Tầng {floor}</h2>
+                                <h2>Tầng {floor}</h2>
                                 <span className={styles.roomCount}>{roomsByFloor[floor].length} phòng</span>
                                 <button
                                     className={styles.btnAddRoom}
@@ -337,16 +337,16 @@ export default function AdminRooms() {
                                         <h3 className={styles.roomName}>{room.name}</h3>
                                         {room.specialty && (
                                             <div className={styles.roomSpecialty} style={{ color: getSpecialtyColor(room.specialty.id) }}>
-                                                🏷️ {room.specialty.name}
+                                                {room.specialty.name}
                                             </div>
                                         )}
                                         {room.location && (
                                             <div className={styles.roomLocation}>
-                                                📍 {room.location}
+                                                Vị trí: {room.location}
                                             </div>
                                         )}
                                         <div className={styles.roomMeta}>
-                                            <span>👥 Sức chứa: {room.capacity || 1}</span>
+                                            <span>Sức chứa: {room.capacity || 1}</span>
                                         </div>
                                         <div className={styles.roomActions}>
                                             <button
@@ -354,14 +354,14 @@ export default function AdminRooms() {
                                                 className={styles.btnEdit}
                                                 title="Chỉnh sửa"
                                             >
-                                                ✏️
+                                                Sửa
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(room)}
                                                 className={styles.btnDelete}
                                                 title="Xóa"
                                             >
-                                                🗑️
+                                                Xóa
                                             </button>
                                         </div>
                                     </div>
@@ -410,14 +410,14 @@ export default function AdminRooms() {
                                             className={styles.btnEdit}
                                             title="Chỉnh sửa"
                                         >
-                                            ✏️
+                                            Sửa
                                         </button>
                                         <button
                                             onClick={() => handleDelete(room)}
                                             className={styles.btnDelete}
                                             title="Xóa"
                                         >
-                                            🗑️
+                                            Xóa
                                         </button>
                                     </td>
                                 </tr>
@@ -432,8 +432,8 @@ export default function AdminRooms() {
                 <div className={styles.modalOverlay} onClick={() => setShowCreateModal(false)}>
                     <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
                         <div className={styles.modalHeader}>
-                            <h2>➕ Thêm phòng khám mới</h2>
-                            <button onClick={() => setShowCreateModal(false)} className={styles.closeBtn}>✕</button>
+                            <h2>Thêm phòng khám mới</h2>
+                            <button onClick={() => setShowCreateModal(false)} className={styles.closeBtn}>Đóng</button>
                         </div>
                         <form onSubmit={handleCreateRoom} className={styles.form}>
                             <div className={styles.formRow}>
@@ -500,9 +500,9 @@ export default function AdminRooms() {
                                         value={formData.status}
                                         onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                                     >
-                                        <option value="active">🟢 Hoạt động</option>
-                                        <option value="maintenance">🟡 Bảo trì</option>
-                                        <option value="inactive">🔴 Tạm đóng</option>
+                                        <option value="active">Hoạt động</option>
+                                        <option value="maintenance">Bảo trì</option>
+                                        <option value="inactive">Tạm đóng</option>
                                     </select>
                                 </div>
                             </div>
@@ -532,7 +532,7 @@ export default function AdminRooms() {
                                     Hủy
                                 </button>
                                 <button type="submit" className={styles.btnSubmit}>
-                                    ✅ Thêm mới
+                                    Thêm mới
                                 </button>
                             </div>
                         </form>
@@ -545,8 +545,8 @@ export default function AdminRooms() {
                 <div className={styles.modalOverlay} onClick={() => setShowEditModal(false)}>
                     <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
                         <div className={styles.modalHeader}>
-                            <h2>✏️ Chỉnh sửa phòng khám</h2>
-                            <button onClick={() => setShowEditModal(false)} className={styles.closeBtn}>✕</button>
+                            <h2>Chỉnh sửa phòng khám</h2>
+                            <button onClick={() => setShowEditModal(false)} className={styles.closeBtn}>Đóng</button>
                         </div>
                         <form onSubmit={handleUpdateRoom} className={styles.form}>
                             <div className={styles.formRow}>
@@ -611,9 +611,9 @@ export default function AdminRooms() {
                                         value={formData.status}
                                         onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                                     >
-                                        <option value="active">🟢 Hoạt động</option>
-                                        <option value="maintenance">🟡 Bảo trì</option>
-                                        <option value="inactive">🔴 Tạm đóng</option>
+                                        <option value="active">Hoạt động</option>
+                                        <option value="maintenance">Bảo trì</option>
+                                        <option value="inactive">Tạm đóng</option>
                                     </select>
                                 </div>
                             </div>
@@ -641,7 +641,7 @@ export default function AdminRooms() {
                                     Hủy
                                 </button>
                                 <button type="submit" className={styles.btnSubmit}>
-                                    ✅ Cập nhật
+                                    Cập nhật
                                 </button>
                             </div>
                         </form>
@@ -654,8 +654,8 @@ export default function AdminRooms() {
                 <div className={styles.modalOverlay} onClick={() => setShowDeleteModal(false)}>
                     <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
                         <div className={styles.modalHeader}>
-                            <h2>⚠️ Xác nhận xóa</h2>
-                            <button onClick={() => setShowDeleteModal(false)} className={styles.closeBtn}>✕</button>
+                            <h2>Xác nhận xóa</h2>
+                            <button onClick={() => setShowDeleteModal(false)} className={styles.closeBtn}>Đóng</button>
                         </div>
                         <div className={styles.deleteConfirm}>
                             <p>Bạn có chắc chắn muốn xóa phòng khám:</p>
@@ -663,14 +663,14 @@ export default function AdminRooms() {
                                 {selectedRoom.room_number && `[${selectedRoom.room_number}] `}
                                 {selectedRoom.name}
                             </p>
-                            <p className={styles.warning}>⚠️ Hành động này không thể hoàn tác!</p>
+                            <p className={styles.warning}>Cảnh báo: Hành động này không thể hoàn tác!</p>
                         </div>
                         <div className={styles.formActions}>
                             <button onClick={() => setShowDeleteModal(false)} className={styles.btnCancel}>
                                 Hủy
                             </button>
                             <button onClick={confirmDelete} className={styles.btnDeleteConfirm}>
-                                🗑️ Xóa phòng
+                                Xóa phòng
                             </button>
                         </div>
                     </div>

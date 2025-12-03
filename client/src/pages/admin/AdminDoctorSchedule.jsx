@@ -88,10 +88,10 @@ export default function AdminDoctorSchedule() {
         try {
             if (editingId) {
                 await api.put(`/api/admin/doctor-schedules/${editingId}`, formData);
-                alert('✅ Cập nhật lịch thành công');
+                alert('Cập nhật lịch thành công');
             } else {
                 await api.post('/api/admin/doctor-schedules', formData);
-                alert('✅ Tạo lịch thành công');
+                alert('Tạo lịch thành công');
             }
 
             // Reset form
@@ -108,7 +108,7 @@ export default function AdminDoctorSchedule() {
             setEditingId(null);
             fetchSchedulesByDoctor(selectedDoctor);
         } catch (error) {
-            alert('❌ ' + (error.response?.data?.message || 'Có lỗi xảy ra'));
+            alert('Lỗi: ' + (error.response?.data?.message || 'Có lỗi xảy ra'));
         }
     };
 
@@ -131,10 +131,10 @@ export default function AdminDoctorSchedule() {
 
         try {
             await api.delete(`/api/admin/doctor-schedules/${scheduleId}`);
-            alert('✅ Xóa lịch thành công');
+            alert('Xóa lịch thành công');
             fetchSchedulesByDoctor(selectedDoctor);
         } catch (error) {
-            alert('❌ ' + (error.response?.data?.message || 'Có lỗi xảy ra'));
+            alert('Lỗi: ' + (error.response?.data?.message || 'Có lỗi xảy ra'));
         }
     };
 
@@ -144,10 +144,10 @@ export default function AdminDoctorSchedule() {
                 ...schedule,
                 is_active: !schedule.is_active
             });
-            alert(`✅ ${schedule.is_active ? 'Đã tắt' : 'Đã bật'} lịch ${schedule.day_of_week}`);
+            alert(`${schedule.is_active ? 'Đã tắt' : 'Đã bật'} lịch ${schedule.day_of_week}`);
             fetchSchedulesByDoctor(selectedDoctor);
         } catch (error) {
-            alert('❌ Lỗi khi thay đổi trạng thái');
+            alert('Lỗi khi thay đổi trạng thái');
         }
     };
 
@@ -195,7 +195,7 @@ export default function AdminDoctorSchedule() {
     return (
         <div className={styles.container}>
             <div className={styles.header}>
-                <h1>📅 Quản Lý Lịch Làm Việc</h1>
+                <h1>Quản Lý Lịch Làm Việc</h1>
                 <p>Cấu hình lịch làm việc hàng tuần cho các bác sĩ. Có thể tắt lịch khi bác sĩ xin nghỉ.</p>
             </div>
 
@@ -221,10 +221,10 @@ export default function AdminDoctorSchedule() {
 
                 {/* Chọn bác sĩ */}
                 <div className={styles.section}>
-                    <h2>👨‍⚕️ Chọn Bác Sĩ</h2>
+                    <h2>Chọn Bác Sĩ</h2>
                     <input
                         type="text"
-                        placeholder="🔍 Tìm kiếm bác sĩ theo tên hoặc chuyên khoa..."
+                        placeholder="Tìm kiếm bác sĩ theo tên hoặc chuyên khoa..."
                         value={searchDoctor}
                         onChange={(e) => setSearchDoctor(e.target.value)}
                         className={styles.searchInput}
@@ -237,7 +237,7 @@ export default function AdminDoctorSchedule() {
                             Object.entries(doctorsBySpecialty).map(([specName, docs]) => (
                                 <div key={specName} className={styles.specialtyGroup}>
                                     <h3 className={styles.groupTitle}>
-                                        🏥 {specName}
+                                        {specName}
                                         <span className={styles.groupCount}>({docs.length} bác sĩ)</span>
                                     </h3>
                                     <div className={styles.doctorsList}>
@@ -281,14 +281,14 @@ export default function AdminDoctorSchedule() {
                     <>
                         {/* Thông tin bác sĩ đang chọn */}
                         <div className={styles.selectedInfo}>
-                            <span>📋 Đang quản lý lịch của: </span>
+                            <span>Đang quản lý lịch của: </span>
                             <strong>{selectedDoctorInfo?.full_name}</strong>
                             <span className={styles.specialty}>({selectedDoctorInfo?.specialty?.name})</span>
                         </div>
 
                         {/* Form thêm/sửa lịch */}
                         <div className={styles.section}>
-                            <h2>{editingId ? '✏️ Chỉnh Sửa Lịch' : '➕ Thêm Lịch Mới'}</h2>
+                            <h2>{editingId ? 'Chỉnh Sửa Lịch' : 'Thêm Lịch Mới'}</h2>
                             <form onSubmit={handleSubmit} className={styles.form}>
                                 <div className={styles.formRow}>
                                     <div className={styles.formGroup}>
@@ -340,7 +340,7 @@ export default function AdminDoctorSchedule() {
                                 </div>
 
                                 <div className={styles.breakSection}>
-                                    <h3>☕ Giờ Nghỉ Trưa (Tùy Chọn)</h3>
+                                    <h3>Giờ Nghỉ Trưa (Tùy Chọn)</h3>
                                     <div className={styles.formRow}>
                                         <div className={styles.formGroup}>
                                             <label>Bắt đầu nghỉ</label>
@@ -378,11 +378,11 @@ export default function AdminDoctorSchedule() {
 
                                 <div className={styles.formActions}>
                                     <button type="submit" className={styles.btnSubmit}>
-                                        {editingId ? '💾 Cập Nhật' : '➕ Thêm Lịch'}
+                                        {editingId ? 'Cập Nhật' : 'Thêm Lịch'}
                                     </button>
                                     {editingId && (
                                         <button type="button" className={styles.btnCancel} onClick={handleCancel}>
-                                            ❌ Hủy
+                                            Hủy
                                         </button>
                                     )}
                                 </div>
@@ -391,9 +391,9 @@ export default function AdminDoctorSchedule() {
 
                         {/* Danh sách lịch */}
                         <div className={styles.section}>
-                            <h2>📋 Lịch Làm Việc Hiện Tại</h2>
+                            <h2>Lịch Làm Việc Hiện Tại</h2>
                             {loading ? (
-                                <p className={styles.loading}>⏳ Đang tải...</p>
+                                <p className={styles.loading}>Đang tải...</p>
                             ) : schedules.length > 0 ? (
                                 <div className={styles.scheduleGrid}>
                                     {schedules.map(schedule => (
@@ -407,16 +407,16 @@ export default function AdminDoctorSchedule() {
                                             </div>
                                             <div className={styles.scheduleInfo}>
                                                 <div className={styles.time}>
-                                                    ⏰ {schedule.start_time?.substring(0, 5)} - {schedule.end_time?.substring(0, 5)}
+                                                    {schedule.start_time?.substring(0, 5)} - {schedule.end_time?.substring(0, 5)}
                                                 </div>
                                                 {schedule.break_start && schedule.break_end && (
                                                     <div className={styles.breakTime}>
-                                                        ☕ Nghỉ: {schedule.break_start?.substring(0, 5)} - {schedule.break_end?.substring(0, 5)}
+                                                        Nghỉ: {schedule.break_start?.substring(0, 5)} - {schedule.break_end?.substring(0, 5)}
                                                     </div>
                                                 )}
                                                 {schedule.room && (
                                                     <div className={styles.room}>
-                                                        🏥 {schedule.room}
+                                                        Phòng: {schedule.room}
                                                     </div>
                                                 )}
                                             </div>
@@ -426,21 +426,21 @@ export default function AdminDoctorSchedule() {
                                                     onClick={() => handleEdit(schedule)}
                                                     title="Sửa"
                                                 >
-                                                    ✏️
+                                                    Sửa
                                                 </button>
                                                 <button
                                                     className={`${styles.btnToggle} ${!schedule.is_active ? styles.toggleOff : ''}`}
                                                     onClick={() => handleToggleActive(schedule)}
                                                     title={schedule.is_active ? 'Cho nghỉ' : 'Mở lại'}
                                                 >
-                                                    {schedule.is_active ? '🔒' : '🔓'}
+                                                    {schedule.is_active ? 'Khóa' : 'Mở'}
                                                 </button>
                                                 <button
                                                     className={styles.btnDelete}
                                                     onClick={() => handleDelete(schedule.id)}
                                                     title="Xóa"
                                                 >
-                                                    🗑️
+                                                    Xóa
                                                 </button>
                                             </div>
                                         </div>

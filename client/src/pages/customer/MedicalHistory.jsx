@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import api from '../../utils/api';
+import { generatePrescriptionPDF } from '../../utils/generatePrescriptionPDF';
 import styles from './MedicalHistory.module.css';
 
 const MedicalHistory = () => {
@@ -14,10 +15,7 @@ const MedicalHistory = () => {
 
     const fetchMedicalHistory = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:5000/api/medical-records/my-history', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.get('/api/medical-records/my-history');
             setRecords(response.data.data || response.data);
         } catch (error) {
             console.error('Error fetching medical history:', error);
@@ -29,10 +27,7 @@ const MedicalHistory = () => {
 
     const handleViewDetail = async (recordId) => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await axios.get(`http://localhost:5000/api/medical-records/my-history/${recordId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.get(`/api/medical-records/my-history/${recordId}`);
             setSelectedRecord(response.data.data || response.data);
             setShowDetailModal(true);
         } catch (error) {
@@ -41,20 +36,73 @@ const MedicalHistory = () => {
         }
     };
 
-    const handleDownloadPDF = (recordId) => {
-        const token = localStorage.getItem('token');
-        window.open(`http://localhost:5000/api/doctor/prescriptions/download-pdf/${recordId}?token=${token}`, '_blank');
+    const handleDownloadPDF = (record) => {
+        if (!record || !record.prescription) {
+            alert('Không có đơn thuốc để tải');
+            return;
+        }
+
+        try {
+            // Chuẩn bị dữ liệu cho PDF
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+            const appointmentData = {
+                patient_name: user.full_name || user.name,
+                patient_dob: user.birthday ? new Date(user.birthday).toLocaleDateString('vi-VN') : '',
+                patient_gender: user.gender,
+                patient_phone: user.phone,
+                patient_email: user.email,
+                patient_address: user.address,
+                appointment_date: record.appointment_date ? new Date(record.appointment_date).toLocaleDateString('vi-VN') : '',
+                appointment_time: record.appointment_time,
+                symptoms: record.symptoms,
+                diagnosis: record.diagnosis,
+                conclusion: record.conclusion,
+                specialty: record.doctor?.specialty || record.specialty,
+                doctor_name: record.doctor?.full_name
+            };
+
+            const prescriptionData = {
+                prescription_code: record.prescription.prescription_code,
+                note: record.prescription.note,
+                PrescriptionDetails: record.prescription.details?.map(detail => ({
+                    Drug: detail.drug,
+                    quantity: detail.quantity,
+                    unit: detail.unit || detail.drug?.unit || 'viên',
+                    dosage: detail.dosage,
+                    duration: detail.duration,
+                    note: detail.note
+                })) || []
+            };
+
+            const doctorData = {
+                full_name: record.doctor?.full_name
+            };
+
+            console.log('📄 Generating PDF with data:', { prescriptionData, appointmentData, doctorData });
+            generatePrescriptionPDF(prescriptionData, appointmentData, doctorData);
+        } catch (error) {
+            console.error('❌ Error generating PDF:', error);
+            alert('Có lỗi xảy ra khi tải đơn thuốc. Vui lòng thử lại!');
+        }
     };
 
-    const formatDate = (dateString) => {
+    const formatDate = (dateString, timeString) => {
+        if (!dateString) return '';
         const date = new Date(dateString);
-        return date.toLocaleDateString('vi-VN', {
+        const formattedDate = date.toLocaleDateString('vi-VN', {
             day: '2-digit',
             month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
+            year: 'numeric'
         });
+
+        if (timeString) {
+            // Format time to HH:mm
+            const timeParts = timeString.split(':');
+            const formattedTime = timeParts.length >= 2 ? `${timeParts[0]}:${timeParts[1]}` : timeString;
+            return `${formattedTime} ${formattedDate}`;
+        }
+        return formattedDate;
     };
 
     if (loading) {
@@ -75,7 +123,7 @@ const MedicalHistory = () => {
                         <div key={record.id} className={styles.recordCard}>
                             <div className={styles.recordHeader}>
                                 <div className={styles.dateInfo}>
-                                    <span className={styles.date}>{formatDate(record.appointment_date)}</span>
+                                    <span className={styles.date}>{formatDate(record.appointment_date, record.appointment_time)}</span>
                                 </div>
                                 <div className={styles.statusBadge}>Đã khám</div>
                             </div>
@@ -90,9 +138,15 @@ const MedicalHistory = () => {
                                     <span className={styles.value}>{record.doctor?.specialty?.name || 'N/A'}</span>
                                 </div>
                                 <div className={styles.infoRow}>
-                                    <span className={styles.label}>Lý do khám:</span>
-                                    <span className={styles.value}>{record.chief_complaint || 'Không có'}</span>
+                                    <span className={styles.label}>Triệu chứng:</span>
+                                    <span className={styles.value}>{record.symptoms || 'Không có'}</span>
                                 </div>
+                                {record.diagnosis && (
+                                    <div className={styles.infoRow}>
+                                        <span className={styles.label}>Chẩn đoán:</span>
+                                        <span className={styles.value}>{record.diagnosis}</span>
+                                    </div>
+                                )}
                             </div>
 
                             <div className={styles.recordFooter}>
@@ -105,7 +159,7 @@ const MedicalHistory = () => {
                                 {record.prescription && (
                                     <button
                                         className={styles.btnDownload}
-                                        onClick={() => handleDownloadPDF(record.id)}
+                                        onClick={() => handleDownloadPDF(record)}
                                     >
                                         📄 Tải đơn thuốc
                                     </button>
@@ -136,7 +190,7 @@ const MedicalHistory = () => {
                                 <div className={styles.detailInfo}>
                                     <div className={styles.detailRow}>
                                         <span className={styles.detailLabel}>Ngày khám:</span>
-                                        <span>{formatDate(selectedRecord.appointment_date)}</span>
+                                        <span>{formatDate(selectedRecord.appointment_date, selectedRecord.appointment_time)}</span>
                                     </div>
                                     <div className={styles.detailRow}>
                                         <span className={styles.detailLabel}>Bác sĩ:</span>
@@ -144,11 +198,11 @@ const MedicalHistory = () => {
                                     </div>
                                     <div className={styles.detailRow}>
                                         <span className={styles.detailLabel}>Chuyên khoa:</span>
-                                        <span>{selectedRecord.doctor?.specialty?.name}</span>
+                                        <span>{selectedRecord.doctor?.specialty?.name || selectedRecord.specialty?.name}</span>
                                     </div>
                                     <div className={styles.detailRow}>
-                                        <span className={styles.detailLabel}>Lý do khám:</span>
-                                        <span>{selectedRecord.chief_complaint}</span>
+                                        <span className={styles.detailLabel}>Triệu chứng:</span>
+                                        <span>{selectedRecord.symptoms || 'Không có'}</span>
                                     </div>
                                 </div>
                             </div>
@@ -169,31 +223,56 @@ const MedicalHistory = () => {
 
                             {selectedRecord.prescription && (
                                 <div className={styles.section}>
-                                    <h3>Đơn thuốc</h3>
+                                    <h3>💊 Đơn thuốc - Hướng dẫn sử dụng</h3>
+                                    <div className={styles.prescriptionCode}>
+                                        Mã đơn: <strong>{selectedRecord.prescription.prescription_code}</strong>
+                                    </div>
                                     <table className={styles.prescriptionTable}>
                                         <thead>
                                             <tr>
+                                                <th>STT</th>
                                                 <th>Tên thuốc</th>
                                                 <th>Hoạt chất</th>
                                                 <th>Số lượng</th>
-                                                <th>Liều dùng</th>
+                                                <th>Cách dùng</th>
                                                 <th>Thời gian</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {selectedRecord.prescription.details?.map((detail, index) => (
                                                 <tr key={index}>
-                                                    <td>{detail.drug?.name || 'N/A'}</td>
-                                                    <td>{detail.drug?.ingredient || 'N/A'}</td>
-                                                    <td>{detail.quantity}</td>
-                                                    <td>{detail.dosage}</td>
-                                                    <td>{detail.duration}</td>
+                                                    <td className={styles.centerText}>{index + 1}</td>
+                                                    <td><strong>{detail.drug?.name || 'N/A'}</strong></td>
+                                                    <td className={styles.ingredient}>{detail.drug?.ingredient || 'N/A'}</td>
+                                                    <td className={styles.centerText}>{detail.quantity} {detail.unit}</td>
+                                                    <td className={styles.dosage}>
+                                                        <div className={styles.dosageInstruction}>
+                                                            {detail.dosage || 'Theo chỉ dẫn bác sĩ'}
+                                                        </div>
+                                                        {detail.note && (
+                                                            <div className={styles.drugNote}>📌 {detail.note}</div>
+                                                        )}
+                                                    </td>
+                                                    <td className={styles.centerText}>{detail.duration || 'N/A'}</td>
                                                 </tr>
                                             ))}
                                         </tbody>
                                     </table>
-                                    <div className={styles.prescriptionNote}>
-                                        <strong>Ghi chú:</strong> {selectedRecord.prescription.notes || 'Không có'}
+                                    {selectedRecord.prescription.note && (
+                                        <div className={styles.prescriptionNote}>
+                                            <strong>📝 Lưu ý từ bác sĩ:</strong>
+                                            <p>{selectedRecord.prescription.note}</p>
+                                        </div>
+                                    )}
+                                    <div className={styles.importantNotes}>
+                                        <h4>⚠️ Lưu ý quan trọng khi dùng thuốc:</h4>
+                                        <ul>
+                                            <li>Uống thuốc đúng giờ, đúng liều lượng theo chỉ định</li>
+                                            <li>Không tự ý ngừng thuốc hoặc thay đổi liều lượng</li>
+                                            <li>Uống thuốc cùng nước lọc, tránh uống với trà, cà phê, sữa</li>
+                                            <li>Nếu có phản ứng phụ bất thường, liên hệ ngay bác sĩ</li>
+                                            <li>Bảo quản thuốc nơi khô ráo, thoáng mát, tránh ánh sáng</li>
+                                        </ul>
                                     </div>
                                 </div>
                             )}
@@ -203,7 +282,7 @@ const MedicalHistory = () => {
                             {selectedRecord.prescription && (
                                 <button
                                     className={styles.btnDownloadModal}
-                                    onClick={() => handleDownloadPDF(selectedRecord.id)}
+                                    onClick={() => handleDownloadPDF(selectedRecord)}
                                 >
                                     📄 Tải đơn thuốc PDF
                                 </button>

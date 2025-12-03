@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import api from '../../utils/api';
 import styles from './Contact.module.css';
 
 export default function Contact() {
@@ -7,13 +8,103 @@ export default function Contact() {
         email: '',
         phone: '',
         subject: '',
-        message: ''
+        message: '',
+        category: 'general',
+        specialty_id: ''
     });
+    const [specialties, setSpecialties] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [user, setUser] = useState(null);
 
-    const handleSubmit = (e) => {
+    useEffect(() => {
+        // Load user info if logged in
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            try {
+                const userData = JSON.parse(storedUser);
+                setUser(userData);
+                // Pre-fill form for logged in users
+                if (userData.role === 'patient') {
+                    setFormData(prev => ({
+                        ...prev,
+                        name: userData.full_name || userData.name || '',
+                        email: userData.email || '',
+                        phone: userData.phone || ''
+                    }));
+                }
+            } catch (e) {
+                console.error('Error parsing user data:', e);
+            }
+        }
+
+        // Load specialties
+        fetchSpecialties();
+    }, []);
+
+    const fetchSpecialties = async () => {
+        try {
+            const response = await api.get('/api/public/specialties');
+            setSpecialties(response.data.specialties || []);
+        } catch (error) {
+            console.error('Error fetching specialties:', error);
+        }
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        alert('Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi sớm nhất.');
-        setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+
+        if (loading) return;
+
+        try {
+            setLoading(true);
+
+            const payload = {
+                subject: formData.subject,
+                message: formData.message,
+                category: formData.category,
+                specialty_id: formData.specialty_id || null
+            };
+
+            // If not logged in, send as guest
+            if (!user) {
+                payload.guest_name = formData.name;
+                payload.guest_email = formData.email;
+                payload.guest_phone = formData.phone;
+            }
+
+            await api.post('/api/consultation-requests', payload);
+
+            alert('✅ Gửi yêu cầu thành công! Chúng tôi sẽ phản hồi sớm nhất.');
+
+            // Reset form (keep user info if logged in)
+            if (user) {
+                setFormData({
+                    name: formData.name,
+                    email: formData.email,
+                    phone: formData.phone,
+                    subject: '',
+                    message: '',
+                    category: 'general',
+                    specialty_id: ''
+                });
+            } else {
+                setFormData({
+                    name: '',
+                    email: '',
+                    phone: '',
+                    subject: '',
+                    message: '',
+                    category: 'general',
+                    specialty_id: ''
+                });
+            }
+
+        } catch (error) {
+            console.error('Error submitting request:', error);
+            alert('❌ ' + (error.response?.data?.message || 'Có lỗi xảy ra! Vui lòng thử lại.'));
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleChange = (e) => {
@@ -60,7 +151,50 @@ export default function Contact() {
 
                 <div className={styles.formSection}>
                     <h2>💬 Gửi tin nhắn cho chúng tôi</h2>
+                    {user && (
+                        <div style={{
+                            padding: '12px',
+                            background: '#e8f5e9',
+                            borderRadius: '8px',
+                            marginBottom: '20px',
+                            color: '#2e7d32'
+                        }}>
+                            ✅ Đang đăng nhập với tài khoản: <strong>{user.email}</strong>
+                        </div>
+                    )}
                     <form onSubmit={handleSubmit} className={styles.form}>
+                        <div className={styles.formGroup}>
+                            <label>Phân loại yêu cầu *</label>
+                            <select
+                                name="category"
+                                value={formData.category}
+                                onChange={handleChange}
+                                required
+                            >
+                                <option value="general">Tổng quát</option>
+                                <option value="medical_inquiry">Tư vấn y tế</option>
+                                <option value="appointment">Đặt lịch khám</option>
+                                <option value="complaint">Khiếu nại</option>
+                                <option value="other">Khác</option>
+                            </select>
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label>Chuyên khoa liên quan</label>
+                            <select
+                                name="specialty_id"
+                                value={formData.specialty_id}
+                                onChange={handleChange}
+                            >
+                                <option value="">-- Chọn chuyên khoa (nếu có) --</option>
+                                {specialties.map(specialty => (
+                                    <option key={specialty.id} value={specialty.id}>
+                                        {specialty.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
                         <div className={styles.formGroup}>
                             <label>Họ và tên *</label>
                             <input
@@ -70,6 +204,7 @@ export default function Contact() {
                                 onChange={handleChange}
                                 placeholder="Nhập họ tên của bạn"
                                 required
+                                disabled={!!user}
                             />
                         </div>
 
@@ -83,6 +218,7 @@ export default function Contact() {
                                     onChange={handleChange}
                                     placeholder="email@example.com"
                                     required
+                                    disabled={!!user}
                                 />
                             </div>
 
@@ -94,6 +230,7 @@ export default function Contact() {
                                     value={formData.phone}
                                     onChange={handleChange}
                                     placeholder="0901234567"
+                                    disabled={!!user}
                                 />
                             </div>
                         </div>
@@ -122,8 +259,8 @@ export default function Contact() {
                             ></textarea>
                         </div>
 
-                        <button type="submit" className={styles.submitBtn}>
-                            📤 Gửi tin nhắn
+                        <button type="submit" className={styles.submitBtn} disabled={loading}>
+                            {loading ? '⏳ Đang gửi...' : '📤 Gửi yêu cầu'}
                         </button>
                     </form>
                 </div>

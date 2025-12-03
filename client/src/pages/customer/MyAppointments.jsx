@@ -28,18 +28,6 @@ export default function MyAppointments() {
             return;
         }
 
-        const user = JSON.parse(userStr);
-
-        // ✅ Redirect if not patient
-        if (user.role === 'doctor') {
-            navigate('/doctor-portal');
-            return;
-        }
-        if (user.role === 'admin') {
-            navigate('/admin');
-            return;
-        }
-
         fetchAppointments();
     }, [navigate]); const fetchAppointments = async () => {
         try {
@@ -389,6 +377,13 @@ export default function MyAppointments() {
                                     <span>Trạng thái:</span>
                                     <span>{getStatusBadge(selectedDetail.status)}</span>
                                 </div>
+                                {/* ✅ Hiển thị dịch vụ */}
+                                {selectedDetail.service_name && (
+                                    <div className={styles.detailRow}>
+                                        <span>Dịch vụ:</span>
+                                        <span className={styles.serviceName}>{selectedDetail.service_name}</span>
+                                    </div>
+                                )}
                                 <div className={styles.detailRow}>
                                     <span>Chuyên khoa:</span>
                                     <span>{selectedDetail.specialty_name}</span>
@@ -408,6 +403,25 @@ export default function MyAppointments() {
                                     </div>
                                 )}
                             </div>
+
+                            {/* ✅ Hiển thị chi phí với styling đặc biệt cho completed */}
+                            {selectedDetail.status === 'completed' && (
+                                <div className={styles.detailSection}>
+                                    <h3>💰 Chi phí khám</h3>
+                                    <div className={styles.costSummary}>
+                                        <div className={styles.costRow}>
+                                            <span>Phí dịch vụ ({selectedDetail.service_name || 'Khám bệnh'}):</span>
+                                            <span>{(selectedDetail.service_price || selectedDetail.price || 0).toLocaleString('vi-VN')}đ</span>
+                                        </div>
+                                        <div className={styles.costTotal}>
+                                            <span>Tổng cộng:</span>
+                                            <span className={styles.totalPrice}>
+                                                {(selectedDetail.service_price || selectedDetail.price || 0).toLocaleString('vi-VN')}đ
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             {selectedDetail.status === 'completed' && (
                                 <>

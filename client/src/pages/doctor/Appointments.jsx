@@ -1,16 +1,33 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import styles from './Appointments.module.css';
 
 export default function Appointments() {
+  const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
-  const [selectedDate, setSelectedDate] = useState('');
+  const [realtimeMode, setRealtimeMode] = useState(true); // 🔥 Mặc định BẬT realtime
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  const getTodayDate = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0]; // YYYY-MM-DD
+  };
+  const [selectedDate, setSelectedDate] = useState(getTodayDate());
+
+  // Cập nhật giờ hiện tại mỗi giây
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     fetchAppointments();
-  }, [filter, selectedDate]);
+  }, [filter, selectedDate, realtimeMode]);
 
   const fetchAppointments = async () => {
     try {
@@ -19,6 +36,7 @@ export default function Appointments() {
 
       if (filter !== 'all') params.append('status', filter);
       if (selectedDate) params.append('date', selectedDate);
+      if (realtimeMode) params.append('realtime', 'true'); // 🔥 REALTIME mode
 
       const response = await api.get(`/api/doctor/appointments?${params}`);
       setAppointments(response.data);
@@ -87,7 +105,12 @@ export default function Appointments() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1>Lịch khám bệnh</h1>
+        <div>
+          <h1>Lịch khám bệnh - Hôm nay {new Date().toLocaleDateString('vi-VN')}</h1>
+          <p style={{ color: '#667eea', fontSize: '1.2rem', fontWeight: 'bold', marginTop: '10px' }}>
+            🕐 Giờ hiện tại: {currentTime.toLocaleTimeString('vi-VN')}
+          </p>
+        </div>
 
         <div className={styles.stats}>
           <div className={styles.statCard}>
@@ -110,6 +133,22 @@ export default function Appointments() {
       </div>
 
       <div className={styles.filters}>
+        <button
+          onClick={() => setRealtimeMode(!realtimeMode)}
+          style={{
+            padding: '10px 20px',
+            background: realtimeMode ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : '#e0e0e0',
+            color: realtimeMode ? 'white' : '#666',
+            border: 'none',
+            borderRadius: '8px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            fontSize: '0.95rem'
+          }}
+        >
+          {realtimeMode ? '🔥 REALTIME (±30 phút)' : '📅 Xem tất cả'}
+        </button>
+
         <select value={filter} onChange={(e) => setFilter(e.target.value)}>
           <option value="all">Tất cả</option>
           <option value="pending">Chờ xác nhận</option>
@@ -123,9 +162,12 @@ export default function Appointments() {
           value={selectedDate}
           onChange={(e) => setSelectedDate(e.target.value)}
           placeholder="Chọn ngày"
+          title={realtimeMode ? 'Tắt REALTIME để chọn ngày' : 'Chọn ngày'}
+          disabled={realtimeMode}
+          style={{ opacity: realtimeMode ? 0.5 : 1, cursor: realtimeMode ? 'not-allowed' : 'pointer' }}
         />
 
-        <button onClick={() => { setFilter('all'); setSelectedDate(''); }}>
+        <button onClick={() => { setFilter('all'); setSelectedDate(getTodayDate()); }}>
           Xóa bộ lọc
         </button>
       </div>
@@ -133,7 +175,36 @@ export default function Appointments() {
       {loading ? (
         <div className={styles.loading}>Đang tải...</div>
       ) : appointments.length === 0 ? (
-        <div className={styles.empty}>Không có lịch hẹn nào</div>
+        <div className={styles.empty}>
+          {realtimeMode ? (
+            <>
+              <h3>🕐 Không có lịch khám trong giờ này</h3>
+              <p style={{ marginTop: '10px', color: '#666' }}>
+                Giờ hiện tại: <strong>{currentTime.toLocaleTimeString('vi-VN')}</strong>
+              </p>
+              <p style={{ color: '#666' }}>
+                Chỉ hiển thị lịch khám trong khoảng <strong>± 30 phút</strong>
+              </p>
+              <button
+                onClick={() => setRealtimeMode(false)}
+                style={{
+                  marginTop: '20px',
+                  padding: '12px 24px',
+                  background: '#667eea',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold'
+                }}
+              >
+                📅 Xem tất cả lịch hôm nay
+              </button>
+            </>
+          ) : (
+            'Không có lịch hẹn nào'
+          )}
+        </div>
       ) : (
         <div className={styles.appointmentList}>
           {appointments.map(appointment => (
@@ -145,7 +216,22 @@ export default function Appointments() {
                     {appointment.service?.specialty?.name} - {appointment.service?.name}
                   </p>
                 </div>
-                {getStatusBadge(appointment.status)}
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  {realtimeMode && (
+                    <span style={{
+                      padding: '8px 16px',
+                      background: 'linear-gradient(135deg, #f39c12 0%, #e74c3c 100%)',
+                      color: 'white',
+                      borderRadius: '20px',
+                      fontSize: '0.85rem',
+                      fontWeight: 'bold',
+                      animation: 'pulse 2s infinite'
+                    }}>
+                      🔥 ĐANG KHÁM
+                    </span>
+                  )}
+                  {getStatusBadge(appointment.status)}
+                </div>
               </div>
 
               <div className={styles.cardBody}>
@@ -201,6 +287,39 @@ export default function Appointments() {
 
                 {appointment.status === 'confirmed' && (
                   <>
+                    <button
+                      className={styles.btnExamine}
+                      onClick={() => {
+                        // 🔥 Kiểm tra ĐÃ ĐẾN GIỜ chưa (± 30 phút)
+                        const now = new Date();
+                        const appointmentTime = appointment.appointment_time; // HH:mm
+                        const [hours, minutes] = appointmentTime.split(':').map(Number);
+                        const appointmentMinutes = hours * 60 + minutes;
+                        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+                        const diff = Math.abs(currentMinutes - appointmentMinutes);
+
+                        if (diff > 30) {
+                          alert(`⏰ Chưa đến giờ khám!\n\nGiờ hẹn: ${appointmentTime}\nGiờ hiện tại: ${now.toTimeString().substring(0, 5)}\n\nVui lòng chờ đến giờ hoặc bật chế độ REALTIME.`);
+                          return;
+                        }
+
+                        navigate('/doctor-portal/examination', {
+                          state: {
+                            appointment: {
+                              ...appointment,
+                              patient_name: appointment.patient?.name || appointment.patient?.full_name || 'Khách vãng lai',
+                              patient_phone: appointment.patient?.phone || '',
+                              patient_email: appointment.patient?.email || '',
+                              patient_dob: appointment.patient?.birthday || '',
+                              patient_gender: appointment.patient?.gender || '',
+                              patient_address: appointment.patient?.address || ''
+                            }
+                          }
+                        });
+                      }}
+                    >
+                      🩺 Khám bệnh
+                    </button>
                     <button
                       className={styles.btnComplete}
                       onClick={() => handleComplete(appointment.id)}

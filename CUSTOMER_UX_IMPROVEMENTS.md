@@ -1,6 +1,6 @@
 # 📱 Customer Experience - Cải Thiện UI/UX
 
-## ✅ Hoàn thành (4/7 features)
+## ✅ Hoàn thành (7/7 features) 🎉
 
 ### 1. **Dashboard Page** (Trang chủ)
 - ✅ Thông tin tổng quan phòng khám
@@ -78,30 +78,114 @@
   - Nếu completed: hiển thị chẩn đoán, đơn thuốc, ghi chú
   - Nút in kết quả khám
 
----
+### 5. **Medical Records** - Hồ sơ bệnh án cá nhân ✅
+- ✅ Xem lịch sử khám bệnh
+- ✅ Xem đơn thuốc chi tiết
+- ✅ Xem chẩn đoán & ghi chú bác sĩ
+- ✅ Export PDF đơn thuốc
+- ✅ Modal chi tiết kết quả khám
 
-## 🔄 Còn lại (3/7 features)
+**Features:**
+- API: `/api/medical-records/patient/:patientId`
+- Component: `MedicalHistory.jsx` + CSS module
+- Hiển thị danh sách lịch khám đã hoàn thành
+- Modal xem chi tiết:
+  - Thông tin lịch khám (booking_id, date, doctor, specialty)
+  - Chẩn đoán (diagnosis)
+  - Ghi chú bác sĩ (notes)
+  - Đơn thuốc đầy đủ (prescription details)
+- Nút download PDF (dùng pdfmake)
+- PDF bao gồm: header phòng khám, thông tin bệnh nhân, chẩn đoán, bảng thuốc
+- Status badges cho từng lần khám
+- Responsive design
 
-### 5. **Medical Records** - Hồ sơ bệnh án cá nhân
-- [ ] Xem lịch sử khám bệnh
-- [ ] Xem đơn thuốc
-- [ ] Xem chẩn đoán
-- [ ] Xem kết quả xét nghiệm
-- [ ] Export PDF/print
+### 6. **Reviews/Ratings** - Đánh giá & phản hồi ✅
+- ✅ Đánh giá bác sĩ (1-5 sao)
+- ✅ Comment/feedback
+- ✅ Xem danh sách đánh giá của mình
+- ✅ Xóa đánh giá
+- ✅ Chỉ đánh giá sau khi khám xong (status = completed)
 
-### 6. **Reviews/Ratings** - Đánh giá & phản hồi
-- [ ] Đánh giá bác sĩ (1-5 sao)
-- [ ] Đánh giá dịch vụ (1-5 sao)
-- [ ] Comment/feedback
-- [ ] Upload ảnh
-- [ ] Danh sách đánh giá
+**Features:**
+- API: 
+  - `/api/reviews/my-reviews` - Lấy danh sách đánh giá của user
+  - `/api/reviews/bookings-without-review` - Lấy lịch khám đã hoàn thành chưa đánh giá
+  - `/api/reviews/create` - Tạo đánh giá mới
+  - `/api/reviews/:id` - Xóa đánh giá
+- Component: `Reviews.jsx` + `Reviews.module.css`
+- Modal tạo đánh giá:
+  - Select booking từ danh sách lịch khám completed
+  - Star rating (1-5 sao) interactive
+  - Textarea comment
+  - Submit review
+- Danh sách đánh giá của mình:
+  - Hiển thị booking info
+  - Rating stars (colored)
+  - Comment text
+  - Thời gian tạo
+  - Nút delete
+- Validation: Không cho đánh giá trùng booking_id
+- Responsive grid layout
 
-### 7. **News/Articles** - Tin tức sức khỏe
-- [ ] Danh sách bài viết
-- [ ] Mẹo chăm sóc sức khỏe
-- [ ] Tin tức phòng khám
-- [ ] Search bài viết
-- [ ] Chi tiết bài viết
+### 7. **News/Articles** - Tin tức sức khỏe ✅
+- ✅ Danh sách bài viết
+- ✅ Mẹo chăm sóc sức khỏe
+- ✅ Tin tức phòng khám
+- ✅ Search bài viết
+- ✅ Filter theo danh mục
+- ✅ Chi tiết bài viết
+- ✅ Featured articles (nổi bật)
+- ✅ Popular articles (phổ biến)
+- ✅ Related articles (liên quan)
+
+**Features:**
+- **Backend:**
+  - Models: `Article.js`, `ArticleCategory.js` (factory pattern)
+  - Controller: `articleController.js`
+    - `getArticles()` - List với search, filter, pagination
+    - `getArticleDetail(slug)` - Chi tiết + auto tăng views + related articles
+    - `getCategories()` - Danh sách danh mục
+    - `getFeaturedArticles()` - Bài viết nổi bật (is_featured = true)
+    - `getPopularArticles()` - Bài viết phổ biến (views cao nhất)
+  - Routes: `/api/articles/*` (public, không cần auth)
+  - Database migrations:
+    - `tn_article_categories` - Danh mục bài viết
+    - `tn_articles` - Bài viết với status (draft/published/archived)
+    - Seed data: 4 categories, 4 sample articles
+  
+- **Frontend:**
+  - Components: `News.jsx`, `NewsDetail.jsx` + CSS modules
+  - `News.jsx`:
+    - Hero section với featured articles (1 main + 2 side)
+    - Search bar (tìm theo title/content)
+    - Category filter buttons
+    - Articles grid (responsive)
+    - Pagination
+    - Category color coding
+    - Views counter formatting (1.2k, etc.)
+  - `NewsDetail.jsx`:
+    - Breadcrumb navigation
+    - Full article content (HTML rendered)
+    - Featured image
+    - Excerpt highlight
+    - Social share buttons (Facebook, Twitter, LinkedIn)
+    - Print functionality
+    - Related articles grid (same category)
+    - Sidebar: Popular articles + CTA widget
+    - Auto-scroll to top on route change
+  
+- **Routing:**
+  - `/news` - Main news page
+  - `/news/:slug` - Article detail page
+  - Added to CustomerLayout navigation
+  
+- **Design:**
+  - Hero section với gradient purple background
+  - Category badges với màu riêng cho mỗi danh mục
+  - Article cards với thumbnail, hover effects
+  - Reading-friendly typography cho article content
+  - Print CSS (ẩn navbar, sidebar khi in)
+  - Responsive cho mobile/tablet
 
 ---
 
@@ -110,18 +194,50 @@
 ### Components tạo/cập nhật:
 ```
 client/src/pages/customer/
-├── Dashboard.jsx                    ✅ NEW
-├── Dashboard.module.css             ✅ NEW
-├── DoctorList.jsx                   ✅ UPDATED
-├── DoctorList.module.css            ✅ UPDATED
-├── Services.jsx                     ✅ UPDATED
-├── MyAppointments.jsx               ✅ UPDATED
-└── MyAppointments.module.css        ✅ UPDATED
+├── Dashboard.jsx                    ✅ COMPLETE
+├── Dashboard.module.css             ✅ COMPLETE
+├── DoctorList.jsx                   ✅ COMPLETE
+├── DoctorList.module.css            ✅ COMPLETE
+├── Services.jsx                     ✅ COMPLETE
+├── MyAppointments.jsx               ✅ COMPLETE
+├── MyAppointments.module.css        ✅ COMPLETE
+├── MedicalHistory.jsx               ✅ NEW - Medical records with PDF
+├── Reviews.jsx                      ✅ NEW - Review & rating system
+├── Reviews.module.css               ✅ NEW
+├── News.jsx                         ✅ NEW - News listing
+├── News.module.css                  ✅ NEW
+├── NewsDetail.jsx                   ✅ NEW - Article detail page
+└── NewsDetail.module.css            ✅ NEW
+```
+
+### Backend Updates:
+```
+server/
+├── controllers/
+│   ├── reviewController.js          ✅ EXISTS
+│   └── articleController.js         ✅ NEW
+├── routes/
+│   └── articleRoutes.js             ✅ NEW
+├── models/
+│   ├── Article.js                   ✅ NEW (factory pattern)
+│   ├── ArticleCategory.js           ✅ NEW (factory pattern)
+│   └── index.js                     ✅ UPDATED (relationships)
+├── migrations/
+│   ├── 202511230001-create-article-categories-table.js  ✅ NEW
+│   └── 202511230002-create-articles-table.js            ✅ NEW
+└── server.js                        ✅ UPDATED (article routes)
 ```
 
 ### App.jsx Updates:
 - ✅ Import Dashboard thay vì Home
 - ✅ Route "/" dùng Dashboard component
+- ✅ Route "/reviews" cho Reviews page
+- ✅ Route "/news" cho News listing
+- ✅ Route "/news/:slug" cho Article detail
+
+### CustomerLayout Updates:
+- ✅ Thêm "Đánh giá" link
+- ✅ Thêm "Tin tức" link
 
 ### Features Implemented:
 - ✅ Client-side sorting (name, experience, rating)
@@ -129,9 +245,16 @@ client/src/pages/customer/
 - ✅ Modal chi tiết lịch hẹn
 - ✅ Browser Notification API (nhắc lịch)
 - ✅ Print functionality
+- ✅ PDF generation (pdfmake 0.2.10)
+- ✅ Medical history tracking
+- ✅ Review & rating system (star ratings)
+- ✅ News/Articles with categories
+- ✅ Article search & pagination
+- ✅ Social share buttons
 - ✅ Responsive design (mobile, tablet, desktop)
-- ✅ Modern UI dengan gradient colors
+- ✅ Modern UI với gradient colors
 - ✅ Hover effects & transitions
+- ✅ SEO-friendly URLs (slug-based)
 
 ---
 
@@ -163,19 +286,36 @@ client/src/pages/customer/
 
 ---
 
-## 🚀 Hướng phát triển tiếp theo
+## 🚀 Tất cả features đã hoàn thành! 
 
-1. **Medical Records Page** - View lịch sử khám, đơn thuốc, chẩn đoán
-2. **Reviews/Ratings** - Cho phép user đánh giá bác sĩ & dịch vụ
-3. **News/Articles** - Blog tin tức sức khỏe
-4. **Chat Support** - Tư vấn trực tuyến với bác sĩ
-5. **Appointment Reminders** - Email + SMS + Push notifications
-6. **Payment Gateway** - Thanh toán trực tuyến
-7. **User Profile** - Sửa thông tin cá nhân, lịch sử lịch hẹn
+### ✅ Completed Features Summary:
+1. **Dashboard** - Trang chủ với stats, featured doctors, services
+2. **Doctor List** - Search, filter, sort doctors
+3. **Services** - Service list with pricing
+4. **My Appointments** - Manage bookings, view results, reminders
+5. **Medical Records** - View history, prescriptions, PDF download
+6. **Reviews/Ratings** - Rate doctors after completed appointments
+7. **News/Articles** - Health articles with search, categories, detail pages
+
+### 📦 Database Tables Created:
+- ✅ `tn_article_categories` - 4 sample categories
+- ✅ `tn_articles` - 4 sample articles with views tracking
+
+### 🎯 Next Steps (Optional Enhancements):
+1. **Admin Panel for Articles** - CRUD operations cho bài viết (hiện chỉ có public viewing)
+2. **Upload ảnh cho Reviews** - Cho phép đính kèm ảnh khi đánh giá
+3. **Email Notifications** - Gửi email khi có đánh giá mới
+4. **Rich Text Editor** - WYSIWYG editor cho article content
+5. **Comments System** - Bình luận trên bài viết
+6. **Tags System** - Gắn tag cho bài viết để tìm kiếm tốt hơn
+7. **Article Statistics** - Track views, likes, shares
+8. **Sitemap & SEO** - Generate sitemap.xml, meta tags
+9. **Push Notifications** - Web push cho bài viết mới
+10. **Related Articles AI** - Dùng ML để suggest bài viết liên quan thông minh hơn
 
 ---
 
-## ✨ Hiệu suất & Tương thích
+## ✨ Hiệu suất & Tương thích 
 
 - ✅ Responsive trên mobile (375px - 1920px)
 - ✅ No JavaScript errors

@@ -9,4 +9,7 @@ router.use(verifyToken, isAdmin);
 // GET - Dashboard statistics
 router.get('/dashboard/stats', adminDashboardController.getDashboardStats);
 
+// GET - Tình trạng bác sĩ (đang khám / rảnh)
+router.get('/dashboard/doctor-status', adminDashboardController.getDoctorStatus);
+
 module.exports = router;

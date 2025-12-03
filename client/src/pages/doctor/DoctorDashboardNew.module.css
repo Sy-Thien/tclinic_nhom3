@@ -388,6 +388,24 @@
     gap: 0.5rem;
 }
 
+.viewHistoryBtn {
+    padding: 8px 14px;
+    background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.viewHistoryBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3);
+}
+
 /* Quick Actions */
 .quickActions {
     background: white;

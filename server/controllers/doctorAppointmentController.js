@@ -1,16 +1,74 @@
-const { Booking, Patient, Specialty, Appointment, MedicalHistory, Prescription } = require('../models');
+const { Booking, Patient, Specialty, Appointment, MedicalHistory, Prescription, DoctorSchedule, Service } = require('../models');
 const { Op } = require('sequelize');
+
+// Doctor - Lấy lịch làm việc định kỳ
+exports.getWorkSchedule = async (req, res) => {
+    try {
+        const doctor_id = req.user.doctor_id || req.user.id;
+
+        const schedules = await DoctorSchedule.findAll({
+            where: { doctor_id },
+            order: [
+                ['day_of_week', 'ASC']
+            ]
+        });
+
+        // Sắp xếp theo thứ tự thực tế (Thứ 2 trước, Chủ nhật cuối)
+        const dayOrder = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật'];
+        schedules.sort((a, b) => dayOrder.indexOf(a.day_of_week) - dayOrder.indexOf(b.day_of_week));
+
+        res.json({ schedules });
+
+    } catch (error) {
+        console.error('❌ Get work schedule error:', error);
+        res.status(500).json({ message: 'Lỗi server', error: error.message });
+    }
+};
 
 // Doctor - Lấy danh sách booking được gán
 exports.getMyAppointments = async (req, res) => {
     try {
-        const doctor_id = req.user.id;
-        const { date, status } = req.query;
+        const doctor_id = req.user.doctor_id || req.user.id;
+        const { date, status, start_date, end_date, realtime } = req.query;
 
         const where = { doctor_id };
 
-        if (date) {
+        // 🔥 REALTIME MODE: Chỉ lấy appointments ĐÚNG GIỜ HIỆN TẠI (± 30 phút)
+        if (realtime === 'true') {
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
+            const currentTime = now.toTimeString().substring(0, 5); // HH:mm
+
+            // Tính khoảng thời gian ± 30 phút
+            const currentMinutes = parseInt(currentTime.split(':')[0]) * 60 + parseInt(currentTime.split(':')[1]);
+            const startMinutes = Math.max(0, currentMinutes - 30);
+            const endMinutes = Math.min(1439, currentMinutes + 30); // 23:59 = 1439 minutes
+
+            const startTime = String(Math.floor(startMinutes / 60)).padStart(2, '0') + ':' +
+                String(startMinutes % 60).padStart(2, '0');
+            const endTime = String(Math.floor(endMinutes / 60)).padStart(2, '0') + ':' +
+                String(endMinutes % 60).padStart(2, '0');
+
+            where.appointment_date = todayStr;
+            where.appointment_time = {
+                [Op.between]: [startTime, endTime]
+            };
+
+            console.log('🔥 REALTIME MODE: Current time:', currentTime);
+            console.log('🔥 Showing appointments between', startTime, '-', endTime);
+        }
+        // Mặc định: hiển thị tất cả lịch HÔM NAY
+        else if (date) {
             where.appointment_date = date;
+        } else if (start_date && end_date) {
+            where.appointment_date = {
+                [Op.between]: [start_date, end_date]
+            };
+        } else {
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            where.appointment_date = todayStr;
+            console.log('📅 Default mode: Showing all appointments for TODAY:', todayStr);
         }
 
         if (status) {
@@ -23,6 +81,11 @@ exports.getMyAppointments = async (req, res) => {
                 {
                     model: Specialty,
                     as: 'specialty',
+                    attributes: ['id', 'name']
+                },
+                {
+                    model: Service,
+                    as: 'service',
                     attributes: ['id', 'name']
                 },
                 {
@@ -149,17 +212,26 @@ exports.completeAppointment = async (req, res) => {
         const { diagnosis, conclusion, prescription } = req.body;
 
         const booking = await Booking.findOne({
-            where: { id, doctor_id }
+            where: { id, doctor_id },
+            include: [{
+                model: Service,
+                as: 'service',
+                attributes: ['id', 'name', 'price']
+            }]
         });
 
         if (!booking) {
             return res.status(404).json({ message: 'Không tìm thấy lịch hẹn' });
         }
 
+        // ✅ Calculate total price from service
+        const servicePrice = booking.service?.price || booking.price || 0;
+
         await booking.update({
             status: 'completed',
             diagnosis: diagnosis || booking.diagnosis,
-            conclusion: conclusion || booking.conclusion
+            conclusion: conclusion || booking.conclusion,
+            price: servicePrice  // ✅ Update price when completed
         });
 
         // ✅ Tự động lưu vào lịch sử bệnh án

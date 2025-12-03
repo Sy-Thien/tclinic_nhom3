@@ -32,6 +32,8 @@ export default function Booking() {
     const [bookingType, setBookingType] = useState(doctorIdFromUrl ? 'with_doctor' : 'instant');
     const [specialties, setSpecialties] = useState([]);
     const [doctors, setDoctors] = useState([]);
+    const [services, setServices] = useState([]); // ✅ NEW: List of services
+    const [selectedService, setSelectedService] = useState(null); // ✅ NEW: Selected service info
     const [availableSlots, setAvailableSlots] = useState([]);
     const [doctorTimeSlots, setDoctorTimeSlots] = useState(null); // ✅ NEW: Full time slots với booking count
     const [selectedDoctor, setSelectedDoctor] = useState(null);
@@ -41,14 +43,44 @@ export default function Booking() {
     // Load specialties
     useEffect(() => {
         fetchSpecialties();
+        // ✅ If service_id from URL, fetch service info
+        if (serviceIdFromUrl) {
+            fetchServiceInfo(serviceIdFromUrl);
+        }
     }, []);
+
+    // ✅ NEW: Fetch service info when coming from service page
+    const fetchServiceInfo = async (serviceId) => {
+        try {
+            const response = await api.get(`/api/public/services/${serviceId}`);
+            setSelectedService(response.data);
+            // Auto-set specialty if not already set
+            if (response.data.specialty_id && !formData.specialty_id) {
+                setFormData(prev => ({ ...prev, specialty_id: response.data.specialty_id }));
+            }
+        } catch (error) {
+            console.error('Error fetching service:', error);
+        }
+    };
 
     // Load bác sĩ và giờ khi chọn chuyên khoa
     useEffect(() => {
         if (formData.specialty_id) {
             fetchDoctorsBySpecialty(formData.specialty_id);
+            fetchServicesBySpecialty(formData.specialty_id);
         }
     }, [formData.specialty_id]);
+
+    // ✅ NEW: Fetch services by specialty
+    const fetchServicesBySpecialty = async (specialtyId) => {
+        try {
+            const response = await api.get(`/api/public/services?specialty_id=${specialtyId}`);
+            setServices(response.data || []);
+        } catch (error) {
+            console.error('Error fetching services:', error);
+            setServices([]);
+        }
+    };
 
     // Sync selectedDoctor if doctor_id comes from URL
     useEffect(() => {
@@ -299,6 +331,8 @@ export default function Booking() {
     };
 
     const handleSelectDoctor = (doctorId) => {
+        console.log('handleSelectDoctor called with:', doctorId, 'current:', selectedDoctor);
+
         if (selectedDoctor === doctorId) {
             // Bỏ chọn bác sĩ
             setSelectedDoctor(null);
@@ -322,6 +356,10 @@ export default function Booking() {
                 doctor_id: doctorId,
                 appointment_time: ''
             }));
+            // ✅ Clear error khi chọn bác sĩ
+            setErrors(prev => ({ ...prev, doctor_id: '' }));
+            console.log('Doctor selected, formData.doctor_id should be:', doctorId);
+
             if (formData.appointment_date) {
                 fetchAvailableSlotsForDoctor(doctorId, formData.appointment_date);
             }
@@ -522,6 +560,33 @@ export default function Booking() {
                 <section className={styles.section}>
                     <h2 className={styles.sectionTitle}>🏥 Thông tin lịch khám</h2>
 
+                    {/* ✅ NEW: Hiển thị dịch vụ đã chọn từ URL */}
+                    {selectedService && (
+                        <div className={styles.selectedServiceInfo}>
+                            <div className={styles.serviceBadge}>
+                                <span className={styles.serviceIcon}>💉</span>
+                                <div className={styles.serviceDetails}>
+                                    <strong>Dịch vụ đã chọn:</strong>
+                                    <span className={styles.serviceName}>{selectedService.name}</span>
+                                    <span className={styles.servicePrice}>
+                                        💰 {selectedService.price?.toLocaleString('vi-VN')}đ
+                                    </span>
+                                </div>
+                                <button
+                                    type="button"
+                                    className={styles.changeServiceBtn}
+                                    onClick={() => {
+                                        setSelectedService(null);
+                                        setFormData(prev => ({ ...prev, service_id: null }));
+                                        navigate('/services');
+                                    }}
+                                >
+                                    Đổi dịch vụ
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Hiển thị thông tin bác sĩ đã chọn từ URL */}
                     {doctorIdFromUrl && doctorNameFromUrl && (
                         <div className={styles.selectedDoctorInfo}>
@@ -675,15 +740,18 @@ export default function Booking() {
                                                     <button
                                                         key={index}
                                                         type="button"
-                                                        className={`${styles.timeSlotBtn} ${isPast ? styles.pastSlot :
-                                                            isBreak ? styles.breakTime :
-                                                                isBooked ? styles.bookedSlot :
-                                                                    isSelected ? styles.selectedSlot :
+                                                        className={`${styles.timeSlotBtn} ${isSelected ? styles.selectedSlot :
+                                                            isPast ? styles.pastSlot :
+                                                                isBreak ? styles.breakTime :
+                                                                    isBooked ? styles.bookedSlot :
                                                                         styles.availableSlot
                                                             }`}
                                                         onClick={() => {
                                                             if (!isDisabled) {
                                                                 setFormData(prev => ({ ...prev, appointment_time: slot.startTime }));
+                                                                // Clear error khi chọn
+                                                                setErrors(prev => ({ ...prev, appointment_time: '' }));
+                                                                console.log('Selected slot:', slot.startTime);
                                                             }
                                                         }}
                                                         disabled={isDisabled}

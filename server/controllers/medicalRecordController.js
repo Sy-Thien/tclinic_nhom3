@@ -11,6 +11,17 @@ exports.getMyMedicalHistory = async (req, res) => {
                 patient_id,
                 status: 'completed'
             },
+            attributes: [
+                'id',
+                'booking_code',
+                'appointment_date',
+                'appointment_time',
+                'symptoms',
+                'diagnosis',
+                'conclusion',
+                'note',
+                'created_at'
+            ],
             include: [
                 {
                     model: Doctor,
@@ -30,9 +41,11 @@ exports.getMyMedicalHistory = async (req, res) => {
                 {
                     model: Prescription,
                     as: 'prescription',
+                    attributes: ['id', 'prescription_code', 'note', 'created_at'],
                     include: [{
                         model: PrescriptionDetail,
                         as: 'details',
+                        attributes: ['id', 'quantity', 'unit', 'dosage', 'duration', 'note'],
                         include: [{
                             model: Drug,
                             as: 'drug',
@@ -72,6 +85,17 @@ exports.getMedicalRecordDetail = async (req, res) => {
                 patient_id,
                 status: 'completed'
             },
+            attributes: [
+                'id',
+                'booking_code',
+                'appointment_date',
+                'appointment_time',
+                'symptoms',
+                'diagnosis',
+                'conclusion',
+                'note',
+                'created_at'
+            ],
             include: [
                 {
                     model: Doctor,
@@ -91,13 +115,15 @@ exports.getMedicalRecordDetail = async (req, res) => {
                 {
                     model: Prescription,
                     as: 'prescription',
+                    attributes: ['id', 'prescription_code', 'note', 'created_at'],
                     include: [{
                         model: PrescriptionDetail,
                         as: 'details',
+                        attributes: ['id', 'quantity', 'unit', 'dosage', 'duration', 'note'],
                         include: [{
                             model: Drug,
                             as: 'drug',
-                            attributes: ['id', 'name', 'ingredient', 'unit', 'usage']
+                            attributes: ['id', 'name', 'ingredient', 'unit']
                         }]
                     }]
                 }

@@ -118,4 +118,149 @@ exports.getDoctorRatingStats = async (req, res) => {
     }
 };
 
+// ✅ POST - Bác sĩ phản hồi đánh giá của bệnh nhân
+exports.replyToReview = async (req, res) => {
+    try {
+        const doctor_id = req.user.id;
+        const { review_id } = req.params;
+        const { reply } = req.body;
+
+        console.log('💬 POST /api/doctor/reviews/:id/reply', { doctor_id, review_id, reply });
+
+        if (!reply || reply.trim() === '') {
+            return res.status(400).json({
+                success: false,
+                message: 'Vui lòng nhập nội dung phản hồi'
+            });
+        }
+
+        // Tìm review
+        const review = await Review.findOne({
+            where: {
+                id: review_id,
+                doctor_id: doctor_id // Đảm bảo bác sĩ chỉ phản hồi đánh giá của mình
+            }
+        });
+
+        if (!review) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy đánh giá này hoặc bạn không có quyền phản hồi'
+            });
+        }
+
+        // Cập nhật phản hồi
+        await review.update({
+            doctor_reply: reply.trim(),
+            replied_at: new Date()
+        });
+
+        console.log('✅ Doctor replied to review:', review_id);
+
+        res.json({
+            success: true,
+            message: 'Phản hồi đánh giá thành công',
+            data: review
+        });
+    } catch (error) {
+        console.error('❌ Error replying to review:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi server',
+            error: error.message
+        });
+    }
+};
+
+// ✅ PUT - Bác sĩ sửa phản hồi
+exports.updateReply = async (req, res) => {
+    try {
+        const doctor_id = req.user.id;
+        const { review_id } = req.params;
+        const { reply } = req.body;
+
+        console.log('✏️ PUT /api/doctor/reviews/:id/reply', { doctor_id, review_id });
+
+        const review = await Review.findOne({
+            where: {
+                id: review_id,
+                doctor_id: doctor_id
+            }
+        });
+
+        if (!review) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy đánh giá này'
+            });
+        }
+
+        if (!review.doctor_reply) {
+            return res.status(400).json({
+                success: false,
+                message: 'Bạn chưa phản hồi đánh giá này'
+            });
+        }
+
+        await review.update({
+            doctor_reply: reply.trim(),
+            replied_at: new Date()
+        });
+
+        res.json({
+            success: true,
+            message: 'Cập nhật phản hồi thành công',
+            data: review
+        });
+    } catch (error) {
+        console.error('❌ Error updating reply:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi server',
+            error: error.message
+        });
+    }
+};
+
+// ✅ DELETE - Bác sĩ xóa phản hồi
+exports.deleteReply = async (req, res) => {
+    try {
+        const doctor_id = req.user.id;
+        const { review_id } = req.params;
+
+        console.log('🗑️ DELETE /api/doctor/reviews/:id/reply', { doctor_id, review_id });
+
+        const review = await Review.findOne({
+            where: {
+                id: review_id,
+                doctor_id: doctor_id
+            }
+        });
+
+        if (!review) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy đánh giá này'
+            });
+        }
+
+        await review.update({
+            doctor_reply: null,
+            replied_at: null
+        });
+
+        res.json({
+            success: true,
+            message: 'Đã xóa phản hồi'
+        });
+    } catch (error) {
+        console.error('❌ Error deleting reply:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi server',
+            error: error.message
+        });
+    }
+};
+
 module.exports = exports;

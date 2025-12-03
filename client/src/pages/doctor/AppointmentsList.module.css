@@ -735,6 +735,24 @@
     border-top: 1px solid #e2e8f0;
     display: flex;
     justify-content: flex-end;
+    gap: 12px;
+}
+
+.btnViewHistory {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btnViewHistory:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3);
 }
 
 .btnClose {

@@ -1,0 +1,920 @@
+/* ===== Main Container ===== */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.container {
+    background: #f8f9fa;
+    width: 100%;
+    max-width: 1400px;
+    height: 90vh;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+}
+
+/* ===== Header ===== */
+.header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.headerLeft {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.bookingCode {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+
+.closeBtn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.closeBtn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+/* ===== Patient Bar ===== */
+.patientBar {
+    background: white;
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e0e0e0;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.patientInfo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.patientIcon {
+    font-size: 2rem;
+}
+
+.patientInfo strong {
+    display: block;
+    font-size: 1.1rem;
+    color: #2c3e50;
+}
+
+.patientMeta {
+    font-size: 0.85rem;
+    color: #7f8c8d;
+}
+
+.diagnosisInfo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #e8f5e9;
+    padding: 8px 16px;
+    border-radius: 8px;
+}
+
+.diagLabel {
+    font-weight: 600;
+    color: #2e7d32;
+}
+
+.diagText {
+    color: #1b5e20;
+}
+
+/* ===== Main Content ===== */
+.mainContent {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 0;
+    overflow: hidden;
+}
+
+/* ===== Drug List Section ===== */
+.drugListSection {
+    background: white;
+    border-right: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.sectionHeader {
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e0e0e0;
+    background: #fafafa;
+}
+
+.sectionHeader h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #2c3e50;
+}
+
+.addDrugBtn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.addDrugBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.emptyState {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: #95a5a6;
+}
+
+.emptyIcon {
+    font-size: 4rem;
+    margin-bottom: 16px;
+}
+
+.addFirstBtn {
+    margin-top: 16px;
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.drugItems {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+}
+
+/* ===== Drug Item Card ===== */
+.drugItem {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    transition: all 0.2s;
+}
+
+.drugItem:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.drugItemHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.drugNumber {
+    background: #667eea;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.removeDrugBtn {
+    background: #ffebee;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.removeDrugBtn:hover {
+    background: #ffcdd2;
+}
+
+/* ===== Drug Selector ===== */
+.drugSelector {
+    background: white;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 12px;
+}
+
+.drugSelector:hover {
+    border-color: #667eea;
+    background: #f3f0ff;
+}
+
+.selectedDrug {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.drugName {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 1.05rem;
+}
+
+.drugMeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 0.85rem;
+    color: #7f8c8d;
+}
+
+.ingredient {
+    color: #3498db;
+}
+
+.stock {
+    color: #27ae60;
+}
+
+.price {
+    color: #e67e22;
+}
+
+.drugPlaceholder {
+    color: #95a5a6;
+    text-align: center;
+    padding: 8px;
+}
+
+/* ===== Usage Type ===== */
+.usageTypeRow {
+    margin-bottom: 12px;
+}
+
+.usageTypeRow label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #7f8c8d;
+    margin-bottom: 8px;
+}
+
+.usageTypes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.usageBtn {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.usageBtn:hover {
+    border-color: #667eea;
+}
+
+.usageBtn.active {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+/* ===== Dosage Grid ===== */
+.dosageGrid {
+    background: white;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+.dosageTitle {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #7f8c8d;
+    margin-bottom: 10px;
+}
+
+.dosageInputs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.dosageItem {
+    text-align: center;
+}
+
+.dosageItem label {
+    display: block;
+    font-size: 0.8rem;
+    margin-bottom: 4px;
+    color: #2c3e50;
+}
+
+.dosageItem input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.dosageItem input:focus {
+    border-color: #667eea;
+    outline: none;
+}
+
+/* ===== Duration Row ===== */
+.durationRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.durationSelect,
+.timingSelect {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.durationSelect label,
+.timingSelect label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #7f8c8d;
+}
+
+.durationSelect select,
+.timingSelect select {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.durationSelect select:focus,
+.timingSelect select:focus {
+    border-color: #667eea;
+    outline: none;
+}
+
+/* ===== Quantity Summary ===== */
+.quantitySummary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    padding: 12px;
+    background: #e8f5e9;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+.quantityInput {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.quantityInput label {
+    font-weight: 600;
+    color: #2e7d32;
+}
+
+.quantityControl {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.quantityControl input {
+    width: 70px;
+    padding: 8px;
+    border: 1px solid #4caf50;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.unitLabel {
+    color: #2e7d32;
+    font-weight: 500;
+}
+
+.quantityCalc {
+    font-size: 0.8rem;
+    color: #7c7c7c;
+    font-style: italic;
+    margin-left: 4px;
+}
+
+.itemTotal {
+    color: #e67e22;
+    font-size: 0.9rem;
+}
+
+.itemTotal strong {
+    font-size: 1rem;
+}
+
+.stockWarning {
+    width: 100%;
+    background: #ffebee;
+    color: #c62828;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* ===== Drug Note ===== */
+.drugNote input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.drugNote input:focus {
+    border-color: #667eea;
+    outline: none;
+}
+
+/* ===== Dosage Preview ===== */
+.dosagePreview {
+    background: #e3f2fd;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: #1565c0;
+    margin-top: 12px;
+}
+
+/* ===== Summary Section ===== */
+.summarySection {
+    background: #f8f9fa;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.summarySection h3 {
+    margin: 0 0 12px 0;
+    font-size: 1rem;
+    color: #2c3e50;
+}
+
+/* Quick Templates */
+.quickTemplates {
+    background: white;
+    padding: 16px;
+    border-radius: 8px;
+}
+
+.templateButtons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.templateBtn {
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.templateBtn:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+/* Re-exam Section */
+.reExamSection {
+    background: white;
+    padding: 16px;
+    border-radius: 8px;
+}
+
+.reExamSection input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+/* Note Section */
+.noteSection {
+    background: white;
+    padding: 16px;
+    border-radius: 8px;
+}
+
+.noteSection textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    resize: vertical;
+    font-size: 0.95rem;
+    font-family: inherit;
+}
+
+.noteSection textarea:focus {
+    border-color: #667eea;
+    outline: none;
+}
+
+/* Cost Summary */
+.costSummary {
+    background: white;
+    padding: 16px;
+    border-radius: 8px;
+}
+
+.costBreakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px dashed #ddd;
+}
+
+.costLine {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: #7f8c8d;
+}
+
+.totalLine {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.totalAmount {
+    color: #e67e22;
+    font-size: 1.2rem;
+}
+
+/* Preview Section */
+.previewSection {
+    background: white;
+    padding: 16px;
+    border-radius: 8px;
+}
+
+.previewBox {
+    background: #fafafa;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 12px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.previewEmpty {
+    color: #95a5a6;
+    text-align: center;
+    margin: 0;
+}
+
+.previewList {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.previewList li {
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+.previewList li strong {
+    color: #2c3e50;
+}
+
+.previewList li small {
+    color: #7f8c8d;
+}
+
+/* ===== Footer ===== */
+.footer {
+    background: white;
+    padding: 16px 24px;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.footerInfo {
+    display: flex;
+    gap: 20px;
+    font-size: 0.95rem;
+    color: #7f8c8d;
+}
+
+.footerActions {
+    display: flex;
+    gap: 12px;
+}
+
+.cancelBtn {
+    background: #f5f5f5;
+    color: #666;
+    border: 1px solid #ddd;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.cancelBtn:hover {
+    background: #eee;
+}
+
+.saveBtn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.saveBtn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.saveBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.savePrintBtn {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    color: #1b5e20;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.savePrintBtn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(67, 233, 123, 0.3);
+}
+
+.savePrintBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ===== Search Modal ===== */
+.searchOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1100;
+}
+
+.searchModal {
+    background: white;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.searchHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.searchHeader h3 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.searchHeader button {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #666;
+}
+
+.searchInput {
+    padding: 16px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.searchInput input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #667eea;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.searchInput input:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+.searchResults {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 400px;
+}
+
+.searchLoading,
+.noResults {
+    padding: 40px;
+    text-align: center;
+    color: #95a5a6;
+}
+
+.drugOption {
+    padding: 12px 20px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.drugOption:hover {
+    background: #f3f0ff;
+}
+
+.drugOptionName {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 4px;
+}
+
+.drugOptionMeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 0.85rem;
+    color: #7f8c8d;
+}
+
+.lowStock {
+    position: absolute;
+    top: 12px;
+    right: 20px;
+    background: #fff3e0;
+    color: #e65100;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+    .mainContent {
+        grid-template-columns: 1fr;
+    }
+
+    .summarySection {
+        border-top: 1px solid #e0e0e0;
+    }
+
+    .container {
+        height: 95vh;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        border-radius: 0;
+        height: 100vh;
+    }
+
+    .patientBar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .dosageInputs {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .durationRow {
+        grid-template-columns: 1fr;
+    }
+
+    .footer {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .footerActions {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .footerActions button {
+        flex: 1;
+    }
+}

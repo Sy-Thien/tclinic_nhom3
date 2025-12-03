@@ -31,6 +31,14 @@ const Review = sequelize.define('Review', {
         type: DataTypes.TEXT,
         allowNull: true
     },
+    doctor_reply: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
+    replied_at: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
     created_at: {
         type: DataTypes.DATE,
         allowNull: true,

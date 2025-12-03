@@ -63,7 +63,9 @@ export default function AdminLayout() {
             {/* Sidebar */}
             <aside className={styles.sidebar}>
                 <div className={styles.brand}>
-                    <div className={styles.logo}>⚕️</div>
+                    <div className={styles.logo}>
+                        <img src="/logo.png" alt="TClinic Logo" />
+                    </div>
                     <div>
                         <div className={styles.brandName}>Admin</div>
                         <div className={styles.brandSubtext}>Phòng Khám Tclinic</div>
@@ -107,7 +109,7 @@ export default function AdminLayout() {
                                 <path d="M23 21v-2a4 4 0 0 0-3-3.87" strokeWidth="2" />
                                 <path d="M16 3.13a4 4 0 0 1 0 7.75" strokeWidth="2" />
                             </svg>
-                            👨‍⚕️ Bác sĩ
+                            Bác sĩ
                             <svg
                                 className={`${styles.arrow} ${doctorMenuOpen ? styles.arrowOpen : ''}`}
                                 width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -121,19 +123,19 @@ export default function AdminLayout() {
                                 to="/admin/doctors"
                                 className={({ isActive }) => isActive ? `${styles.subItem} ${styles.active}` : styles.subItem}
                             >
-                                📋 Quản lý bác sĩ
+                                Quản lý bác sĩ
                             </NavLink>
                             <NavLink
                                 to="/admin/doctor-schedules"
                                 className={({ isActive }) => isActive ? `${styles.subItem} ${styles.active}` : styles.subItem}
                             >
-                                📅 Lịch làm việc
+                                Lịch làm việc
                             </NavLink>
                             <NavLink
                                 to="/admin/time-slots"
                                 className={({ isActive }) => isActive ? `${styles.subItem} ${styles.active}` : styles.subItem}
                             >
-                                ⏰ Quản lý khung giờ
+                                Quản lý khung giờ
                             </NavLink>
                         </div>
                     </div>
@@ -191,7 +193,17 @@ export default function AdminLayout() {
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" strokeWidth="2" />
                         </svg>
-                        💊 Kho Thuốc
+                        Kho Thuốc
+                    </NavLink>
+
+                    <NavLink
+                        to="/admin/consultations"
+                        className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}
+                    >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" strokeWidth="2" />
+                        </svg>
+                        Yêu cầu tư vấn
                     </NavLink>
 
                     <NavLink

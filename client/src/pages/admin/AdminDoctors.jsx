@@ -176,7 +176,7 @@ export default function AdminDoctors() {
             <div className={styles.header}>
                 <h1>Quản lý Bác sĩ</h1>
                 <button className={styles.btnAdd} onClick={() => handleOpenModal()}>
-                    ➕ Thêm bác sĩ
+                    Thêm bác sĩ
                 </button>
             </div>
 
@@ -185,7 +185,7 @@ export default function AdminDoctors() {
                 <input
                     type="text"
                     name="search"
-                    placeholder="🔍 Tìm kiếm (tên, email, số điện thoại)..."
+                    placeholder="Tìm kiếm (tên, email, số điện thoại)..."
                     value={filters.search}
                     onChange={handleFilterChange}
                     className={styles.searchInput}
@@ -214,7 +214,7 @@ export default function AdminDoctors() {
             </div>
 
             {/* Table */}
-            {loading && <div className={styles.loading}>⏳ Đang tải...</div>}
+            {loading && <div className={styles.loading}>Đang tải...</div>}
 
             {!loading && doctors.length === 0 && (
                 <div className={styles.noData}>Không có dữ liệu</div>
@@ -265,21 +265,21 @@ export default function AdminDoctors() {
                                                 onClick={() => handleOpenModal(doctor)}
                                                 title="Sửa"
                                             >
-                                                ✏️
+                                                Sửa
                                             </button>
                                             <button
                                                 className={styles.btnToggle}
                                                 onClick={() => handleToggleStatus(doctor)}
                                                 title={doctor.is_active ? 'Vô hiệu hóa' : 'Kích hoạt'}
                                             >
-                                                {doctor.is_active ? '🔒' : '🔓'}
+                                                {doctor.is_active ? 'Khóa' : 'Mở'}
                                             </button>
                                             <button
                                                 className={styles.btnDelete}
                                                 onClick={() => handleDeleteConfirm(doctor)}
                                                 title="Xóa"
                                             >
-                                                🗑️
+                                                Xóa
                                             </button>
                                         </div>
                                     </td>
@@ -296,7 +296,7 @@ export default function AdminDoctors() {
                     <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
                         <div className={styles.modalHeader}>
                             <h2>{selectedDoctor ? 'Sửa thông tin bác sĩ' : 'Thêm bác sĩ mới'}</h2>
-                            <button className={styles.btnClose} onClick={handleCloseModal}>✕</button>
+                            <button className={styles.btnClose} onClick={handleCloseModal}>Đóng</button>
                         </div>
                         <form onSubmit={handleSubmit} className={styles.form}>
                             <div className={styles.formGrid}>
@@ -396,7 +396,7 @@ export default function AdminDoctors() {
                                     Hủy
                                 </button>
                                 <button type="submit" className={styles.btnSubmit} disabled={loading}>
-                                    {loading ? '⏳ Đang xử lý...' : selectedDoctor ? 'Cập nhật' : 'Thêm mới'}
+                                    {loading ? 'Đang xử lý...' : selectedDoctor ? 'Cập nhật' : 'Thêm mới'}
                                 </button>
                             </div>
                         </form>
@@ -415,7 +415,7 @@ export default function AdminDoctors() {
                                 Hủy
                             </button>
                             <button className={styles.btnDelete} onClick={handleDelete} disabled={loading}>
-                                {loading ? '⏳ Đang xóa...' : 'Xóa'}
+                                {loading ? 'Đang xóa...' : 'Xóa'}
                             </button>
                         </div>
                     </div>

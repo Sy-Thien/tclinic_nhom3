@@ -50,6 +50,9 @@ const medicalRecordRoutes = require('./routes/medicalRecordRoutes');  // ✅ NEW
 const medicalHistoryRoutes = require('./routes/medicalHistoryRoutes');  // ✅ NEW: Medical history
 const reminderRoutes = require('./routes/reminderRoutes');  // ✅ NEW: Appointment reminders
 const reviewRoutes = require('./routes/reviewRoutes');  // ✅ NEW: Reviews & ratings
+const consultationRequestRoutes = require('./routes/consultationRequestRoutes');  // ✅ NEW: Consultation/Support
+const adminConsultationRoutes = require('./routes/adminConsultationRoutes');  // ✅ NEW
+const doctorConsultationRoutes = require('./routes/doctorConsultationRoutes');  // ✅ NEW
 
 app.use('/api/auth', authRoutes);
 app.use('/api/public', publicRoutes);
@@ -80,6 +83,10 @@ app.use('/api/medical-records', medicalRecordRoutes);  // ✅ NEW: Medical histo
 app.use('/api/medical-history', medicalHistoryRoutes);  // ✅ NEW: Patient medical history
 app.use('/api/reminders', reminderRoutes);  // ✅ NEW: Appointment reminders
 app.use('/api/reviews', reviewRoutes);  // ✅ NEW: Reviews & ratings
+app.use('/api/articles', require('./routes/articleRoutes'));  // ✅ NEW: News & articles
+app.use('/api/consultation-requests', consultationRequestRoutes);  // ✅ NEW: Consultation/Support
+app.use('/api/admin/consultations', adminConsultationRoutes);  // ✅ NEW: Admin manage consultations
+app.use('/api/doctor/consultations', doctorConsultationRoutes);  // ✅ NEW: Doctor consultations
 
 // Health check
 app.get('/health', (req, res) => {

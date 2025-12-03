@@ -2,15 +2,32 @@ const nodemailer = require('nodemailer');
 
 // Cấu hình email transporter
 const createTransporter = () => {
+    // Log để debug
+    console.log('📧 Email config:', {
+        user: process.env.EMAIL_USER,
+        hasPassword: !!process.env.EMAIL_PASSWORD
+    });
+
     return nodemailer.createTransport({
-        host: process.env.SMTP_HOST || 'smtp.gmail.com',
-        port: process.env.SMTP_PORT || 587,
-        secure: false, // true for 465, false for other ports
+        service: 'gmail', // Sử dụng Gmail service
         auth: {
-            user: process.env.EMAIL_USER || 'your-email@gmail.com',
-            pass: process.env.EMAIL_PASSWORD || 'your-app-password'
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASSWORD // App Password từ Google
         }
     });
+};
+
+// Test kết nối email
+exports.testConnection = async () => {
+    try {
+        const transporter = createTransporter();
+        await transporter.verify();
+        console.log('✅ Email server is ready to send messages');
+        return true;
+    } catch (error) {
+        console.error('❌ Email connection failed:', error.message);
+        return false;
+    }
 };
 
 // Gửi email nhắc lịch khám
@@ -174,11 +191,13 @@ exports.sendBookingConfirmation = async (appointment) => {
             `
         };
 
-        await transporter.sendMail(mailOptions);
+        const info = await transporter.sendMail(mailOptions);
         console.log('✅ Booking confirmation sent to:', appointment.patient_email);
+        return { success: true, messageId: info.messageId };
 
     } catch (error) {
         console.error('❌ Confirmation email error:', error);
+        return { success: false, error: error.message };
     }
 };
 

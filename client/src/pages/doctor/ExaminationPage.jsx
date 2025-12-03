@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../../utils/api';
 import styles from './ExaminationPage.module.css';
+import PrescriptionFormPro from './PrescriptionFormPro';
 
 export default function ExaminationPage() {
     const navigate = useNavigate();
@@ -90,11 +91,26 @@ export default function ExaminationPage() {
         if (!window.confirm('Xác nhận hoàn thành khám bệnh?')) return;
 
         try {
-            // Save examination first
+            // 1. Save examination first
             await api.put(`/api/doctor/appointments/${appointment.id}/exam`, formData);
-            // Mark as completed
+
+            // 2. Mark as completed
             await api.put(`/api/doctor/appointments/${appointment.id}/complete`);
-            alert('Đã hoàn thành khám bệnh!');
+
+            // 3. ✅ Lưu vào lịch sử bệnh án (nếu có patient_id)
+            if (appointment.patient_id) {
+                try {
+                    await api.post('/api/medical-history/save', {
+                        booking_id: appointment.id
+                    });
+                    console.log('✅ Medical history saved');
+                } catch (historyError) {
+                    // Không block flow nếu lưu history lỗi
+                    console.warn('⚠️ Could not save medical history:', historyError.message);
+                }
+            }
+
+            alert('Đã hoàn thành khám bệnh và lưu hồ sơ bệnh án!');
             navigate('/doctor-portal/appointments');
         } catch (error) {
             console.error('Error completing examination:', error);
@@ -130,7 +146,7 @@ export default function ExaminationPage() {
                         {appointment.patient_id && medicalHistories.length > 0 && (
                             <button
                                 className={styles.historyBtn}
-                                onClick={() => navigate(`/doctor/patient-history/${appointment.patient_id}`)}
+                                onClick={() => navigate(`/doctor-portal/patient-history/${appointment.patient_id}`)}
                             >
                                 📋 Xem lịch sử ({medicalHistories.length} lần)
                             </button>
@@ -288,194 +304,19 @@ export default function ExaminationPage() {
                 </div>
             </div>
 
-            {/* Prescription Modal */}
+            {/* Prescription Modal - Professional Version */}
             {showPrescriptionModal && (
-                <PrescriptionModal
-                    appointment={appointment}
+                <PrescriptionFormPro
+                    appointment={{
+                        ...appointment,
+                        diagnosis: formData.diagnosis // Pass current diagnosis
+                    }}
                     onClose={() => setShowPrescriptionModal(false)}
+                    onSuccess={() => {
+                        console.log('✅ Prescription saved successfully');
+                    }}
                 />
             )}
-        </div>
-    );
-}
-
-// Prescription Modal Component
-function PrescriptionModal({ appointment, onClose }) {
-    const navigate = useNavigate();
-    const [drugs, setDrugs] = useState([]);
-    const [prescriptionItems, setPrescriptionItems] = useState([{
-        drug_id: '',
-        quantity: 1,
-        dosage: '',
-        usage_instructions: ''
-    }]);
-    const [saving, setSaving] = useState(false);
-
-    useEffect(() => {
-        fetchDrugs();
-    }, []);
-
-    const fetchDrugs = async () => {
-        try {
-            const response = await api.get('/api/public/drugs');
-            setDrugs(response.data.drugs || []);
-        } catch (error) {
-            console.error('Error fetching drugs:', error);
-        }
-    };
-
-    const addItem = () => {
-        setPrescriptionItems([...prescriptionItems, {
-            drug_id: '',
-            quantity: 1,
-            dosage: '',
-            usage_instructions: ''
-        }]);
-    };
-
-    const removeItem = (index) => {
-        setPrescriptionItems(prescriptionItems.filter((_, i) => i !== index));
-    };
-
-    const updateItem = (index, field, value) => {
-        const updated = [...prescriptionItems];
-        updated[index][field] = value;
-        setPrescriptionItems(updated);
-    };
-
-    const handleSavePrescription = async () => {
-        // Validate
-        const validItems = prescriptionItems.filter(item => item.drug_id && item.quantity > 0);
-        if (validItems.length === 0) {
-            alert('Vui lòng chọn ít nhất một loại thuốc!');
-            return;
-        }
-
-        try {
-            setSaving(true);
-            // Format data theo API backend
-            const payload = {
-                booking_id: appointment.id,
-                patient_id: appointment.patient_id,
-                drugs: validItems.map(item => ({
-                    drug_id: parseInt(item.drug_id),
-                    quantity: item.quantity,
-                    unit: 'viên',
-                    dosage: item.dosage || null,
-                    note: item.usage_instructions || null
-                }))
-            };
-
-            await api.post('/api/doctor/prescriptions', payload);
-            alert('Đã kê đơn thuốc thành công!');
-            onClose();
-        } catch (error) {
-            console.error('Error saving prescription:', error);
-            alert(error.response?.data?.message || 'Có lỗi xảy ra khi kê đơn!');
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    return (
-        <div className={styles.modalOverlay} onClick={onClose}>
-            <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-                <div className={styles.modalHeader}>
-                    <h2><i className="fas fa-prescription-bottle"></i> Kê Đơn Thuốc</h2>
-                    <button className={styles.closeBtn} onClick={onClose}>
-                        <i className="fas fa-times"></i>
-                    </button>
-                </div>
-
-                <div className={styles.modalBody}>
-                    {prescriptionItems.map((item, index) => (
-                        <div key={index} className={styles.prescriptionItem}>
-                            <div className={styles.itemHeader}>
-                                <h4>Thuốc #{index + 1}</h4>
-                                {prescriptionItems.length > 1 && (
-                                    <button
-                                        className={styles.removeBtn}
-                                        onClick={() => removeItem(index)}
-                                    >
-                                        <i className="fas fa-trash"></i>
-                                    </button>
-                                )}
-                            </div>
-
-                            <div className={styles.itemForm}>
-                                <div className={styles.formGroup}>
-                                    <label>Tên thuốc *</label>
-                                    <select
-                                        value={item.drug_id}
-                                        onChange={(e) => updateItem(index, 'drug_id', e.target.value)}
-                                        className={styles.select}
-                                    >
-                                        <option value="">-- Chọn thuốc --</option>
-                                        {drugs.map(drug => (
-                                            <option key={drug.id} value={drug.id}>
-                                                {drug.name} ({drug.unit}) - Còn: {drug.stock_quantity}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <div className={styles.formRow}>
-                                    <div className={styles.formGroup}>
-                                        <label>Số lượng *</label>
-                                        <input
-                                            type="number"
-                                            min="1"
-                                            value={item.quantity}
-                                            onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value))}
-                                            className={styles.input}
-                                        />
-                                    </div>
-                                    <div className={styles.formGroup}>
-                                        <label>Liều lượng</label>
-                                        <input
-                                            type="text"
-                                            value={item.dosage}
-                                            onChange={(e) => updateItem(index, 'dosage', e.target.value)}
-                                            placeholder="VD: 1 viên/lần"
-                                            className={styles.input}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className={styles.formGroup}>
-                                    <label>Cách dùng</label>
-                                    <input
-                                        type="text"
-                                        value={item.usage_instructions}
-                                        onChange={(e) => updateItem(index, 'usage_instructions', e.target.value)}
-                                        placeholder="VD: Uống sau ăn, ngày 2 lần"
-                                        className={styles.input}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-
-                    <button className={styles.btnAddItem} onClick={addItem}>
-                        <i className="fas fa-plus"></i>
-                        Thêm Thuốc
-                    </button>
-                </div>
-
-                <div className={styles.modalFooter}>
-                    <button className={styles.btnCancel} onClick={onClose}>
-                        Hủy
-                    </button>
-                    <button
-                        className={styles.btnSavePrescription}
-                        onClick={handleSavePrescription}
-                        disabled={saving}
-                    >
-                        <i className="fas fa-save"></i>
-                        {saving ? 'Đang lưu...' : 'Lưu Đơn Thuốc'}
-                    </button>
-                </div>
-            </div>
         </div>
     );
 }

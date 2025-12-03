@@ -162,13 +162,13 @@ export default function AdminSpecialties() {
             <div className={styles.actions}>
                 <input
                     type="text"
-                    placeholder="🔍 Tìm theo tên chuyên khoa..."
+                    placeholder="Tìm theo tên chuyên khoa..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className={styles.searchInput}
                 />
                 <button onClick={handleCreate} className={styles.btnCreate}>
-                    ➕ Thêm chuyên khoa
+                    Thêm chuyên khoa
                 </button>
             </div>
 
@@ -216,21 +216,21 @@ export default function AdminSpecialties() {
                                             className={styles.btnView}
                                             title="Xem chi tiết"
                                         >
-                                            👁️
+                                            Xem
                                         </button>
                                         <button
                                             onClick={() => handleEdit(specialty)}
                                             className={styles.btnEdit}
                                             title="Chỉnh sửa"
                                         >
-                                            ✏️
+                                            Sửa
                                         </button>
                                         <button
                                             onClick={() => handleDelete(specialty)}
                                             className={styles.btnDelete}
                                             title="Xóa"
                                         >
-                                            🗑️
+                                            Xóa
                                         </button>
                                     </td>
                                 </tr>
@@ -247,7 +247,7 @@ export default function AdminSpecialties() {
                         <div className={styles.modalHeader}>
                             <h2>Thêm chuyên khoa mới</h2>
                             <button onClick={() => setShowCreateModal(false)} className={styles.closeBtn}>
-                                ✕
+                                Đóng
                             </button>
                         </div>
 
@@ -303,7 +303,7 @@ export default function AdminSpecialties() {
                         <div className={styles.modalHeader}>
                             <h2>Chỉnh sửa chuyên khoa</h2>
                             <button onClick={() => setShowEditModal(false)} className={styles.closeBtn}>
-                                ✕
+                                Đóng
                             </button>
                         </div>
 
@@ -356,7 +356,7 @@ export default function AdminSpecialties() {
                         <div className={styles.modalHeader}>
                             <h2>Chi tiết chuyên khoa</h2>
                             <button onClick={() => setShowDetailModal(false)} className={styles.closeBtn}>
-                                ✕
+                                Đóng
                             </button>
                         </div>
 
@@ -422,7 +422,7 @@ export default function AdminSpecialties() {
                         <div className={styles.modalHeader}>
                             <h2>Xác nhận xóa</h2>
                             <button onClick={() => setShowDeleteModal(false)} className={styles.closeBtn}>
-                                ✕
+                                Đóng
                             </button>
                         </div>
 
@@ -431,7 +431,7 @@ export default function AdminSpecialties() {
                             <p className={styles.specialtyName}>{selectedSpecialty.name}</p>
                             {(selectedSpecialty.doctorCount > 0 || selectedSpecialty.serviceCount > 0) && (
                                 <p className={styles.warning}>
-                                    ⚠️ Chuyên khoa này có {selectedSpecialty.doctorCount} bác sĩ và {selectedSpecialty.serviceCount} dịch vụ!
+                                    Cảnh báo: Chuyên khoa này có {selectedSpecialty.doctorCount} bác sĩ và {selectedSpecialty.serviceCount} dịch vụ!
                                 </p>
                             )}
                         </div>

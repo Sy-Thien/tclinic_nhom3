@@ -613,6 +613,17 @@ export default function AppointmentsList() {
                         </div>
 
                         <div className={styles.modalFooter}>
+                            {(selectedAppointment.patient?.id || selectedAppointment.patient_id) && (
+                                <button
+                                    className={styles.btnViewHistory}
+                                    onClick={() => {
+                                        setShowDetailModal(false);
+                                        navigate(`/doctor-portal/patient-history/${selectedAppointment.patient?.id || selectedAppointment.patient_id}`);
+                                    }}
+                                >
+                                    📋 Xem hồ sơ bệnh án
+                                </button>
+                            )}
                             <button
                                 className={styles.btnClose}
                                 onClick={() => setShowDetailModal(false)}

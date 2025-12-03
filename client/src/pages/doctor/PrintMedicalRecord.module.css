@@ -1,0 +1,430 @@
+/* PrintMedicalRecord.module.css - Hospital-style Print Layout */
+
+.printContainer {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 10mm 15mm;
+    background: white;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #000;
+    box-sizing: border-box;
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #0f766e;
+    margin-bottom: 10px;
+    gap: 15px;
+}
+
+.logoSection {
+    flex-shrink: 0;
+}
+
+.logo {
+    width: 70px;
+    height: 70px;
+    object-fit: contain;
+    background: white;
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.headerCenter {
+    flex: 1;
+    text-align: center;
+}
+
+.clinicName {
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #0f766e;
+}
+
+.clinicInfo {
+    font-size: 11px;
+    color: #333;
+    margin-top: 4px;
+}
+
+.headerRight {
+    text-align: right;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.formCode,
+.visitCode {
+    margin-bottom: 2px;
+}
+
+/* Title */
+.title {
+    text-align: center;
+    margin: 15px 0;
+}
+
+.title h1 {
+    font-size: 20px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin: 0;
+    letter-spacing: 1px;
+}
+
+/* Patient Section */
+.patientSection {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    background: #fafafa;
+}
+
+.patientRow {
+    display: flex;
+    margin-bottom: 6px;
+}
+
+.patientRow:last-child {
+    margin-bottom: 0;
+}
+
+.patientField {
+    display: flex;
+    margin-right: 30px;
+}
+
+.patientField:last-child {
+    margin-right: 0;
+}
+
+.label {
+    font-weight: bold;
+    margin-right: 5px;
+    white-space: nowrap;
+}
+
+.value {
+    border-bottom: 1px dotted #666;
+    min-width: 100px;
+    padding: 0 5px;
+}
+
+/* Diagnosis Section */
+.diagnosisSection {
+    margin-bottom: 15px;
+}
+
+.sectionTitle {
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    padding: 5px 10px;
+    background: #e8e8e8;
+    border-left: 4px solid #0056b3;
+}
+
+.fieldGroup {
+    margin-bottom: 8px;
+    padding-left: 10px;
+}
+
+.fieldLabel {
+    font-weight: bold;
+    margin-bottom: 3px;
+}
+
+.fieldContent {
+    padding-left: 15px;
+    min-height: 20px;
+}
+
+.fieldContent.bold {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* Prescription Section */
+.prescriptionSection {
+    margin-bottom: 15px;
+}
+
+.drugTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 12px;
+}
+
+.drugTable th,
+.drugTable td {
+    border: 1px solid #333;
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.drugTable th {
+    background: #e8e8e8;
+    font-weight: bold;
+    text-align: center;
+}
+
+.thStt {
+    width: 40px;
+}
+
+.thName {
+    width: 35%;
+}
+
+.thQuantity {
+    width: 80px;
+}
+
+.thDosage {
+    width: auto;
+}
+
+.tdStt {
+    text-align: center;
+    font-weight: bold;
+}
+
+.tdName {}
+
+.drugName {
+    font-weight: bold;
+}
+
+.drugIngredient {
+    font-size: 11px;
+    color: #555;
+    font-style: italic;
+}
+
+.tdQuantity {
+    text-align: center;
+    font-weight: bold;
+}
+
+.tdDosage {
+    font-size: 12px;
+}
+
+/* Note & Re-exam */
+.noteSection,
+.reExamSection {
+    margin-top: 10px;
+    padding: 8px 10px;
+    background: #fff8dc;
+    border: 1px dashed #d4a700;
+}
+
+.noteLabel,
+.reExamLabel {
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.reExamSection {
+    background: #e6f3ff;
+    border-color: #0056b3;
+}
+
+.reExamContent {
+    font-weight: bold;
+    color: #0056b3;
+}
+
+.noPrescription {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-style: italic;
+}
+
+/* Footer */
+.footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    padding-top: 15px;
+}
+
+.footerLeft {
+    flex: 1;
+}
+
+.footerNote {
+    font-size: 11px;
+    color: #666;
+}
+
+.footerRight {
+    text-align: center;
+    min-width: 200px;
+}
+
+.signatureDate {
+    font-style: italic;
+    margin-bottom: 5px;
+    font-size: 12px;
+}
+
+.signatureTitle {
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 13px;
+}
+
+.signatureSpace {
+    height: 60px;
+}
+
+.doctorName {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* Tear Line */
+.tearLine {
+    border-top: 1px dashed #999;
+    margin: 20px 0;
+    position: relative;
+}
+
+.tearLine::before {
+    content: '✂';
+    position: absolute;
+    left: 0;
+    top: -10px;
+    background: white;
+    padding-right: 5px;
+    color: #999;
+}
+
+/* Patient Copy */
+.patientCopy {
+    font-size: 11px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    background: #f9f9f9;
+}
+
+.copyHeader {
+    text-align: center;
+    margin-bottom: 8px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #ddd;
+    font-size: 12px;
+}
+
+.copyContent {
+    line-height: 1.6;
+}
+
+.copyDrugs {
+    margin: 8px 0;
+    padding-left: 10px;
+}
+
+.copyDrugItem {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 3px;
+}
+
+.copyDrugNum {
+    font-weight: bold;
+    min-width: 20px;
+}
+
+.copyDrugName {
+    font-weight: bold;
+}
+
+.copyDrugDosage {
+    color: #333;
+}
+
+.copyReExam {
+    margin-top: 8px;
+    padding-top: 5px;
+    border-top: 1px dotted #ccc;
+}
+
+/* Print-specific styles */
+@media print {
+    .printContainer {
+        width: 100%;
+        min-height: auto;
+        padding: 5mm 10mm;
+        margin: 0;
+        box-shadow: none;
+    }
+
+    .header {
+        border-bottom-color: #000 !important;
+    }
+
+    .drugTable th,
+    .drugTable td {
+        border-color: #000 !important;
+    }
+
+    .sectionTitle {
+        background: #e8e8e8 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .patientSection {
+        background: #fafafa !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .noteSection {
+        background: #fff8dc !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .reExamSection {
+        background: #e6f3ff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    /* Avoid page breaks inside elements */
+    .drugTable {
+        page-break-inside: avoid;
+    }
+
+    .footer {
+        page-break-inside: avoid;
+    }
+
+    .patientCopy {
+        page-break-inside: avoid;
+    }
+}
+
+/* Screen preview styles */
+@media screen {
+    .printContainer {
+        max-width: 210mm;
+        margin: 20px auto;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+        border: 1px solid #ddd;
+    }
+}

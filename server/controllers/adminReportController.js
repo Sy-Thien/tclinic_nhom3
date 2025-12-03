@@ -1,8 +1,131 @@
-const { Booking, Doctor, Specialty } = require('../models');
+const { Booking, Doctor, Specialty, Service } = require('../models');
 const { Op, fn, col, literal } = require('sequelize');
 const moment = require('moment');
 const ExcelJS = require('exceljs');
 const PDFDocument = require('pdfkit');
+const sequelize = require('../config/database');
+
+// Thống kê tổng quan
+exports.getSummaryStats = async (req, res) => {
+    try {
+        const { from, to } = req.query;
+        const where = {};
+        if (from && to) {
+            where.appointment_date = { [Op.between]: [from, to] };
+        }
+
+        // Tổng số booking
+        const totalBookings = await Booking.count({ where });
+
+        // Số booking theo trạng thái
+        const completedBookings = await Booking.count({
+            where: { ...where, status: 'completed' }
+        });
+
+        const cancelledBookings = await Booking.count({
+            where: { ...where, status: 'cancelled' }
+        });
+
+        const pendingBookings = await Booking.count({
+            where: { ...where, status: { [Op.in]: ['pending', 'confirmed', 'waiting_doctor_confirmation', 'waiting_doctor_assignment'] } }
+        });
+
+        // ✅ Tính doanh thu thực từ price trong booking (đã hoàn thành)
+        const revenueResult = await Booking.findOne({
+            attributes: [[fn('SUM', col('price')), 'totalRevenue']],
+            where: { ...where, status: 'completed' },
+            raw: true
+        });
+        const totalRevenue = parseFloat(revenueResult?.totalRevenue) || 0;
+
+        // Tính số ngày trong khoảng thời gian
+        let dayCount = 30;
+        if (from && to) {
+            const fromDate = new Date(from);
+            const toDate = new Date(to);
+            dayCount = Math.ceil((toDate - fromDate) / (1000 * 60 * 60 * 24)) + 1;
+        }
+
+        const avgPerDay = dayCount > 0 ? Math.round(totalBookings / dayCount) : 0;
+        const avgRevenuePerDay = dayCount > 0 ? Math.round(totalRevenue / dayCount) : 0;
+
+        res.json({
+            totalBookings,
+            completedBookings,
+            cancelledBookings,
+            pendingBookings,
+            avgPerDay,
+            totalRevenue,
+            avgRevenuePerDay
+        });
+    } catch (error) {
+        console.error('Error getting summary stats:', error);
+        res.status(500).json({ message: 'Lỗi thống kê tổng quan', error: error.message });
+    }
+};
+
+// ✅ NEW: Thống kê doanh thu theo ngày/tháng
+exports.getRevenueStats = async (req, res) => {
+    try {
+        const { type = 'day', from, to } = req.query;
+
+        let groupFormat;
+        let labelFormat;
+        if (type === 'day') {
+            groupFormat = '%Y-%m-%d';
+            labelFormat = 'DD/MM/YYYY';
+        } else if (type === 'month') {
+            groupFormat = '%Y-%m';
+            labelFormat = 'MM/YYYY';
+        } else {
+            groupFormat = '%Y-%m-%d';
+            labelFormat = 'DD/MM/YYYY';
+        }
+
+        const where = { status: 'completed' };
+        if (from && to) {
+            where.appointment_date = { [Op.between]: [from, to] };
+        }
+
+        const stats = await Booking.findAll({
+            attributes: [
+                [fn('DATE_FORMAT', col('appointment_date'), groupFormat), 'period'],
+                [fn('COUNT', col('Booking.id')), 'count'],
+                [fn('SUM', col('price')), 'revenue']
+            ],
+            where,
+            group: [literal('period')],
+            order: [[literal('period'), 'ASC']],
+            raw: true
+        });
+
+        // Format lại data
+        const formattedStats = stats.map(item => ({
+            period: item.period,
+            label: type === 'day'
+                ? moment(item.period).format('DD/MM')
+                : moment(item.period + '-01').format('MM/YYYY'),
+            count: parseInt(item.count) || 0,
+            revenue: parseFloat(item.revenue) || 0
+        }));
+
+        // Tính tổng
+        const totalRevenue = formattedStats.reduce((sum, item) => sum + item.revenue, 0);
+        const totalCount = formattedStats.reduce((sum, item) => sum + item.count, 0);
+
+        res.json({
+            data: formattedStats,
+            summary: {
+                totalRevenue,
+                totalCount,
+                avgRevenue: formattedStats.length > 0 ? Math.round(totalRevenue / formattedStats.length) : 0
+            }
+        });
+    } catch (error) {
+        console.error('Error in getRevenueStats:', error);
+        res.status(500).json({ message: 'Lỗi thống kê doanh thu', error: error.message });
+    }
+};
 
 // Số lượt khám theo ngày/tuần/tháng
 exports.getVisitStats = async (req, res) => {
@@ -22,15 +145,17 @@ exports.getVisitStats = async (req, res) => {
         const stats = await Booking.findAll({
             attributes: [
                 [fn('DATE_FORMAT', col('appointment_date'), groupFormat), 'period'],
-                [fn('COUNT', col('id')), 'count']
+                [fn('COUNT', col('Booking.id')), 'count']
             ],
             where,
             group: [literal('period')],
-            order: [[literal('period'), 'ASC']]
+            order: [[literal('period'), 'ASC']],
+            raw: true
         });
 
         res.json(stats);
     } catch (error) {
+        console.error('Error in getVisitStats:', error);
         res.status(500).json({ message: 'Lỗi thống kê lượt khám', error: error.message });
     }
 };
@@ -39,7 +164,7 @@ exports.getVisitStats = async (req, res) => {
 exports.getTopDoctors = async (req, res) => {
     try {
         const { from, to, limit = 5 } = req.query;
-        const where = {};
+        const where = { doctor_id: { [Op.ne]: null } };
         if (from && to) {
             where.appointment_date = { [Op.between]: [from, to] };
         }
@@ -48,17 +173,19 @@ exports.getTopDoctors = async (req, res) => {
         const stats = await Booking.findAll({
             attributes: [
                 'doctor_id',
-                [fn('COUNT', col('id')), 'count']
+                [fn('COUNT', col('Booking.id')), 'count']
             ],
             where,
-            group: ['doctor_id'],
-            order: [[fn('COUNT', col('id')), 'DESC']],
+            group: ['doctor_id', 'doctor.id', 'doctor.full_name'],
+            order: [[literal('count'), 'DESC']],
             limit: parseInt(limit),
-            include: [{ model: Doctor, as: 'doctor', attributes: ['id', 'full_name'] }]
+            include: [{ model: Doctor, as: 'doctor', attributes: ['id', 'full_name'] }],
+            raw: false
         });
 
         res.json(stats);
     } catch (error) {
+        console.error('Error in getTopDoctors:', error);
         res.status(500).json({ message: 'Lỗi thống kê bác sĩ', error: error.message });
     }
 };
@@ -67,7 +194,7 @@ exports.getTopDoctors = async (req, res) => {
 exports.getPopularSpecialties = async (req, res) => {
     try {
         const { from, to, limit = 5 } = req.query;
-        const where = {};
+        const where = { specialty_id: { [Op.ne]: null } };
         if (from && to) {
             where.appointment_date = { [Op.between]: [from, to] };
         }
@@ -76,17 +203,19 @@ exports.getPopularSpecialties = async (req, res) => {
         const stats = await Booking.findAll({
             attributes: [
                 'specialty_id',
-                [fn('COUNT', col('id')), 'count']
+                [fn('COUNT', col('Booking.id')), 'count']
             ],
             where,
-            group: ['specialty_id'],
-            order: [[fn('COUNT', col('id')), 'DESC']],
+            group: ['specialty_id', 'specialty.id', 'specialty.name'],
+            order: [[literal('count'), 'DESC']],
             limit: parseInt(limit),
-            include: [{ model: Specialty, as: 'specialty', attributes: ['id', 'name'] }]
+            include: [{ model: Specialty, as: 'specialty', attributes: ['id', 'name'] }],
+            raw: false
         });
 
         res.json(stats);
     } catch (error) {
+        console.error('Error in getPopularSpecialties:', error);
         res.status(500).json({ message: 'Lỗi thống kê chuyên khoa', error: error.message });
     }
 };

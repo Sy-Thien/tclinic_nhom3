@@ -52,7 +52,9 @@ export default function DoctorLayout() {
             {/* Sidebar */}
             <aside className={styles.sidebar}>
                 <div className={styles.brand}>
-                    <div className={styles.logo}>👨‍⚕️</div>
+                    <div className={styles.logo}>
+                        <img src="/logo.png" alt="TClinic Logo" />
+                    </div>
                     <div>
                         <div className={styles.brandName}>Bác Sĩ</div>
                         <div className={styles.brandSubtext}>{doctor.full_name || doctor.name}</div>
@@ -93,6 +95,39 @@ export default function DoctorLayout() {
                             <path d="M8 2v4M16 2v4M3 10h18" strokeWidth="2" strokeLinecap="round" />
                         </svg>
                         Lịch Làm Việc
+                    </NavLink>
+
+                    <NavLink
+                        to="/doctor-portal/consultations"
+                        className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}
+                    >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" strokeWidth="2" />
+                        </svg>
+                        Tư vấn bệnh nhân
+                    </NavLink>
+
+                    <NavLink
+                        to="/doctor-portal/patients"
+                        className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}
+                    >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            <circle cx="9" cy="7" r="4" strokeWidth="2" />
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" strokeWidth="2" />
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75" strokeWidth="2" />
+                        </svg>
+                        Hồ Sơ Bệnh Nhân
+                    </NavLink>
+
+                    <NavLink
+                        to="/doctor-portal/reviews"
+                        className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}
+                    >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        Đánh giá từ BN
                     </NavLink>
 
                     <NavLink

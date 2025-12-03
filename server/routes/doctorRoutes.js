@@ -5,6 +5,7 @@ const { Booking, Patient, Service, Specialty } = require('../models');
 const { Op } = require('sequelize');
 const doctorScheduleViewController = require('../controllers/doctorScheduleViewController');
 const doctorReviewController = require('../controllers/doctorReviewController');
+const doctorAppointmentController = require('../controllers/doctorAppointmentController');
 
 // Middleware kiểm tra role doctor
 const checkDoctorRole = (req, res, next) => {
@@ -13,6 +14,9 @@ const checkDoctorRole = (req, res, next) => {
     }
     next();
 };
+
+// GET - Lịch làm việc định kỳ (DoctorSchedule)
+router.get('/work-schedule', verifyToken, checkDoctorRole, doctorAppointmentController.getWorkSchedule);
 
 // GET - Danh sách lịch hẹn của bác sĩ
 router.get('/appointments', verifyToken, checkDoctorRole, async (req, res) => {
@@ -67,8 +71,8 @@ router.get('/appointments', verifyToken, checkDoctorRole, async (req, res) => {
     }
 });
 
-// GET - Lịch làm việc theo ngày
-router.get('/my-schedule', verifyToken, checkDoctorRole, doctorScheduleViewController.getDoctorSchedule);
+// GET - Lịch làm việc theo ngày (với bookings)
+router.get('/my-schedule', verifyToken, checkDoctorRole, doctorAppointmentController.getMyAppointments);
 
 // GET - Thống kê lịch làm việc theo tuần/tháng
 router.get('/schedule-statistics', verifyToken, checkDoctorRole, doctorScheduleViewController.getDoctorScheduleStatistics);
@@ -249,5 +253,14 @@ router.get('/reviews', verifyToken, checkDoctorRole, doctorReviewController.getD
 
 // GET - Thống kê rating của bác sĩ
 router.get('/rating-stats', verifyToken, checkDoctorRole, doctorReviewController.getDoctorRatingStats);
+
+// POST - Bác sĩ phản hồi đánh giá
+router.post('/reviews/:review_id/reply', verifyToken, checkDoctorRole, doctorReviewController.replyToReview);
+
+// PUT - Bác sĩ sửa phản hồi
+router.put('/reviews/:review_id/reply', verifyToken, checkDoctorRole, doctorReviewController.updateReply);
+
+// DELETE - Bác sĩ xóa phản hồi
+router.delete('/reviews/:review_id/reply', verifyToken, checkDoctorRole, doctorReviewController.deleteReply);
 
 module.exports = router;

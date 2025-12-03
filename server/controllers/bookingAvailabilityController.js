@@ -1,5 +1,6 @@
 const { Booking, Doctor, DoctorSchedule, Specialty } = require('../models');
 const moment = require('moment');
+const { Op } = require('sequelize');
 
 // Lấy danh sách bác sĩ theo chuyên khoa
 exports.getDoctorsBySpecialty = async (req, res) => {
@@ -59,7 +60,7 @@ exports.getAvailableSlots = async (req, res) => {
         });
 
         if (!schedule) {
-            return res.json({ availableSlots: [] });
+            return res.json({ availableSlots: [], bookedSlots: [] });
         }
 
         // Tạo danh sách slots trong ngày
@@ -91,21 +92,49 @@ exports.getAvailableSlots = async (req, res) => {
             current = slotEnd;
         }
 
-        // Lấy các lịch đã đặt của bác sĩ trong ngày đó
-        const bookedSlots = await Booking.findAll({
+        // Lấy các lịch đã đặt của bác sĩ trong ngày đó (pending, confirmed, in_progress)
+        const bookedAppointments = await Booking.findAll({
             where: {
                 doctor_id: doctorId,
                 appointment_date: date,
-                status: ['pending', 'confirmed']
+                status: { [Op.in]: ['pending', 'confirmed', 'in_progress'] }
             },
-            attributes: ['appointment_time']
+            attributes: ['appointment_time', 'status', 'patient_name']
         });
 
-        // Lọc các slot còn rảnh
-        const bookedTimes = bookedSlots.map(b => b.appointment_time);
-        const availableSlots = allSlots.filter(slot => !bookedTimes.includes(slot.start));
+        const bookedTimes = bookedAppointments.map(b => ({
+            time: b.appointment_time?.substring(0, 5),
+            status: b.status,
+            patient_name: b.patient_name
+        }));
 
-        res.json({ availableSlots });
+        // Lọc các slot còn rảnh và đánh dấu slot đã đặt
+        const now = moment();
+        const isToday = moment(date).isSame(now, 'day');
+
+        const slots = allSlots.map(slot => {
+            const booked = bookedTimes.find(b => b.time === slot.start);
+            const slotMoment = moment(slot.start, 'HH:mm');
+
+            // Nếu là hôm nay và slot đã qua thì không cho đặt
+            const isPast = isToday && slotMoment.isBefore(now);
+
+            return {
+                ...slot,
+                available: !booked && !isPast,
+                status: booked ? booked.status : (isPast ? 'past' : 'available'),
+                patient_name: booked?.patient_name || null
+            };
+        });
+
+        const availableSlots = slots.filter(s => s.available);
+        const unavailableSlots = slots.filter(s => !s.available);
+
+        res.json({
+            allSlots: slots,
+            availableSlots,
+            bookedSlots: unavailableSlots
+        });
     } catch (error) {
         res.status(500).json({ message: 'Lỗi lấy giờ rảnh bác sĩ', error: error.message });
     }

@@ -1,0 +1,168 @@
+// TClinic Database Schema
+
+Table tn_admins {
+  id int [pk]
+  username varchar
+  email varchar
+  password varchar
+  full_name varchar
+  role varchar
+  is_active tinyint
+}
+
+Table tn_doctors {
+  id int [pk]
+  email varchar
+  password varchar
+  full_name varchar
+  phone varchar
+  gender enum
+  specialty_id int [ref: > tn_specialties.id]
+  experience varchar
+  education varchar
+  is_active tinyint
+}
+
+Table tn_patients {
+  id int [pk]
+  email varchar
+  password varchar
+  full_name varchar
+  phone varchar
+  gender enum
+  birthday varchar
+  address varchar
+  is_active tinyint
+}
+
+Table tn_specialties {
+  id int [pk]
+  name varchar
+  description varchar
+  image varchar
+}
+
+Table tn_services {
+  id int [pk]
+  name varchar
+  description text
+  price decimal
+  duration int
+  specialty_id int [ref: > tn_specialties.id]
+}
+
+Table tn_rooms {
+  id int [pk]
+  name varchar
+  location varchar
+  floor int
+  specialty_id int [ref: > tn_specialties.id]
+  room_number varchar
+  status varchar
+  capacity int
+}
+
+Table doctor_schedules {
+  id int [pk]
+  doctor_id int [ref: > tn_doctors.id]
+  day_of_week varchar
+  start_time time
+  end_time time
+  break_start time
+  break_end time
+  is_active tinyint
+  room varchar
+}
+
+Table tn_time_slots {
+  id int [pk]
+  doctor_id int [ref: > tn_doctors.id]
+  date date
+  start_time time
+  end_time time
+  max_patients int
+  current_patients int
+  is_available tinyint
+  room_id int [ref: > tn_rooms.id]
+}
+
+Table tn_booking {
+  id int [pk]
+  patient_id int [ref: > tn_patients.id]
+  booking_code varchar
+  patient_name varchar
+  patient_phone varchar
+  specialty_id int [ref: > tn_specialties.id]
+  service_id int [ref: > tn_services.id]
+  doctor_id int [ref: > tn_doctors.id]
+  appointment_date date
+  appointment_time varchar
+  symptoms text
+  diagnosis text
+  status varchar
+  price decimal
+  time_slot_id int [ref: > tn_time_slots.id]
+}
+
+Table tn_drugs {
+  id int [pk]
+  name varchar
+  ingredient text
+  quantity int
+  unit varchar
+  expiry_date datetime
+  warning_level int
+  price decimal
+}
+
+Table tn_prescriptions {
+  id int [pk]
+  booking_id int [ref: > tn_booking.id]
+  doctor_id int [ref: > tn_doctors.id]
+  patient_id int [ref: > tn_patients.id]
+  prescription_code varchar
+  note text
+}
+
+Table tn_prescription_details {
+  id int [pk]
+  prescription_id int [ref: > tn_prescriptions.id]
+  drug_id int [ref: > tn_drugs.id]
+  quantity int
+  unit varchar
+  dosage varchar
+  duration varchar
+}
+
+Table tn_medical_records {
+  id int [pk]
+  patient_id int [ref: > tn_patients.id]
+  blood_type varchar
+  allergies text
+  chronic_diseases text
+  family_history text
+}
+
+Table tn_treatments {
+  id int [pk]
+  appointment_id int [ref: > tn_booking.id]
+  type varchar
+  times int
+  purpose varchar
+  instruction varchar
+}
+
+Table tn_consultation_requests {
+  id int [pk]
+  patient_id int [ref: > tn_patients.id]
+  guest_name varchar
+  guest_phone varchar
+  subject varchar
+  message text
+  category varchar
+  specialty_id int [ref: > tn_specialties.id]
+  assigned_doctor_id int [ref: > tn_doctors.id]
+  status varchar
+  priority varchar
+  doctor_response text
+}

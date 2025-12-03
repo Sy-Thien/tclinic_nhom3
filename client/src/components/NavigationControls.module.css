@@ -1,0 +1,100 @@
+.navControls {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    display: flex;
+    gap: 10px;
+    z-index: 1000;
+    flex-direction: column;
+}
+
+.navButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    min-width: 120px;
+    justify-content: center;
+}
+
+.navButton:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.navButton:active {
+    transform: translateY(-1px);
+}
+
+.icon {
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.label {
+    font-size: 0.9rem;
+}
+
+.restartButton {
+    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+    box-shadow: 0 5px 15px rgba(243, 156, 18, 0.3);
+}
+
+.restartButton:hover {
+    box-shadow: 0 8px 25px rgba(243, 156, 18, 0.4);
+}
+
+/* Responsive - Mobile */
+@media (max-width: 768px) {
+    .navControls {
+        bottom: 20px;
+        right: 20px;
+        gap: 8px;
+    }
+
+    .navButton {
+        padding: 10px 16px;
+        font-size: 0.85rem;
+        min-width: 100px;
+    }
+
+    .label {
+        font-size: 0.8rem;
+    }
+
+    .icon {
+        font-size: 1rem;
+    }
+}
+
+/* Alternative horizontal layout */
+.navControls.horizontal {
+    flex-direction: row;
+    bottom: 20px;
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.navControls.horizontal .navButton {
+    min-width: auto;
+}
+
+@media (max-width: 768px) {
+    .navControls.horizontal {
+        flex-direction: column;
+        left: auto;
+        right: 20px;
+        transform: none;
+    }
+}

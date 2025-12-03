@@ -429,9 +429,9 @@ router.get('/drugs', async (req, res) => {
         }
 
         const drugs = await Drug.findAll({
-            attributes: ['id', 'name', 'description', 'unit', 'price', 'stock_quantity'],
+            attributes: ['id', 'name', 'ingredient', 'unit', 'price', 'quantity'],
             where: {
-                stock_quantity: { [Op.gt]: 0 }  // Chỉ lấy thuốc còn hàng
+                quantity: { [Op.gt]: 0 }  // Chỉ lấy thuốc còn hàng
             },
             order: [['name', 'ASC']]
         });

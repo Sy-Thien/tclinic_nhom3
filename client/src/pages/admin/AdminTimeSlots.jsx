@@ -242,7 +242,7 @@ export default function AdminTimeSlots() {
                 await api.put(`/api/admin/time-slots/${slot.lockedInfo.id}`, { is_available: true });
                 fetchWeekData();
             } catch (error) {
-                alert('❌ Lỗi mở khóa slot');
+                alert('Lỗi mở khóa slot');
             }
         } else {
             // Lock - create time slot record với is_available = false
@@ -270,7 +270,7 @@ export default function AdminTimeSlots() {
                         fetchWeekData();
                     }
                 } catch (err2) {
-                    alert('❌ Lỗi khóa slot');
+                    alert('Lỗi khóa slot');
                 }
             }
         }
@@ -304,7 +304,7 @@ export default function AdminTimeSlots() {
             }
             fetchWeekData();
         } catch (error) {
-            alert('❌ Lỗi thao tác');
+            alert('Lỗi thao tác');
         } finally {
             setLoading(false);
         }
@@ -364,14 +364,14 @@ export default function AdminTimeSlots() {
         <div className={styles.container}>
             <div className={styles.header}>
                 <div>
-                    <h1>⏰ Quản Lý Khung Giờ Khám</h1>
+                    <h1>Quản Lý Khung Giờ Khám</h1>
                     <p>Lịch làm việc định kỳ hàng tuần. Khóa/mở từng khung giờ khi cần thiết.</p>
                 </div>
             </div>
 
             {/* Info Banner */}
             <div className={styles.infoBanner}>
-                <span>💡</span>
+                <span>Lưu ý</span>
                 <div>
                     <strong>Cách hoạt động:</strong> Lịch làm việc của bác sĩ được thiết lập định kỳ theo tuần (ví dụ: Thứ 2-6, 8h-17h).
                     Hệ thống tự động tạo khung giờ khám cho tất cả các tuần. Bạn chỉ cần khóa những slot đặc biệt khi bác sĩ nghỉ.
@@ -400,10 +400,10 @@ export default function AdminTimeSlots() {
             <div className={styles.mainContent}>
                 {/* Sidebar: Doctor Selection */}
                 <div className={styles.sidebar}>
-                    <h3>👨‍⚕️ Chọn Bác Sĩ</h3>
+                    <h3>Chọn Bác Sĩ</h3>
                     <input
                         type="text"
-                        placeholder="🔍 Tìm bác sĩ..."
+                        placeholder="Tìm bác sĩ..."
                         value={searchDoctor}
                         onChange={(e) => setSearchDoctor(e.target.value)}
                         className={styles.searchInput}
@@ -430,18 +430,18 @@ export default function AdminTimeSlots() {
                             {/* Doctor Info Header */}
                             <div className={styles.contentHeader}>
                                 <div className={styles.doctorInfo}>
-                                    <span>📋 <strong>{selectedDoctorInfo?.full_name}</strong></span>
+                                    <span><strong>{selectedDoctorInfo?.full_name}</strong></span>
                                     <span className={styles.specialty}>({selectedDoctorInfo?.specialty?.name})</span>
                                 </div>
                                 <button className={styles.btnSchedule} onClick={() => window.location.href = '/admin/doctor-schedules'}>
-                                    ⚙️ Sửa lịch định kỳ
+                                    Sửa lịch định kỳ
                                 </button>
                             </div>
 
                             {/* Schedule Summary */}
                             {doctorSchedule.length > 0 ? (
                                 <div className={styles.scheduleSummary}>
-                                    <h4>📅 Lịch làm việc định kỳ:</h4>
+                                    <h4>Lịch làm việc định kỳ:</h4>
                                     <div className={styles.scheduleGrid}>
                                         {dayOptions.map(day => {
                                             const schedule = doctorSchedule.find(s => s.day_of_week === day.value);
@@ -462,15 +462,15 @@ export default function AdminTimeSlots() {
                                     </div>
                                     {scheduleStats && (
                                         <p className={styles.scheduleNote}>
-                                            ✅ Làm việc {scheduleStats.activeDays} ngày/tuần, tổng ~{scheduleStats.workHours}h/tuần
+                                            Làm việc {scheduleStats.activeDays} ngày/tuần, tổng ~{scheduleStats.workHours}h/tuần
                                         </p>
                                     )}
                                 </div>
                             ) : (
                                 <div className={styles.noSchedule}>
-                                    <p>⚠️ Bác sĩ chưa có lịch làm việc định kỳ</p>
+                                    <p>Bác sĩ chưa có lịch làm việc định kỳ</p>
                                     <button className={styles.btnSchedule} onClick={() => window.location.href = '/admin/doctor-schedules'}>
-                                        ➕ Tạo lịch làm việc
+                                        Tạo lịch làm việc
                                     </button>
                                 </div>
                             )}
@@ -488,7 +488,7 @@ export default function AdminTimeSlots() {
                                     </div>
 
                                     {loading ? (
-                                        <div className={styles.loading}>⏳ Đang tải...</div>
+                                        <div className={styles.loading}>Đang tải...</div>
                                     ) : (
                                         <div className={styles.weekGrid}>
                                             {weekDates.map((date) => {
@@ -512,9 +512,9 @@ export default function AdminTimeSlots() {
                                                         {dayData.hasSchedule ? (
                                                             <>
                                                                 <div className={styles.dayStats}>
-                                                                    <span title="Còn trống" className={styles.available}>✅ {availableCount}</span>
-                                                                    {bookedCount > 0 && <span title="Có lịch hẹn" className={styles.booked}>👥 {bookedCount}</span>}
-                                                                    {lockedCount > 0 && <span title="Đã khóa" className={styles.locked}>🔒 {lockedCount}</span>}
+                                                                    <span title="Còn trống" className={styles.available}>Trống: {availableCount}</span>
+                                                                    {bookedCount > 0 && <span title="Có lịch hẹn" className={styles.booked}>Đặt: {bookedCount}</span>}
+                                                                    {lockedCount > 0 && <span title="Đã khóa" className={styles.locked}>Khóa: {lockedCount}</span>}
                                                                 </div>
 
                                                                 <div className={styles.daySlots}>
@@ -531,10 +531,10 @@ export default function AdminTimeSlots() {
                                                                                     onClick={() => handleLockSlot(dateStr, slot)}
                                                                                     title={slot.isLocked ? 'Mở khóa' : 'Khóa'}
                                                                                 >
-                                                                                    {slot.isLocked ? '🔓' : '🔒'}
+                                                                                    {slot.isLocked ? 'Mở' : 'Khóa'}
                                                                                 </button>
                                                                             )}
-                                                                            {slot.isBooked && <span className={styles.bookedIcon}>👤</span>}
+                                                                            {slot.isBooked && <span className={styles.bookedIcon}>Đặt</span>}
                                                                         </div>
                                                                     ))}
                                                                 </div>
@@ -546,21 +546,21 @@ export default function AdminTimeSlots() {
                                                                             onClick={() => handleLockDay(dateStr, true)}
                                                                             title="Khóa cả ngày"
                                                                         >
-                                                                            🔒 Khóa ngày
+                                                                            Khóa ngày
                                                                         </button>
                                                                         <button
                                                                             className={styles.btnDayAction}
                                                                             onClick={() => handleLockDay(dateStr, false)}
                                                                             title="Mở khóa cả ngày"
                                                                         >
-                                                                            🔓 Mở
+                                                                            Mở
                                                                         </button>
                                                                     </div>
                                                                 )}
                                                             </>
                                                         ) : (
                                                             <div className={styles.dayOffContent}>
-                                                                <span>😴</span>
+                                                                <span>Nghỉ</span>
                                                                 <span>Không làm việc</span>
                                                             </div>
                                                         )}

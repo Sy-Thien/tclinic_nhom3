@@ -2,62 +2,108 @@ import { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import styles from './DoctorScheduleView.module.css';
 
+// Hàm lấy ngày theo timezone local (tránh bug UTC)
+const getLocalDateString = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
 export default function DoctorScheduleView() {
-    const [viewMode, setViewMode] = useState('day');
-    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+    const [viewMode, setViewMode] = useState('week');
+    const [selectedDate, setSelectedDate] = useState(getLocalDateString(new Date()));
     const [loading, setLoading] = useState(false);
-    const [schedules, setSchedules] = useState([]);
+    const [weekData, setWeekData] = useState([]);
+    const [workSchedule, setWorkSchedule] = useState([]);
+    const [workScheduleLoaded, setWorkScheduleLoaded] = useState(false);
     const [stats, setStats] = useState({ total: 0, confirmed: 0, completed: 0, waiting: 0 });
 
+    // Load work schedule một lần khi component mount
     useEffect(() => {
-        if (viewMode === 'day') {
-            fetchDaySchedule();
-        } else {
-            fetchWeekSchedule();
-        }
-    }, [selectedDate, viewMode]);
+        fetchWorkSchedule();
+    }, []);
 
-    const fetchDaySchedule = async () => {
+    // Load week data sau khi work schedule đã load xong
+    useEffect(() => {
+        if (workScheduleLoaded) {
+            fetchWeekData();
+        }
+    }, [selectedDate, workScheduleLoaded, workSchedule]);
+
+    const fetchWorkSchedule = async () => {
+        try {
+            // Lấy lịch làm việc định kỳ của bác sĩ
+            const response = await api.get('/api/doctor/work-schedule');
+            setWorkSchedule(response.data.schedules || []);
+        } catch (error) {
+            console.error('Error fetching work schedule:', error);
+        } finally {
+            setWorkScheduleLoaded(true);
+        }
+    };
+
+    const fetchWeekData = async () => {
         try {
             setLoading(true);
-            const response = await api.get(`/api/doctor/my-schedule?date=${selectedDate}`);
-            const data = response.data.bookings || [];
-            setSchedules(data);
-            calculateStats(data);
+            const { startDate, endDate } = getWeekRange(selectedDate);
+
+            // Lấy lịch hẹn trong tuần
+            const response = await api.get(`/api/doctor/my-schedule?start_date=${startDate}&end_date=${endDate}`);
+            const bookings = response.data.bookings || [];
+
+            // Nhóm theo ngày
+            const grouped = groupByDate(bookings, startDate, endDate);
+            setWeekData(grouped);
+
+            // Tính stats
+            calculateStats(bookings);
         } catch (error) {
-            console.error('Error fetching day schedule:', error);
+            console.error('Error fetching week data:', error);
+            // Tạo tuần rỗng nếu lỗi
+            const { startDate, endDate } = getWeekRange(selectedDate);
+            const empty = groupByDate([], startDate, endDate);
+            setWeekData(empty);
         } finally {
             setLoading(false);
         }
     };
 
-    const fetchWeekSchedule = async () => {
-        try {
-            setLoading(true);
-            const { startDate, endDate } = getWeekRange(selectedDate);
-            const response = await api.get(`/api/doctor/schedule-statistics?start_date=${startDate}&end_date=${endDate}`);
+    const groupByDate = (bookings, startDate, endDate) => {
+        const days = [];
+        const start = new Date(startDate + 'T00:00:00');
+        const end = new Date(endDate + 'T00:00:00');
+        const todayStr = getLocalDateString(new Date());
 
-            const dailyStats = response.data.dailyStats || {};
-            const scheduleData = Object.entries(dailyStats).map(([date, stats]) => ({
-                appointment_date: date,
-                stats
-            }));
+        // Tạo 7 ngày trong tuần
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+            const dateStr = getLocalDateString(d);
+            const dayName = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'][d.getDay()];
 
-            setSchedules(scheduleData);
+            // Tìm lịch làm việc cho ngày này
+            const workDay = workSchedule.find(w => w.day_of_week === dayName);
 
-            const totals = Object.values(dailyStats).reduce((acc, day) => ({
-                total: acc.total + day.total,
-                confirmed: acc.confirmed + (day.confirmed || 0),
-                completed: acc.completed + (day.completed || 0),
-                waiting: acc.waiting + (day.pending || 0)
-            }), { total: 0, confirmed: 0, completed: 0, waiting: 0 });
+            // Lấy các booking trong ngày
+            const dayBookings = bookings.filter(b => b.appointment_date === dateStr);
 
-            setStats(totals);
-        } catch (error) {
-            console.error('Error fetching week schedule:', error);
-        } finally {
-            setLoading(false);
+            days.push({
+                date: dateStr,
+                dayName,
+                dayNumber: d.getDate(),
+                month: d.getMonth() + 1,
+                isToday: dateStr === todayStr,
+                workSchedule: workDay,
+                bookings: dayBookings,
+                stats: {
+                    total: dayBookings.length,
+                    waiting: dayBookings.filter(b => b.status.includes('waiting')).length,
+                    confirmed: dayBookings.filter(b => b.status === 'confirmed').length,
+                    completed: dayBookings.filter(b => b.status === 'completed').length
+                }
+            });
         }
+
+        return days;
     };
 
     const calculateStats = (data) => {
@@ -72,7 +118,7 @@ export default function DoctorScheduleView() {
     };
 
     const getWeekRange = (dateStr) => {
-        const date = new Date(dateStr);
+        const date = new Date(dateStr + 'T00:00:00');
         const day = date.getDay();
         const diff = date.getDate() - day + (day === 0 ? -6 : 1);
 
@@ -81,40 +127,24 @@ export default function DoctorScheduleView() {
         sunday.setDate(monday.getDate() + 6);
 
         return {
-            startDate: monday.toISOString().split('T')[0],
-            endDate: sunday.toISOString().split('T')[0]
+            startDate: getLocalDateString(monday),
+            endDate: getLocalDateString(sunday)
         };
     };
 
-    const changeDate = (days) => {
-        const newDate = new Date(selectedDate);
-        if (viewMode === 'day') {
-            newDate.setDate(newDate.getDate() + days);
-        } else {
-            newDate.setDate(newDate.getDate() + (days * 7));
-        }
-        setSelectedDate(newDate.toISOString().split('T')[0]);
+    const changeWeek = (direction) => {
+        const newDate = new Date(selectedDate + 'T00:00:00');
+        newDate.setDate(newDate.getDate() + (direction * 7));
+        setSelectedDate(getLocalDateString(newDate));
     };
 
     const goToToday = () => {
-        setSelectedDate(new Date().toISOString().split('T')[0]);
-    };
-
-    const formatDate = (dateStr) => {
-        const date = new Date(dateStr);
-        const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
-        return {
-            weekday: days[date.getDay()],
-            date: date.getDate(),
-            month: date.getMonth() + 1,
-            year: date.getFullYear(),
-            full: date.toLocaleDateString('vi-VN')
-        };
+        setSelectedDate(getLocalDateString(new Date()));
     };
 
     const getStatusBadge = (status) => {
         const statusMap = {
-            'waiting_doctor_assignment': { text: 'Chờ gán BS', class: 'waiting' },
+            'waiting_doctor_assignment': { text: 'Chờ gán', class: 'waiting' },
             'waiting_doctor_confirmation': { text: 'Chờ xác nhận', class: 'waiting' },
             'confirmed': { text: 'Đã xác nhận', class: 'confirmed' },
             'completed': { text: 'Hoàn thành', class: 'completed' },
@@ -127,10 +157,13 @@ export default function DoctorScheduleView() {
     return (
         <div className={styles.container}>
             <div className={styles.header}>
-                <h1>📅 Lịch làm việc</h1>
-                <p>Xem lịch khám theo ngày hoặc tuần</p>
+                <div>
+                    <h1>📅 Lịch Làm Việc & Lịch Hẹn</h1>
+                    <p>Xem lịch làm việc và các lịch hẹn đã đặt theo tuần</p>
+                </div>
             </div>
 
+            {/* Stats Cards */}
             <div className={styles.statsGrid}>
                 <div className={styles.statCard}>
                     <div className={styles.statIcon} style={{ background: '#e3f2fd' }}>📋</div>
@@ -162,107 +195,101 @@ export default function DoctorScheduleView() {
                 </div>
             </div>
 
+            {/* Week Navigation */}
             <div className={styles.controls}>
-                <div className={styles.viewToggle}>
-                    <button className={viewMode === 'day' ? styles.active : ''} onClick={() => setViewMode('day')}>📅 Ngày</button>
-                    <button className={viewMode === 'week' ? styles.active : ''} onClick={() => setViewMode('week')}>📆 Tuần</button>
+                <div className={styles.weekNav}>
+                    <button onClick={() => changeWeek(-1)} className={styles.navBtn}>◀ Tuần trước</button>
+                    <button onClick={goToToday} className={styles.todayBtn}>📍 Tuần này</button>
+                    <button onClick={() => changeWeek(1)} className={styles.navBtn}>Tuần sau ▶</button>
                 </div>
-                <div className={styles.dateNav}>
-                    <button onClick={() => changeDate(-1)}>◀</button>
-                    <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} />
-                    <button onClick={() => changeDate(1)}>▶</button>
-                    <button onClick={goToToday} className={styles.todayBtn}>Hôm nay</button>
+                <div className={styles.weekRange}>
+                    {(() => {
+                        const { startDate, endDate } = getWeekRange(selectedDate);
+                        const start = new Date(startDate);
+                        const end = new Date(endDate);
+                        return `${start.getDate()}/${start.getMonth() + 1} - ${end.getDate()}/${end.getMonth() + 1}/${end.getFullYear()}`;
+                    })()}
                 </div>
             </div>
 
-            <div className={styles.scheduleContent}>
-                {loading ? (
-                    <div className={styles.loading}>
-                        <div className={styles.spinner}></div>
-                        <p>Đang tải...</p>
-                    </div>
-                ) : viewMode === 'day' ? (
-                    <div className={styles.dayView}>
-                        <div className={styles.dateHeader}>
-                            {(() => { const d = formatDate(selectedDate); return `${d.weekday}, ${d.date} tháng ${d.month} năm ${d.year}`; })()}
-                        </div>
-                        {schedules.length === 0 ? (
-                            <div className={styles.emptyState}>
-                                <div className={styles.emptyIcon}>📭</div>
-                                <h3>Không có lịch hẹn</h3>
-                                <p>Bạn không có lịch khám nào trong ngày này</p>
+            {/* Week Calendar */}
+            {loading ? (
+                <div className={styles.loading}>
+                    <div className={styles.spinner}></div>
+                    <p>Đang tải lịch...</p>
+                </div>
+            ) : (
+                <div className={styles.weekCalendar}>
+                    {weekData.map((day) => (
+                        <div
+                            key={day.date}
+                            className={`${styles.dayColumn} ${day.isToday ? styles.today : ''} ${!day.workSchedule ? styles.dayOff : ''}`}
+                        >
+                            {/* Day Header */}
+                            <div className={styles.dayHeader}>
+                                <div className={styles.dayName}>{day.dayName}</div>
+                                <div className={styles.dayDate}>{day.dayNumber}/{day.month}</div>
                             </div>
-                        ) : (
-                            <div className={styles.appointmentsList}>
-                                {schedules.map((schedule) => (
-                                    <div key={schedule.id} className={styles.appointmentCard}>
-                                        <div className={styles.timeSlot}>
-                                            <div className={styles.time}>{schedule.appointment_time}</div>
-                                            {getStatusBadge(schedule.status)}
-                                        </div>
-                                        <div className={styles.patientInfo}>
-                                            <div className={styles.patientName}>👤 {schedule.patient?.full_name || 'N/A'}</div>
-                                            <div className={styles.patientDetails}>
-                                                📞 {schedule.patient?.phone || 'N/A'} • {schedule.patient?.gender === 'male' ? 'Nam' : 'Nữ'}
-                                            </div>
-                                            {schedule.symptoms && <div className={styles.symptoms}>💬 {schedule.symptoms}</div>}
-                                        </div>
-                                        <div className={styles.serviceInfo}>
-                                            {schedule.service?.name && <span className={styles.serviceBadge}>🏥 {schedule.service.name}</span>}
-                                            {schedule.specialty?.name && <span className={styles.specialtyBadge}>⚕️ {schedule.specialty.name}</span>}
-                                        </div>
+
+                            {/* Work Schedule Info */}
+                            {day.workSchedule ? (
+                                <div className={styles.workTime}>
+                                    <div className={styles.workLabel}>⏰ Giờ làm việc:</div>
+                                    <div className={styles.workHours}>
+                                        {day.workSchedule.start_time.slice(0, 5)} - {day.workSchedule.end_time.slice(0, 5)}
                                     </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                ) : (
-                    <div className={styles.weekView}>
-                        <div className={styles.weekHeader}>
-                            Tuần từ {formatDate(getWeekRange(selectedDate).startDate).full} đến {formatDate(getWeekRange(selectedDate).endDate).full}
-                        </div>
-                        {schedules.length === 0 ? (
-                            <div className={styles.emptyState}>
-                                <div className={styles.emptyIcon}>📭</div>
-                                <h3>Không có lịch hẹn</h3>
-                                <p>Bạn không có lịch khám nào trong tuần này</p>
-                            </div>
-                        ) : (
-                            <div className={styles.weekGrid}>
-                                {schedules.map((day) => {
-                                    const d = formatDate(day.appointment_date);
-                                    return (
-                                        <div key={day.appointment_date} className={styles.dayCard}>
-                                            <div className={styles.dayHeader}>
-                                                <div className={styles.dayName}>{d.weekday}</div>
-                                                <div className={styles.dayDate}>{d.date}/{d.month}</div>
-                                            </div>
-                                            <div className={styles.dayStats}>
-                                                <div className={styles.dayStat}>
-                                                    <span className={styles.statCount}>{day.stats.total}</span>
-                                                    <span className={styles.statText}>Tổng</span>
-                                                </div>
-                                                <div className={styles.dayStat}>
-                                                    <span className={styles.statCount} style={{ color: '#ff9800' }}>{day.stats.pending || 0}</span>
-                                                    <span className={styles.statText}>Chờ</span>
-                                                </div>
-                                                <div className={styles.dayStat}>
-                                                    <span className={styles.statCount} style={{ color: '#4caf50' }}>{day.stats.confirmed || 0}</span>
-                                                    <span className={styles.statText}>Xác nhận</span>
-                                                </div>
-                                                <div className={styles.dayStat}>
-                                                    <span className={styles.statCount} style={{ color: '#9c27b0' }}>{day.stats.completed || 0}</span>
-                                                    <span className={styles.statText}>Hoàn thành</span>
-                                                </div>
-                                            </div>
+                                    {day.workSchedule.break_start && (
+                                        <div className={styles.breakTime}>
+                                            ☕ Nghỉ: {day.workSchedule.break_start.slice(0, 5)} - {day.workSchedule.break_end.slice(0, 5)}
                                         </div>
-                                    );
-                                })}
+                                    )}
+                                    {day.workSchedule.room && (
+                                        <div className={styles.roomInfo}>🚪 {day.workSchedule.room}</div>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className={styles.dayOffBadge}>
+                                    🏖️ Nghỉ
+                                </div>
+                            )}
+
+                            {/* Bookings List */}
+                            <div className={styles.bookingsList}>
+                                <div className={styles.bookingsHeader}>
+                                    📋 Lịch hẹn ({day.bookings.length})
+                                </div>
+                                {day.bookings.length === 0 ? (
+                                    <div className={styles.noBookings}>Không có lịch</div>
+                                ) : (
+                                    day.bookings.map((booking) => (
+                                        <div key={booking.id} className={styles.bookingItem}>
+                                            <div className={styles.bookingTime}>
+                                                🕐 {booking.appointment_time || 'Chưa xác định'}
+                                            </div>
+                                            <div className={styles.bookingPatient}>
+                                                👤 {booking.patient?.full_name || 'N/A'}
+                                            </div>
+                                            <div className={styles.bookingService}>
+                                                {booking.service?.name || booking.specialty?.name}
+                                            </div>
+                                            {getStatusBadge(booking.status)}
+                                        </div>
+                                    ))
+                                )}
                             </div>
-                        )}
-                    </div>
-                )}
-            </div>
+
+                            {/* Day Stats Summary */}
+                            {day.bookings.length > 0 && (
+                                <div className={styles.dayStatsSummary}>
+                                    <span className={styles.miniStat} style={{ color: '#ff9800' }}>⏳ {day.stats.waiting}</span>
+                                    <span className={styles.miniStat} style={{ color: '#4caf50' }}>✅ {day.stats.confirmed}</span>
+                                    <span className={styles.miniStat} style={{ color: '#9c27b0' }}>🎉 {day.stats.completed}</span>
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

@@ -207,6 +207,19 @@ export default function AdminLayout() {
                     </NavLink>
 
                     <NavLink
+                        to="/admin/news"
+                        className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}
+                    >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" strokeWidth="2" />
+                            <path d="M18 14h-8" strokeWidth="2" />
+                            <path d="M18 18h-8" strokeWidth="2" />
+                            <path d="M14 6h4v4h-4z" strokeWidth="2" />
+                        </svg>
+                        Tin tức
+                    </NavLink>
+
+                    <NavLink
                         to="/admin/reports"
                         className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}
                     >

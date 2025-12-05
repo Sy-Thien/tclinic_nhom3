@@ -29,7 +29,7 @@
 
 /* ===== HEADER ===== */
 .header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     color: white;
     padding: 2.5rem 2rem;
     text-align: center;
@@ -88,8 +88,8 @@
 }
 
 .typeCard:hover {
-    border-color: #667eea;
-    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+    border-color: #45c3d2;
+    box-shadow: 0 8px 24px rgba(69, 195, 210, 0.15);
     transform: translateY(-4px);
 }
 
@@ -112,7 +112,7 @@
 
 .typeHint {
     display: block;
-    color: #667eea;
+    color: #45c3d2;
     font-weight: 600;
     margin-top: 1rem;
 }
@@ -192,8 +192,8 @@ input:focus,
 select:focus,
 textarea:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #45c3d2;
+    box-shadow: 0 0 0 3px rgba(69, 195, 210, 0.1);
 }
 
 input::placeholder,
@@ -231,7 +231,7 @@ textarea {
 
 .info {
     display: block;
-    color: #667eea;
+    color: #45c3d2;
     font-size: 0.875rem;
     margin-top: 0.25rem;
 }
@@ -239,6 +239,67 @@ textarea {
 .warning {
     color: #d97706;
     font-weight: 600;
+}
+
+/* ===== BOOKING SUMMARY BANNER (khi có dịch vụ/bác sĩ từ URL) ===== */
+.bookingSummaryBanner {
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    border: 2px solid #10b981;
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    margin: 0 auto 2rem auto;
+    max-width: 800px;
+}
+
+.bookingSummaryBanner h3 {
+    margin: 0 0 1rem 0;
+    color: #047857;
+    font-size: 1.1rem;
+}
+
+.summaryItems {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.summaryItem {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: white;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.summaryLabel {
+    font-weight: 600;
+    color: #374151;
+    min-width: 100px;
+}
+
+.summaryValue {
+    flex: 1;
+    font-weight: 700;
+    color: #111827;
+    font-size: 1.05rem;
+}
+
+.summaryPrice {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.summaryNote {
+    margin: 1rem 0 0 0;
+    color: #047857;
+    font-size: 0.95rem;
+    font-weight: 500;
 }
 
 /* ===== SELECTED SERVICE INFO (from URL) ===== */
@@ -415,15 +476,15 @@ textarea {
 }
 
 .typeOption:hover {
-    border-color: #667eea;
+    border-color: #45c3d2;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    box-shadow: 0 4px 12px rgba(69, 195, 210, 0.2);
 }
 
 .typeOption.active {
-    border-color: #667eea;
-    background: linear-gradient(135deg, #667eea15, #764ba215);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    border-color: #45c3d2;
+    background: linear-gradient(135deg, #45c3d215, #2aa6b715);
+    box-shadow: 0 4px 12px rgba(69, 195, 210, 0.3);
 }
 
 .typeOption h3 {
@@ -453,13 +514,13 @@ textarea {
 }
 
 .doctorOption:hover {
-    border-color: #667eea;
+    border-color: #45c3d2;
     background: #f7fafc;
 }
 
 .doctorOption.selected {
-    border-color: #667eea;
-    background: #ede9fe;
+    border-color: #45c3d2;
+    background: #e0f7fa;
 }
 
 .doctorOption h4 {
@@ -493,13 +554,13 @@ textarea {
 }
 
 .slotBtn:hover {
-    border-color: #667eea;
-    color: #667eea;
+    border-color: #45c3d2;
+    color: #45c3d2;
 }
 
 .slotBtn.selected {
-    border-color: #667eea;
-    background: #667eea;
+    border-color: #45c3d2;
+    background: #45c3d2;
     color: white;
 }
 
@@ -549,11 +610,11 @@ textarea {
 
 /* Selected Slot - Blue */
 .timeSlotBtn.selectedSlot {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    border-color: #764ba2;
+    background: linear-gradient(135deg, #45c3d2, #2aa6b7);
+    border-color: #2aa6b7;
     color: white;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 4px 12px rgba(69, 195, 210, 0.4);
 }
 
 /* Booked Slot - Black/Dark */
@@ -624,7 +685,7 @@ textarea {
 .btnSubmit {
     width: 100%;
     padding: 1rem 2rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     color: white;
     border: none;
     border-radius: 10px;
@@ -636,7 +697,7 @@ textarea {
 
 .btnSubmit:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 8px 20px rgba(69, 195, 210, 0.4);
 }
 
 .btnSubmit:disabled {

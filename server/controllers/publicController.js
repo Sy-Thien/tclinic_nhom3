@@ -55,13 +55,13 @@ exports.getHomeStats = async (req, res) => {
     }
 };
 
-// GET - Danh sách bác sĩ nổi bật (top rated)
+// GET - Danh sách bác sĩ nổi bật (nhiều lượt khám + đánh giá tốt)
 exports.getFeaturedDoctors = async (req, res) => {
     try {
         const { limit = 6 } = req.query;
         console.log('👨‍⚕️ GET /api/public/featured-doctors', { limit });
 
-        // Lấy bác sĩ có nhiều lịch hẹn hoàn thành nhất
+        // Lấy tất cả bác sĩ active với số lượt khám hoàn thành
         const doctors = await Doctor.findAll({
             where: { is_active: true },
             include: [
@@ -91,33 +91,69 @@ exports.getFeaturedDoctors = async (req, res) => {
                 [sequelize.fn('COUNT', sequelize.col('bookings.id')), 'completedBookings']
             ],
             group: ['Doctor.id'],
-            order: [[sequelize.literal('completedBookings'), 'DESC']],
-            limit: parseInt(limit),
             subQuery: false
         });
 
-        // Format dữ liệu
+        // Lấy rating trung bình của từng bác sĩ từ bảng reviews
+        const doctorIds = doctors.map(d => d.id);
+        const reviews = await Review.findAll({
+            where: { doctor_id: { [Op.in]: doctorIds } },
+            attributes: [
+                'doctor_id',
+                [sequelize.fn('AVG', sequelize.col('rating')), 'avgRating'],
+                [sequelize.fn('COUNT', sequelize.col('id')), 'reviewCount']
+            ],
+            group: ['doctor_id']
+        });
+
+        // Map rating theo doctor_id
+        const ratingMap = {};
+        reviews.forEach(r => {
+            const json = r.toJSON();
+            ratingMap[json.doctor_id] = {
+                avgRating: parseFloat(json.avgRating) || 0,
+                reviewCount: parseInt(json.reviewCount) || 0
+            };
+        });
+
+        // Format và tính điểm nổi bật (số lượt khám * 0.4 + rating * 0.6)
         const formattedDoctors = doctors.map(doc => {
             const jsonDoc = doc.toJSON();
+            const completedBookings = parseInt(jsonDoc.completedBookings) || 0;
+            const ratingData = ratingMap[jsonDoc.id] || { avgRating: 0, reviewCount: 0 };
+
+            // Điểm nổi bật: kết hợp số lượt khám và rating
+            // Normalize: bookings / 10 (max 10 điểm) + rating (max 5 điểm) * 2
+            const featuredScore = (Math.min(completedBookings, 100) / 10) + (ratingData.avgRating * 2);
+
             return {
                 id: jsonDoc.id,
                 full_name: jsonDoc.full_name,
                 email: jsonDoc.email,
                 phone: jsonDoc.phone,
                 description: jsonDoc.description,
-                avatar: jsonDoc.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(jsonDoc.full_name || 'Doctor')}&background=667eea&color=fff&size=200`,
+                avatar: jsonDoc.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(jsonDoc.full_name || 'Doctor')}&background=45c3d2&color=fff&size=200`,
                 experience: jsonDoc.experience,
                 education: jsonDoc.education,
                 specialty_id: jsonDoc.specialty_id,
                 specialty_name: jsonDoc.specialty?.name || null,
-                completed_bookings: parseInt(jsonDoc.completedBookings) || 0
+                completed_bookings: completedBookings,
+                avg_rating: ratingData.avgRating.toFixed(1),
+                review_count: ratingData.reviewCount,
+                featured_score: featuredScore
             };
         });
 
-        console.log(`✅ Found ${formattedDoctors.length} featured doctors`);
+        // Sắp xếp theo điểm nổi bật giảm dần
+        formattedDoctors.sort((a, b) => b.featured_score - a.featured_score);
+
+        // Lấy top N bác sĩ
+        const topDoctors = formattedDoctors.slice(0, parseInt(limit));
+
+        console.log(`✅ Found ${topDoctors.length} featured doctors (sorted by bookings + rating)`);
         res.json({
             success: true,
-            data: formattedDoctors
+            data: topDoctors
         });
     } catch (error) {
         console.error('❌ Error fetching featured doctors:', error);

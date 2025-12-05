@@ -183,11 +183,19 @@
 }
 
 .thName {
-    width: 35%;
+    width: 25%;
 }
 
 .thQuantity {
+    width: 60px;
+}
+
+.thPrice {
     width: 80px;
+}
+
+.thTotal {
+    width: 90px;
 }
 
 .thDosage {
@@ -214,6 +222,17 @@
 .tdQuantity {
     text-align: center;
     font-weight: bold;
+}
+
+.tdPrice {
+    text-align: right;
+    font-size: 12px;
+}
+
+.tdTotal {
+    text-align: right;
+    font-weight: bold;
+    color: #0056b3;
 }
 
 .tdDosage {
@@ -250,6 +269,62 @@
     padding: 20px;
     color: #666;
     font-style: italic;
+}
+
+/* Payment Section */
+.paymentSection {
+    margin-bottom: 15px;
+    page-break-inside: avoid;
+}
+
+.paymentTable {
+    margin-top: 10px;
+    border: 2px solid #333;
+    padding: 10px 15px;
+    background: #f8f9fa;
+}
+
+.paymentRow {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px dotted #ccc;
+}
+
+.paymentRow:last-child {
+    border-bottom: none;
+}
+
+.paymentLabel {
+    font-size: 13px;
+}
+
+.paymentValue {
+    font-size: 13px;
+    font-weight: bold;
+    min-width: 120px;
+    text-align: right;
+}
+
+.paymentTotal {
+    border-top: 2px solid #333;
+    margin-top: 5px;
+    padding-top: 10px;
+    background: #e8f4e8;
+    margin: 5px -15px -10px -15px;
+    padding: 12px 15px;
+}
+
+.paymentTotal .paymentLabel {
+    font-size: 15px;
+    font-weight: bold;
+    color: #0056b3;
+}
+
+.paymentTotal .paymentValue {
+    font-size: 18px;
+    font-weight: bold;
+    color: #d32f2f;
 }
 
 /* Footer */

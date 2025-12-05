@@ -39,12 +39,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #667eea;
+  background: #45c3d2;
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #5568d3;
+  background: #2aa6b7;
 }
 
 /* ===== LINKS ===== */
@@ -54,7 +54,7 @@ a {
 }
 
 a:hover {
-  color: #667eea;
+  color: #45c3d2;
 }
 
 /* ===== BUTTONS ===== */

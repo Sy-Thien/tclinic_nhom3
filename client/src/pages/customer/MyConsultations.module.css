@@ -22,7 +22,7 @@
 
 .btnNew {
     padding: 12px 24px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     color: white;
     text-decoration: none;
     border-radius: 8px;
@@ -32,7 +32,7 @@
 
 .btnNew:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 12px rgba(69, 195, 210, 0.3);
 }
 
 .requestsList {
@@ -58,7 +58,7 @@
 
 .cardHeader {
     padding: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     color: white;
     display: flex;
     justify-content: space-between;
@@ -197,7 +197,7 @@
 .btnEmptyAction {
     display: inline-block;
     padding: 12px 32px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     color: white;
     text-decoration: none;
     border-radius: 8px;
@@ -207,7 +207,7 @@
 
 .btnEmptyAction:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 12px rgba(69, 195, 210, 0.3);
 }
 
 /* Loading */

@@ -73,8 +73,8 @@
 }
 
 .tabBtn.active {
-    color: #667eea;
-    border-bottom-color: #667eea;
+    color: #45c3d2;
+    border-bottom-color: #45c3d2;
 }
 
 /* Form */
@@ -124,8 +124,8 @@
 .formGroup select:focus,
 .formGroup textarea:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #45c3d2;
+    box-shadow: 0 0 0 3px rgba(69, 195, 210, 0.1);
 }
 
 .passwordTips {
@@ -161,7 +161,7 @@
 
 .btnSubmit {
     padding: 12px 30px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     color: white;
     border: none;
     border-radius: 6px;
@@ -169,12 +169,12 @@
     font-weight: 600;
     font-size: 14px;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 12px rgba(69, 195, 210, 0.3);
 }
 
 .btnSubmit:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 6px 16px rgba(69, 195, 210, 0.4);
 }
 
 .btnSubmit:disabled {

@@ -18,6 +18,12 @@ router.get('/patients/:id', adminPatientController.getPatientById);
 // GET - Lịch sử khám của bệnh nhân
 router.get('/patients/:id/history', adminPatientController.getPatientHistory);
 
+// GET - Hồ sơ bệnh án chi tiết của bệnh nhân (Admin xem TẤT CẢ)
+router.get('/patients/:id/medical-records', adminPatientController.getPatientMedicalRecords);
+
+// PUT - Cập nhật hồ sơ bệnh án
+router.put('/medical-records/:id', adminPatientController.updateMedicalRecord);
+
 // POST - Thêm bệnh nhân mới
 router.post('/patients', adminPatientController.createPatient);
 

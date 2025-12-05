@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../utils/api';
 import styles from './AdminPatients.module.css';
 
 export default function AdminPatients() {
@@ -12,8 +12,13 @@ export default function AdminPatients() {
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [showMedicalRecordModal, setShowMedicalRecordModal] = useState(false);
+    const [showEditRecordModal, setShowEditRecordModal] = useState(false);
     const [selectedPatient, setSelectedPatient] = useState(null);
     const [patientHistory, setPatientHistory] = useState([]);
+    const [medicalRecords, setMedicalRecords] = useState([]);
+    const [selectedRecord, setSelectedRecord] = useState(null);
+    const [activeTab, setActiveTab] = useState('info'); // 'info', 'bookings', 'records'
 
     // Form data for edit
     const [formData, setFormData] = useState({
@@ -25,20 +30,24 @@ export default function AdminPatients() {
         address: ''
     });
 
+    // Form data for edit medical record
+    const [recordFormData, setRecordFormData] = useState({
+        symptoms: '',
+        diagnosis: '',
+        conclusion: '',
+        note: ''
+    });
+
     // Lấy danh sách bệnh nhân
     const fetchPatients = async () => {
         try {
             setLoading(true);
-            const token = localStorage.getItem('token');
             const params = new URLSearchParams();
 
             if (searchTerm) params.append('search', searchTerm);
             if (filterStatus !== 'all') params.append('status', filterStatus);
 
-            const response = await axios.get(`http://localhost:5000/api/admin/patients?${params}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-
+            const response = await api.get(`/api/admin/patients?${params}`);
             setPatients(response.data);
         } catch (error) {
             console.error('Error fetching patients:', error);
@@ -55,11 +64,7 @@ export default function AdminPatients() {
     // Lấy lịch sử khám của bệnh nhân
     const fetchPatientHistory = async (patientId) => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await axios.get(
-                `http://localhost:5000/api/admin/patients/${patientId}/history`,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            const response = await api.get(`/api/admin/patients/${patientId}/history`);
             setPatientHistory(response.data);
         } catch (error) {
             console.error('Error fetching patient history:', error);
@@ -67,10 +72,27 @@ export default function AdminPatients() {
         }
     };
 
+    // Lấy hồ sơ bệnh án chi tiết
+    const fetchMedicalRecords = async (patientId) => {
+        try {
+            const response = await api.get(`/api/admin/patients/${patientId}/medical-records`);
+            if (response.data.success) {
+                setMedicalRecords(response.data.medicalRecords || []);
+            }
+        } catch (error) {
+            console.error('Error fetching medical records:', error);
+            alert('Lỗi khi tải hồ sơ bệnh án');
+        }
+    };
+
     // Xem chi tiết bệnh nhân
     const handleViewDetail = async (patient) => {
         setSelectedPatient(patient);
-        await fetchPatientHistory(patient.id);
+        setActiveTab('info');
+        await Promise.all([
+            fetchPatientHistory(patient.id),
+            fetchMedicalRecords(patient.id)
+        ]);
         setShowDetailModal(true);
     };
 
@@ -92,12 +114,7 @@ export default function AdminPatients() {
     const handleUpdatePatient = async (e) => {
         e.preventDefault();
         try {
-            const token = localStorage.getItem('token');
-            await axios.put(
-                `http://localhost:5000/api/admin/patients/${selectedPatient.id}`,
-                formData,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            await api.put(`/api/admin/patients/${selectedPatient.id}`, formData);
 
             alert('Cập nhật thông tin bệnh nhân thành công');
             setShowEditModal(false);
@@ -105,6 +122,34 @@ export default function AdminPatients() {
         } catch (error) {
             console.error('Error updating patient:', error);
             alert(error.response?.data?.message || 'Lỗi khi cập nhật bệnh nhân');
+        }
+    };
+
+    // Mở modal chỉnh sửa hồ sơ bệnh án
+    const handleEditRecord = (record) => {
+        setSelectedRecord(record);
+        setRecordFormData({
+            symptoms: record.symptoms || '',
+            diagnosis: record.diagnosis || '',
+            conclusion: record.conclusion || '',
+            note: record.note || ''
+        });
+        setShowEditRecordModal(true);
+    };
+
+    // Cập nhật hồ sơ bệnh án
+    const handleUpdateRecord = async (e) => {
+        e.preventDefault();
+        try {
+            await api.put(`/api/admin/medical-records/${selectedRecord.id}`, recordFormData);
+
+            alert('Cập nhật hồ sơ bệnh án thành công');
+            setShowEditRecordModal(false);
+            // Refresh medical records
+            await fetchMedicalRecords(selectedPatient.id);
+        } catch (error) {
+            console.error('Error updating medical record:', error);
+            alert(error.response?.data?.message || 'Lỗi khi cập nhật hồ sơ bệnh án');
         }
     };
 
@@ -116,11 +161,7 @@ export default function AdminPatients() {
 
     const confirmDelete = async () => {
         try {
-            const token = localStorage.getItem('token');
-            await axios.delete(
-                `http://localhost:5000/api/admin/patients/${selectedPatient.id}`,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            await api.delete(`/api/admin/patients/${selectedPatient.id}`);
 
             alert('Xóa bệnh nhân thành công');
             setShowDeleteModal(false);
@@ -134,12 +175,7 @@ export default function AdminPatients() {
     // Toggle trạng thái
     const handleToggleStatus = async (patient) => {
         try {
-            const token = localStorage.getItem('token');
-            await axios.put(
-                `http://localhost:5000/api/admin/patients/${patient.id}/toggle-status`,
-                {},
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            await api.put(`/api/admin/patients/${patient.id}/toggle-status`);
 
             alert(`${patient.is_active ? 'Vô hiệu hóa' : 'Kích hoạt'} tài khoản thành công`);
             fetchPatients();
@@ -294,82 +330,197 @@ export default function AdminPatients() {
                 <div className={styles.modalOverlay} onClick={() => setShowDetailModal(false)}>
                     <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
                         <div className={styles.modalHeader}>
-                            <h2>Thông tin bệnh nhân</h2>
+                            <h2>Hồ sơ bệnh nhân - {selectedPatient.full_name}</h2>
                             <button onClick={() => setShowDetailModal(false)} className={styles.closeBtn}>
-                                Đóng
+                                ✕
                             </button>
                         </div>
 
-                        <div className={styles.patientInfo}>
-                            <h3>Thông tin cá nhân</h3>
-                            <div className={styles.infoGrid}>
-                                <div className={styles.infoItem}>
-                                    <strong>Họ và tên:</strong>
-                                    <span>{selectedPatient.full_name}</span>
-                                </div>
-                                <div className={styles.infoItem}>
-                                    <strong>Số điện thoại:</strong>
-                                    <span>{selectedPatient.phone}</span>
-                                </div>
-                                <div className={styles.infoItem}>
-                                    <strong>Email:</strong>
-                                    <span>{selectedPatient.email || 'N/A'}</span>
-                                </div>
-                                <div className={styles.infoItem}>
-                                    <strong>Giới tính:</strong>
-                                    <span>
-                                        {selectedPatient.gender === 'male'
-                                            ? 'Nam'
-                                            : selectedPatient.gender === 'female'
-                                                ? 'Nữ'
-                                                : 'Khác'}
-                                    </span>
-                                </div>
-                                <div className={styles.infoItem}>
-                                    <strong>Ngày sinh:</strong>
-                                    <span>{selectedPatient.birthday || 'N/A'}</span>
-                                </div>
-                                <div className={styles.infoItem}>
-                                    <strong>Địa chỉ:</strong>
-                                    <span>{selectedPatient.address || 'N/A'}</span>
-                                </div>
-                            </div>
+                        {/* Tabs */}
+                        <div className={styles.tabContainer}>
+                            <button
+                                className={`${styles.tabBtn} ${activeTab === 'info' ? styles.tabActive : ''}`}
+                                onClick={() => setActiveTab('info')}
+                            >
+                                📋 Thông tin cá nhân
+                            </button>
+                            <button
+                                className={`${styles.tabBtn} ${activeTab === 'bookings' ? styles.tabActive : ''}`}
+                                onClick={() => setActiveTab('bookings')}
+                            >
+                                📅 Lịch sử đặt khám ({patientHistory.length})
+                            </button>
+                            <button
+                                className={`${styles.tabBtn} ${activeTab === 'records' ? styles.tabActive : ''}`}
+                                onClick={() => setActiveTab('records')}
+                            >
+                                🏥 Hồ sơ bệnh án ({medicalRecords.length})
+                            </button>
                         </div>
 
-                        <div className={styles.patientHistory}>
-                            <h3>Lịch sử khám ({patientHistory.length})</h3>
-                            {patientHistory.length === 0 ? (
-                                <p className={styles.noHistory}>Chưa có lịch sử khám</p>
-                            ) : (
-                                <div className={styles.historyTable}>
-                                    <table>
-                                        <thead>
-                                            <tr>
-                                                <th>Mã</th>
-                                                <th>Ngày</th>
-                                                <th>Giờ</th>
-                                                <th>Chuyên khoa</th>
-                                                <th>Bác sĩ</th>
-                                                <th>Triệu chứng</th>
-                                                <th>Trạng thái</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {patientHistory.map((booking) => (
-                                                <tr key={booking.id}>
-                                                    <td>{booking.booking_code}</td>
-                                                    <td>{formatDate(booking.appointment_date)}</td>
-                                                    <td>{formatTime(booking.appointment_time)}</td>
-                                                    <td>{booking.specialty?.name || 'N/A'}</td>
-                                                    <td>{booking.doctor?.full_name || 'Chưa có'}</td>
-                                                    <td className={styles.symptoms}>
-                                                        {booking.symptoms || 'N/A'}
-                                                    </td>
-                                                    <td>{renderStatusBadge(booking.status)}</td>
-                                                </tr>
+                        {/* Tab Content */}
+                        <div className={styles.tabContent}>
+                            {/* Info Tab */}
+                            {activeTab === 'info' && (
+                                <div className={styles.patientInfo}>
+                                    <div className={styles.infoGrid}>
+                                        <div className={styles.infoItem}>
+                                            <strong>Họ và tên:</strong>
+                                            <span>{selectedPatient.full_name}</span>
+                                        </div>
+                                        <div className={styles.infoItem}>
+                                            <strong>Số điện thoại:</strong>
+                                            <span>{selectedPatient.phone}</span>
+                                        </div>
+                                        <div className={styles.infoItem}>
+                                            <strong>Email:</strong>
+                                            <span>{selectedPatient.email || 'N/A'}</span>
+                                        </div>
+                                        <div className={styles.infoItem}>
+                                            <strong>Giới tính:</strong>
+                                            <span>
+                                                {selectedPatient.gender === 'male'
+                                                    ? 'Nam'
+                                                    : selectedPatient.gender === 'female'
+                                                        ? 'Nữ'
+                                                        : 'Khác'}
+                                            </span>
+                                        </div>
+                                        <div className={styles.infoItem}>
+                                            <strong>Ngày sinh:</strong>
+                                            <span>{selectedPatient.birthday || 'N/A'}</span>
+                                        </div>
+                                        <div className={styles.infoItem}>
+                                            <strong>Địa chỉ:</strong>
+                                            <span>{selectedPatient.address || 'N/A'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Bookings Tab */}
+                            {activeTab === 'bookings' && (
+                                <div className={styles.patientHistory}>
+                                    {patientHistory.length === 0 ? (
+                                        <p className={styles.noHistory}>Chưa có lịch sử đặt khám</p>
+                                    ) : (
+                                        <div className={styles.historyTable}>
+                                            <table>
+                                                <thead>
+                                                    <tr>
+                                                        <th>Mã</th>
+                                                        <th>Ngày</th>
+                                                        <th>Giờ</th>
+                                                        <th>Chuyên khoa</th>
+                                                        <th>Bác sĩ</th>
+                                                        <th>Triệu chứng</th>
+                                                        <th>Trạng thái</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {patientHistory.map((booking) => (
+                                                        <tr key={booking.id}>
+                                                            <td>{booking.booking_code}</td>
+                                                            <td>{formatDate(booking.appointment_date)}</td>
+                                                            <td>{formatTime(booking.appointment_time)}</td>
+                                                            <td>{booking.specialty?.name || 'N/A'}</td>
+                                                            <td>{booking.doctor?.full_name || 'Chưa có'}</td>
+                                                            <td className={styles.symptoms}>
+                                                                {booking.symptoms || 'N/A'}
+                                                            </td>
+                                                            <td>{renderStatusBadge(booking.status)}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Medical Records Tab */}
+                            {activeTab === 'records' && (
+                                <div className={styles.medicalRecords}>
+                                    {medicalRecords.length === 0 ? (
+                                        <p className={styles.noHistory}>Chưa có hồ sơ bệnh án</p>
+                                    ) : (
+                                        <div className={styles.recordsList}>
+                                            {medicalRecords.map((record) => (
+                                                <div key={record.id} className={styles.recordCard}>
+                                                    <div className={styles.recordHeader}>
+                                                        <div className={styles.recordDate}>
+                                                            <span className={styles.recordIcon}>📅</span>
+                                                            {formatDate(record.visit_date)} - {formatTime(record.visit_time)}
+                                                        </div>
+                                                        <div className={styles.recordDoctor}>
+                                                            <span className={styles.recordIcon}>👨‍⚕️</span>
+                                                            BS. {record.doctor?.full_name || 'N/A'}
+                                                            {record.doctor?.specialty?.name && (
+                                                                <span className={styles.specialtyTag}>
+                                                                    {record.doctor.specialty.name}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <button
+                                                            className={styles.btnEditRecord}
+                                                            onClick={() => handleEditRecord(record)}
+                                                            title="Chỉnh sửa"
+                                                        >
+                                                            ✏️
+                                                        </button>
+                                                    </div>
+
+                                                    <div className={styles.recordBody}>
+                                                        <div className={styles.recordSection}>
+                                                            <label>Triệu chứng:</label>
+                                                            <p>{record.symptoms || 'Chưa có'}</p>
+                                                        </div>
+                                                        <div className={styles.recordSection}>
+                                                            <label>Chẩn đoán:</label>
+                                                            <p>{record.diagnosis || 'Chưa có'}</p>
+                                                        </div>
+                                                        <div className={styles.recordSection}>
+                                                            <label>Kết luận:</label>
+                                                            <p>{record.conclusion || 'Chưa có'}</p>
+                                                        </div>
+                                                        {record.note && (
+                                                            <div className={styles.recordSection}>
+                                                                <label>Ghi chú:</label>
+                                                                <p>{record.note}</p>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Prescription */}
+                                                        {record.prescription && record.prescription.details?.length > 0 && (
+                                                            <div className={styles.prescriptionSection}>
+                                                                <label>💊 Đơn thuốc:</label>
+                                                                <table className={styles.prescriptionTable}>
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th>Thuốc</th>
+                                                                            <th>SL</th>
+                                                                            <th>Đơn vị</th>
+                                                                            <th>Cách dùng</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {record.prescription.details.map((detail, idx) => (
+                                                                            <tr key={idx}>
+                                                                                <td>{detail.drug?.name || 'N/A'}</td>
+                                                                                <td>{detail.quantity}</td>
+                                                                                <td>{detail.drug?.unit || 'N/A'}</td>
+                                                                                <td>{detail.dosage}</td>
+                                                                            </tr>
+                                                                        ))}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             ))}
-                                        </tbody>
-                                    </table>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -490,6 +641,80 @@ export default function AdminPatients() {
                                 Xóa
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Medical Record Modal */}
+            {showEditRecordModal && selectedRecord && (
+                <div className={styles.modalOverlay} onClick={() => setShowEditRecordModal(false)}>
+                    <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+                        <div className={styles.modalHeader}>
+                            <h2>Chỉnh sửa hồ sơ bệnh án</h2>
+                            <button onClick={() => setShowEditRecordModal(false)} className={styles.closeBtn}>
+                                ✕
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleUpdateRecord} className={styles.form}>
+                            <div className={styles.recordInfo}>
+                                <p>
+                                    <strong>Ngày khám:</strong> {formatDate(selectedRecord.visit_date)} - {formatTime(selectedRecord.visit_time)}
+                                </p>
+                                <p>
+                                    <strong>Bác sĩ:</strong> BS. {selectedRecord.doctor?.full_name || 'N/A'}
+                                </p>
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label>Triệu chứng</label>
+                                <textarea
+                                    value={recordFormData.symptoms}
+                                    onChange={(e) => setRecordFormData({ ...recordFormData, symptoms: e.target.value })}
+                                    rows="3"
+                                    placeholder="Mô tả triệu chứng của bệnh nhân..."
+                                />
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label>Chẩn đoán</label>
+                                <textarea
+                                    value={recordFormData.diagnosis}
+                                    onChange={(e) => setRecordFormData({ ...recordFormData, diagnosis: e.target.value })}
+                                    rows="3"
+                                    placeholder="Chẩn đoán bệnh..."
+                                />
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label>Kết luận</label>
+                                <textarea
+                                    value={recordFormData.conclusion}
+                                    onChange={(e) => setRecordFormData({ ...recordFormData, conclusion: e.target.value })}
+                                    rows="3"
+                                    placeholder="Kết luận sau khám..."
+                                />
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label>Ghi chú</label>
+                                <textarea
+                                    value={recordFormData.note}
+                                    onChange={(e) => setRecordFormData({ ...recordFormData, note: e.target.value })}
+                                    rows="2"
+                                    placeholder="Ghi chú thêm (nếu có)..."
+                                />
+                            </div>
+
+                            <div className={styles.formActions}>
+                                <button type="button" onClick={() => setShowEditRecordModal(false)} className={styles.btnCancel}>
+                                    Hủy
+                                </button>
+                                <button type="submit" className={styles.btnSubmit}>
+                                    Cập nhật
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

@@ -264,14 +264,26 @@ export default function DoctorScheduleView() {
                                     day.bookings.map((booking) => (
                                         <div key={booking.id} className={styles.bookingItem}>
                                             <div className={styles.bookingTime}>
-                                                🕐 {booking.appointment_time || 'Chưa xác định'}
+                                                🕐 {booking.appointment_time?.substring(0, 5) || 'Chưa xác định'}
                                             </div>
                                             <div className={styles.bookingPatient}>
-                                                👤 {booking.patient?.full_name || 'N/A'}
+                                                👤 {booking.patient?.full_name || booking.patient_name || 'N/A'}
                                             </div>
-                                            <div className={styles.bookingService}>
-                                                {booking.service?.name || booking.specialty?.name}
-                                            </div>
+                                            {booking.service?.name && (
+                                                <div className={styles.bookingService}>
+                                                    🩺 <strong>{booking.service.name}</strong>
+                                                </div>
+                                            )}
+                                            {!booking.service?.name && booking.specialty?.name && (
+                                                <div className={styles.bookingSpecialty}>
+                                                    🏥 {booking.specialty.name}
+                                                </div>
+                                            )}
+                                            {booking.symptoms && (
+                                                <div className={styles.bookingSymptoms}>
+                                                    📝 {booking.symptoms.substring(0, 50)}{booking.symptoms.length > 50 ? '...' : ''}
+                                                </div>
+                                            )}
                                             {getStatusBadge(booking.status)}
                                         </div>
                                     ))

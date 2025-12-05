@@ -495,6 +495,206 @@
     color: #667eea;
 }
 
+/* Tabs */
+.tabContainer {
+    display: flex;
+    border-bottom: 2px solid #e2e8f0;
+    background: #f8faff;
+}
+
+.tabBtn {
+    flex: 1;
+    padding: 16px 20px;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.tabBtn:hover {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+.tabActive {
+    background: white;
+    color: #667eea;
+    border-bottom: 3px solid #667eea;
+    margin-bottom: -2px;
+}
+
+.tabContent {
+    padding: 0;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+/* Medical Records */
+.medicalRecords {
+    padding: 20px;
+}
+
+.recordsList {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.recordCard {
+    background: #f8faff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.recordHeader {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    flex-wrap: wrap;
+}
+
+.recordDate,
+.recordDoctor {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.recordIcon {
+    font-size: 16px;
+}
+
+.specialtyTag {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    margin-left: 8px;
+}
+
+.btnEditRecord {
+    margin-left: auto;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.btnEditRecord:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.recordBody {
+    padding: 20px;
+}
+
+.recordSection {
+    margin-bottom: 16px;
+}
+
+.recordSection:last-child {
+    margin-bottom: 0;
+}
+
+.recordSection label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #667eea;
+    margin-bottom: 6px;
+}
+
+.recordSection p {
+    margin: 0;
+    font-size: 14px;
+    color: #334155;
+    line-height: 1.6;
+    background: white;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+/* Prescription Table */
+.prescriptionSection {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 2px dashed #e2e8f0;
+}
+
+.prescriptionSection label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #667eea;
+    margin-bottom: 12px;
+}
+
+.prescriptionTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.prescriptionTable th {
+    background: #f1f5f9;
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #475569;
+}
+
+.prescriptionTable td {
+    padding: 10px 12px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.prescriptionTable tr:hover td {
+    background: #f8faff;
+}
+
+/* Record Info in Edit Modal */
+.recordInfo {
+    background: #f8faff;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #e2e8f0;
+}
+
+.recordInfo p {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: #475569;
+}
+
+.recordInfo p:last-child {
+    margin-bottom: 0;
+}
+
+.recordInfo strong {
+    color: #334155;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .container {

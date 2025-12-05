@@ -1,5 +1,17 @@
 import { Navigate, useLocation } from 'react-router-dom';
 
+// ✅ Helper: Check if JWT token is expired
+const isTokenExpired = (token) => {
+    if (!token) return true;
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const exp = payload.exp * 1000; // Convert to milliseconds
+        return Date.now() >= exp;
+    } catch {
+        return true;
+    }
+};
+
 /**
  * ProtectedRoute Component
  * Bảo vệ routes theo role người dùng
@@ -12,9 +24,17 @@ export default function ProtectedRoute({ children, requiredRole = 'public' }) {
     const userData = localStorage.getItem('user');
     const location = useLocation();
 
+    // ✅ Check token expiry locally
+    const tokenExpired = isTokenExpired(token);
+    if (tokenExpired && token) {
+        console.log('⚠️ Token expired, clearing...');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+    }
+
     // Parse user data
     let user = null;
-    if (userData) {
+    if (userData && !tokenExpired) {
         try {
             user = JSON.parse(userData);
         } catch (error) {

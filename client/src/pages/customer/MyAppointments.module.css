@@ -26,7 +26,7 @@
 
 .btnNewBooking {
     padding: 0.875rem 1.5rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     color: white;
     border: none;
     border-radius: 10px;
@@ -38,7 +38,7 @@
 
 .btnNewBooking:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 8px 20px rgba(69, 195, 210, 0.4);
 }
 
 /* FILTER */
@@ -62,12 +62,12 @@
 }
 
 .filterBtn:hover {
-    border-color: #667eea;
-    color: #667eea;
+    border-color: #45c3d2;
+    color: #45c3d2;
 }
 
 .filterActive {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     color: white;
     border-color: transparent;
 }
@@ -110,7 +110,7 @@
 }
 
 .specialty {
-    color: #667eea;
+    color: #45c3d2;
     font-size: 0.9rem;
     margin: 0;
 }
@@ -426,7 +426,7 @@
 .btnPrint {
     flex: 1;
     padding: 0.875rem 1.5rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     color: white;
     border: none;
     border-radius: 8px;
@@ -437,7 +437,7 @@
 
 .btnPrint:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 8px 20px rgba(69, 195, 210, 0.3);
 }
 
 /* RESCHEDULE MODAL FORM */
@@ -465,8 +465,8 @@
 .dateInput:focus,
 .timeSelect:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #45c3d2;
+    box-shadow: 0 0 0 3px rgba(69, 195, 210, 0.1);
 }
 
 .noteBox {
@@ -539,7 +539,7 @@
     height: 50px;
     margin: 0 auto 1rem;
     border: 4px solid #e2e8f0;
-    border-top-color: #667eea;
+    border-top-color: #45c3d2;
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }

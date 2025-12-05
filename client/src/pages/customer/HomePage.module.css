@@ -16,7 +16,7 @@
     width: 50px;
     height: 50px;
     border: 4px solid #f3f3f3;
-    border-top: 4px solid #667eea;
+    border-top: 4px solid #45c3d2;
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -40,7 +40,7 @@
 
 /* Hero Section */
 .hero {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     color: white;
     padding: 80px 20px;
     min-height: 600px;
@@ -101,7 +101,7 @@
 
 .btnPrimary {
     background: white;
-    color: #667eea;
+    color: #45c3d2;
 }
 
 .btnPrimary:hover {
@@ -187,7 +187,7 @@
 .statValue {
     font-size: 36px;
     font-weight: 700;
-    color: #667eea;
+    color: #45c3d2;
     margin-bottom: 8px;
 }
 
@@ -230,8 +230,8 @@
 }
 
 .featureCard:hover {
-    border-color: #667eea;
-    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+    border-color: #45c3d2;
+    box-shadow: 0 8px 24px rgba(69, 195, 210, 0.15);
 }
 
 .featureIcon {
@@ -275,9 +275,9 @@
 }
 
 .specialtyCard:hover {
-    border-color: #667eea;
+    border-color: #45c3d2;
     transform: translateY(-5px);
-    box-shadow: 0 12px 30px rgba(102, 126, 234, 0.2);
+    box-shadow: 0 12px 30px rgba(69, 195, 210, 0.2);
 }
 
 .specialtyIcon {
@@ -301,7 +301,7 @@
 
 .specialtyStats {
     font-size: 13px;
-    color: #667eea;
+    color: #45c3d2;
     margin: 0 0 16px 0;
     display: flex;
     align-items: center;
@@ -310,7 +310,7 @@
 }
 
 .specialtyBtn {
-    background: #667eea;
+    background: #45c3d2;
     color: white;
     border: none;
     padding: 10px 20px;
@@ -323,7 +323,7 @@
 }
 
 .specialtyBtn:hover {
-    background: #5568d3;
+    background: #2aa6b7;
 }
 
 /* ========== Specialties with Doctors Section (BookingCare style) ========== */
@@ -547,16 +547,16 @@
 }
 
 .doctorCard:hover {
-    border-color: #667eea;
+    border-color: #45c3d2;
     transform: translateY(-5px);
-    box-shadow: 0 12px 30px rgba(102, 126, 234, 0.2);
+    box-shadow: 0 12px 30px rgba(69, 195, 210, 0.2);
 }
 
 .doctorImage {
     width: 100%;
     height: 250px;
     overflow: hidden;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
 }
 
 .doctorImage img {
@@ -583,7 +583,7 @@
 
 .doctorSpecialty {
     font-size: 14px;
-    color: #667eea;
+    color: #45c3d2;
     margin: 0 0 12px 0;
     font-weight: 500;
 }
@@ -600,7 +600,7 @@
 
 .doctorExperience i,
 .doctorStats i {
-    color: #667eea;
+    color: #45c3d2;
 }
 
 .doctorBtn {
@@ -608,7 +608,7 @@
     margin-top: 16px;
     padding: 12px;
     background: #f3f4f6;
-    color: #667eea;
+    color: #45c3d2;
     border: none;
     border-radius: 8px;
     font-size: 14px;
@@ -618,7 +618,7 @@
 }
 
 .doctorBtn:hover {
-    background: #667eea;
+    background: #45c3d2;
     color: white;
 }
 
@@ -657,7 +657,7 @@
 
 .testimonialAvatar {
     font-size: 48px;
-    color: #667eea;
+    color: #45c3d2;
 }
 
 .testimonialAuthor h4 {
@@ -695,7 +695,7 @@
 
 .testimonialDoctor {
     font-size: 13px;
-    color: #667eea;
+    color: #45c3d2;
     margin: 0;
     display: flex;
     align-items: center;
@@ -707,7 +707,7 @@
 }
 
 .btnViewAll {
-    background: #667eea;
+    background: #45c3d2;
     color: white;
     border: none;
     padding: 14px 32px;
@@ -719,7 +719,7 @@
 }
 
 .btnViewAll:hover {
-    background: #5568d3;
+    background: #2aa6b7;
     transform: translateY(-2px);
 }
 
@@ -776,7 +776,7 @@
 .serviceBtn {
     width: 100%;
     padding: 10px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     color: white;
     border: none;
     border-radius: 8px;
@@ -788,7 +788,7 @@
 
 .serviceBtn:hover {
     transform: scale(1.02);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 4px 12px rgba(69, 195, 210, 0.4);
 }
 
 /* Quick Booking */
@@ -862,7 +862,7 @@
 .stepNumber {
     width: 80px;
     height: 80px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     color: white;
     font-size: 36px;
     font-weight: 700;
@@ -871,7 +871,7 @@
     align-items: center;
     justify-content: center;
     margin: 0 auto 20px auto;
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 8px 20px rgba(69, 195, 210, 0.3);
 }
 
 .stepTitle {
@@ -892,14 +892,14 @@
     right: -15px;
     top: 35px;
     font-size: 30px;
-    color: #667eea;
+    color: #45c3d2;
     display: none;
 }
 
 /* CTA Section */
 .cta {
     padding: 80px 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     color: white;
 }
 
@@ -922,7 +922,7 @@
 
 .ctaButton {
     background: white;
-    color: #667eea;
+    color: #45c3d2;
     border: none;
     padding: 16px 48px;
     border-radius: 12px;

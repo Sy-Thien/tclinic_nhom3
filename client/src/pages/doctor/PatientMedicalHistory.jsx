@@ -52,6 +52,12 @@ export default function PatientMedicalHistory() {
             }
         } catch (error) {
             console.error('Error fetching patient history:', error);
+            // ✅ Xử lý trường hợp bác sĩ không có quyền xem
+            if (error.response?.status === 403) {
+                alert('⚠️ ' + (error.response.data.message || 'Bạn không có quyền xem hồ sơ bệnh nhân này'));
+                navigate(-1);
+                return;
+            }
             alert('Không thể tải lịch sử khám bệnh');
         } finally {
             setLoading(false);

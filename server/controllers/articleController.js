@@ -211,4 +211,385 @@ exports.getPopularArticles = async (req, res) => {
     }
 };
 
+// ========== ADMIN APIs ==========
+
+// Helper: Generate slug from title
+const generateSlug = (title) => {
+    return title
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'd')
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim();
+};
+
+// Admin - Lấy tất cả bài viết (bao gồm draft)
+exports.adminGetArticles = async (req, res) => {
+    console.log('📰 [Admin] getArticles called');
+    try {
+        const { category, search, status, page = 1, limit = 20 } = req.query;
+
+        const pageNum = parseInt(page);
+        const limitNum = parseInt(limit);
+        const offset = (pageNum - 1) * limitNum;
+
+        const where = {};
+
+        if (status && status !== 'all') {
+            where.status = status;
+        }
+
+        if (category && category !== 'all') {
+            where.category_id = category;
+        }
+
+        if (search) {
+            where[Op.or] = [
+                { title: { [Op.like]: `%${search}%` } },
+                { excerpt: { [Op.like]: `%${search}%` } }
+            ];
+        }
+
+        const articles = await Article.findAndCountAll({
+            where,
+            include: [{
+                model: ArticleCategory,
+                as: 'category',
+                attributes: ['id', 'name', 'slug']
+            }],
+            order: [['created_at', 'DESC']],
+            limit: limitNum,
+            offset: offset
+        });
+
+        const totalPages = Math.ceil(articles.count / limitNum);
+
+        res.json({
+            success: true,
+            articles: articles.rows,
+            pagination: {
+                total: articles.count,
+                page: pageNum,
+                limit: limitNum,
+                totalPages: totalPages
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ [Admin] Get articles error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi server',
+            error: error.message
+        });
+    }
+};
+
+// Admin - Lấy chi tiết bài viết theo ID
+exports.adminGetArticleById = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const article = await Article.findByPk(id, {
+            include: [{
+                model: ArticleCategory,
+                as: 'category',
+                attributes: ['id', 'name', 'slug']
+            }]
+        });
+
+        if (!article) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy bài viết'
+            });
+        }
+
+        res.json({
+            success: true,
+            data: article
+        });
+
+    } catch (error) {
+        console.error('❌ [Admin] Get article by ID error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi server',
+            error: error.message
+        });
+    }
+};
+
+// Admin - Tạo bài viết mới
+exports.adminCreateArticle = async (req, res) => {
+    try {
+        const { title, content, excerpt, category_id, thumbnail, status, is_featured } = req.body;
+
+        if (!title || !content) {
+            return res.status(400).json({
+                success: false,
+                message: 'Tiêu đề và nội dung là bắt buộc'
+            });
+        }
+
+        // Generate unique slug
+        let baseSlug = generateSlug(title);
+        let slug = baseSlug;
+        let counter = 1;
+
+        while (await Article.findOne({ where: { slug } })) {
+            slug = `${baseSlug}-${counter}`;
+            counter++;
+        }
+
+        const article = await Article.create({
+            title,
+            slug,
+            content,
+            excerpt: excerpt || content.substring(0, 200),
+            category_id: category_id || null,
+            thumbnail: thumbnail || null,
+            status: status || 'draft',
+            is_featured: is_featured || false,
+            author_id: req.user?.id || null,
+            published_at: status === 'published' ? new Date() : null,
+            views: 0
+        });
+
+        console.log('✅ [Admin] Article created:', article.id);
+
+        res.status(201).json({
+            success: true,
+            message: 'Tạo bài viết thành công',
+            data: article
+        });
+
+    } catch (error) {
+        console.error('❌ [Admin] Create article error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi server',
+            error: error.message
+        });
+    }
+};
+
+// Admin - Cập nhật bài viết
+exports.adminUpdateArticle = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title, content, excerpt, category_id, thumbnail, status, is_featured } = req.body;
+
+        const article = await Article.findByPk(id);
+
+        if (!article) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy bài viết'
+            });
+        }
+
+        // Update slug if title changed
+        let slug = article.slug;
+        if (title && title !== article.title) {
+            let baseSlug = generateSlug(title);
+            slug = baseSlug;
+            let counter = 1;
+
+            while (await Article.findOne({ where: { slug, id: { [Op.ne]: id } } })) {
+                slug = `${baseSlug}-${counter}`;
+                counter++;
+            }
+        }
+
+        // Check if publishing for the first time
+        const isNewlyPublished = status === 'published' && article.status !== 'published';
+
+        await article.update({
+            title: title || article.title,
+            slug,
+            content: content || article.content,
+            excerpt: excerpt || article.excerpt,
+            category_id: category_id !== undefined ? category_id : article.category_id,
+            thumbnail: thumbnail !== undefined ? thumbnail : article.thumbnail,
+            status: status || article.status,
+            is_featured: is_featured !== undefined ? is_featured : article.is_featured,
+            published_at: isNewlyPublished ? new Date() : article.published_at,
+            updated_at: new Date()
+        });
+
+        console.log('✅ [Admin] Article updated:', article.id);
+
+        res.json({
+            success: true,
+            message: 'Cập nhật bài viết thành công',
+            data: article
+        });
+
+    } catch (error) {
+        console.error('❌ [Admin] Update article error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi server',
+            error: error.message
+        });
+    }
+};
+
+// Admin - Xóa bài viết
+exports.adminDeleteArticle = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const article = await Article.findByPk(id);
+
+        if (!article) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy bài viết'
+            });
+        }
+
+        await article.destroy();
+
+        console.log('✅ [Admin] Article deleted:', id);
+
+        res.json({
+            success: true,
+            message: 'Xóa bài viết thành công'
+        });
+
+    } catch (error) {
+        console.error('❌ [Admin] Delete article error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi server',
+            error: error.message
+        });
+    }
+};
+
+// Admin - Quản lý danh mục
+exports.adminGetCategories = async (req, res) => {
+    try {
+        const categories = await ArticleCategory.findAll({
+            order: [['name', 'ASC']],
+            include: [{
+                model: Article,
+                as: 'articles',
+                attributes: ['id'],
+                required: false
+            }]
+        });
+
+        // Add article count to each category
+        const categoriesWithCount = categories.map(cat => ({
+            ...cat.toJSON(),
+            articleCount: cat.articles?.length || 0
+        }));
+
+        res.json({
+            success: true,
+            data: categoriesWithCount
+        });
+
+    } catch (error) {
+        console.error('❌ [Admin] Get categories error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi server',
+            error: error.message
+        });
+    }
+};
+
+// Admin - Tạo danh mục
+exports.adminCreateCategory = async (req, res) => {
+    try {
+        const { name, description } = req.body;
+
+        if (!name) {
+            return res.status(400).json({
+                success: false,
+                message: 'Tên danh mục là bắt buộc'
+            });
+        }
+
+        const slug = generateSlug(name);
+
+        // Check if slug exists
+        const existing = await ArticleCategory.findOne({ where: { slug } });
+        if (existing) {
+            return res.status(400).json({
+                success: false,
+                message: 'Danh mục đã tồn tại'
+            });
+        }
+
+        const category = await ArticleCategory.create({
+            name,
+            slug,
+            description: description || null
+        });
+
+        res.status(201).json({
+            success: true,
+            message: 'Tạo danh mục thành công',
+            data: category
+        });
+
+    } catch (error) {
+        console.error('❌ [Admin] Create category error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi server',
+            error: error.message
+        });
+    }
+};
+
+// Admin - Xóa danh mục
+exports.adminDeleteCategory = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const category = await ArticleCategory.findByPk(id);
+
+        if (!category) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy danh mục'
+            });
+        }
+
+        // Check if there are articles using this category
+        const articleCount = await Article.count({ where: { category_id: id } });
+        if (articleCount > 0) {
+            return res.status(400).json({
+                success: false,
+                message: `Không thể xóa danh mục đang có ${articleCount} bài viết`
+            });
+        }
+
+        await category.destroy();
+
+        res.json({
+            success: true,
+            message: 'Xóa danh mục thành công'
+        });
+
+    } catch (error) {
+        console.error('❌ [Admin] Delete category error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi server',
+            error: error.message
+        });
+    }
+};
+
 module.exports = exports;

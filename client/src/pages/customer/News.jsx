@@ -178,22 +178,46 @@ const News = () => {
             {/* Search & Filter Section */}
             <section className={styles.filterSection}>
                 <div className={styles.filterContainer}>
-                    <form onSubmit={handleSearch} className={styles.searchForm}>
-                        <input
-                            type="text"
-                            placeholder="🔍 Tìm kiếm bài viết..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className={styles.searchInput}
-                        />
-                        <button type="submit" className={styles.searchButton}>
+                    <div className={styles.searchRow}>
+                        <div className={styles.searchWrapper}>
+                            <span className={styles.searchIcon}>🔍</span>
+                            <input
+                                type="text"
+                                placeholder="Tìm kiếm bài viết theo tiêu đề, nội dung..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && handleSearch(e)}
+                                className={styles.searchInput}
+                            />
+                            {searchTerm && (
+                                <button
+                                    className={styles.clearSearch}
+                                    onClick={() => { setSearchTerm(''); setCurrentPage(1); }}
+                                >
+                                    ✕
+                                </button>
+                            )}
+                        </div>
+                        <select
+                            value={selectedCategory}
+                            onChange={(e) => { setSelectedCategory(e.target.value); setCurrentPage(1); }}
+                            className={styles.categorySelect}
+                        >
+                            <option value="">📂 Tất cả danh mục</option>
+                            {Array.isArray(categories) && categories.map(cat => (
+                                <option key={cat.id} value={cat.slug}>
+                                    {cat.name}
+                                </option>
+                            ))}
+                        </select>
+                        <button onClick={handleSearch} className={styles.searchButton}>
                             Tìm kiếm
                         </button>
-                    </form>
+                    </div>
 
-                    <div className={styles.categoryFilter}>
+                    <div className={styles.categoryTabs}>
                         <button
-                            className={`${styles.categoryButton} ${!selectedCategory ? styles.active : ''}`}
+                            className={`${styles.categoryTab} ${!selectedCategory ? styles.active : ''}`}
                             onClick={() => { setSelectedCategory(''); setCurrentPage(1); }}
                         >
                             Tất cả
@@ -201,14 +225,31 @@ const News = () => {
                         {Array.isArray(categories) && categories.map(cat => (
                             <button
                                 key={cat.id}
-                                className={`${styles.categoryButton} ${selectedCategory === cat.slug ? styles.active : ''}`}
+                                className={`${styles.categoryTab} ${selectedCategory === cat.slug ? styles.active : ''}`}
                                 onClick={() => { setSelectedCategory(cat.slug); setCurrentPage(1); }}
-                                style={selectedCategory === cat.slug ? { backgroundColor: getCategoryColor(cat.slug) } : {}}
+                                style={selectedCategory === cat.slug ? { backgroundColor: getCategoryColor(cat.slug), borderColor: getCategoryColor(cat.slug) } : {}}
                             >
                                 {cat.name}
                             </button>
                         ))}
                     </div>
+
+                    {/* Search Results Info */}
+                    {(searchTerm || selectedCategory) && (
+                        <div className={styles.searchInfo}>
+                            <span>
+                                {searchTerm && `Kết quả cho "${searchTerm}"`}
+                                {searchTerm && selectedCategory && ' trong '}
+                                {selectedCategory && `danh mục "${categories.find(c => c.slug === selectedCategory)?.name || selectedCategory}"`}
+                            </span>
+                            <button
+                                className={styles.clearFilters}
+                                onClick={() => { setSearchTerm(''); setSelectedCategory(''); setCurrentPage(1); }}
+                            >
+                                Xóa bộ lọc
+                            </button>
+                        </div>
+                    )}
                 </div>
             </section>
 

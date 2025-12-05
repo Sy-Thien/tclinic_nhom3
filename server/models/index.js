@@ -7,17 +7,14 @@ const Doctor = require('./Doctor');
 const Specialty = require('./Specialty');
 const Service = require('./Service');
 const Booking = require('./Booking');
-const Appointment = require('./Appointment');
 const Drug = require('./Drug');
 const Prescription = require('./Prescription');  // ✅ NEW
 const PrescriptionDetail = require('./PrescriptionDetail');  // ✅ NEW
 const Review = require('./Review');
 const Notification = require('./Notification');
-const MedicalRecord = require('./MedicalRecord');
 const MedicalHistory = require('./MedicalHistory');
 const Treatment = require('./Treatment');
 const BookingPhoto = require('./BookingPhoto');
-const DoctorAndService = require('./DoctorAndService');
 // const DoctorAvailability = require('./DoctorAvailability');  // ✅ DISABLED - Using DoctorSchedule instead
 
 // Initialize DoctorSchedule model (it's a factory function)
@@ -99,36 +96,6 @@ try {
         as: 'bookings'
     });
 
-    // ✅ Appointment <-> Booking
-    Appointment.belongsTo(Booking, {
-        foreignKey: 'booking_id',
-        as: 'booking'
-    });
-    Booking.hasOne(Appointment, {
-        foreignKey: 'booking_id',
-        as: 'appointment'
-    });
-
-    // ✅ Appointment <-> Doctor
-    Appointment.belongsTo(Doctor, {
-        foreignKey: 'doctor_id',
-        as: 'doctor'
-    });
-    Doctor.hasMany(Appointment, {
-        foreignKey: 'doctor_id',
-        as: 'appointments'
-    });
-
-    // ✅ Appointment <-> Patient
-    Appointment.belongsTo(Patient, {
-        foreignKey: 'patient_id',
-        as: 'patient'
-    });
-    Patient.hasMany(Appointment, {
-        foreignKey: 'patient_id',
-        as: 'appointments'
-    });
-
     // ✅ Review <-> Patient & Doctor
     Review.belongsTo(Patient, {
         foreignKey: 'patient_id',
@@ -156,16 +123,6 @@ try {
     Patient.hasMany(Notification, {
         foreignKey: 'patient_id',
         as: 'notifications'
-    });
-
-    // ✅ MedicalRecord <-> Patient
-    MedicalRecord.belongsTo(Patient, {
-        foreignKey: 'patient_id',
-        as: 'patient'
-    });
-    Patient.hasOne(MedicalRecord, {
-        foreignKey: 'patient_id',
-        as: 'medicalRecord'
     });
 
     // ✅ MedicalHistory <-> Patient
@@ -216,25 +173,6 @@ try {
     Booking.hasMany(BookingPhoto, {
         foreignKey: 'booking_id',
         as: 'photos'
-    });
-
-    // ✅ DoctorAndService <-> Doctor & Service (Many-to-Many)
-    DoctorAndService.belongsTo(Doctor, {
-        foreignKey: 'doctor_id',
-        as: 'doctor'
-    });
-    Doctor.hasMany(DoctorAndService, {
-        foreignKey: 'doctor_id',
-        as: 'doctorServices'
-    });
-
-    DoctorAndService.belongsTo(Service, {
-        foreignKey: 'service_id',
-        as: 'service'
-    });
-    Service.hasMany(DoctorAndService, {
-        foreignKey: 'service_id',
-        as: 'servicesDoctors'
     });
 
     // ✅ Prescription <-> Booking
@@ -410,18 +348,15 @@ module.exports = {
     Specialty,
     Service,
     Booking,
-    Appointment,
     Drug,
     Prescription,  // ✅ NEW
     PrescriptionDetail,  // ✅ NEW
     Room,
     Review,
     Notification,
-    MedicalRecord,
     MedicalHistory,
     Treatment,
     BookingPhoto,
-    DoctorAndService,
     DoctorSchedule,
     TimeSlot,  // ✅ NEW
     Article,  // ✅ NEW

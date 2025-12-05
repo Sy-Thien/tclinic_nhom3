@@ -50,6 +50,7 @@ import AdminDoctorSchedule from './pages/admin/AdminDoctorSchedule';
 import AdminTimeSlots from './pages/admin/AdminTimeSlots';
 import DrugManagement from './pages/admin/DrugManagement';  // ✅ NEW
 import ConsultationRequests from './pages/admin/ConsultationRequests';  // ✅ NEW
+import AdminNews from './pages/admin/AdminNews';  // ✅ NEW: News management
 import DoctorConsultations from './pages/doctor/DoctorConsultations';  // ✅ NEW
 import DoctorReviews from './pages/doctor/DoctorReviews';  // ✅ NEW: Doctor reviews management
 
@@ -118,6 +119,7 @@ export default function App() {
                     <Route path="reports" element={<AdminReports />} />
                     <Route path="drugs" element={<DrugManagement />} />
                     <Route path="consultations" element={<ConsultationRequests />} />
+                    <Route path="news" element={<AdminNews />} />
                 </Route>
 
                 {/* Auth Routes - Guest only */}
@@ -134,13 +136,13 @@ export default function App() {
                         flexDirection: 'column',
                         background: '#f5f7fa'
                     }}>
-                        <h1 style={{ fontSize: '4rem', color: '#667eea' }}>404</h1>
+                        <h1 style={{ fontSize: '4rem', color: '#45c3d2' }}>404</h1>
                         <p style={{ fontSize: '1.5rem', color: '#4a5568', marginBottom: '2rem' }}>
                             Trang không tồn tại
                         </p>
                         <a href="/" style={{
                             padding: '1rem 2rem',
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            background: 'linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%)',
                             color: 'white',
                             borderRadius: '8px',
                             textDecoration: 'none',

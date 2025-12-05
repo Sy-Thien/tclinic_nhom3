@@ -99,12 +99,12 @@
     left: 0;
     width: 0;
     height: 2px;
-    background: #667eea;
+    background: #45c3d2;
     transition: width 0.3s;
 }
 
 .nav a:hover {
-    color: #667eea;
+    color: #45c3d2;
 }
 
 .nav a:hover::after {
@@ -141,7 +141,7 @@
 
 .btnAdmin {
     padding: 8px 16px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, #45c3d2, #2aa6b7);
     color: white;
     border: none;
     border-radius: 8px;
@@ -155,12 +155,12 @@
 
 .btnAdmin:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 4px 12px rgba(69, 195, 210, 0.4);
 }
 
 .btnLogin {
     padding: 10px 24px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, #45c3d2, #2aa6b7);
     color: white;
     border: none;
     border-radius: 8px;
@@ -174,7 +174,7 @@
 
 .btnLogin:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 4px 12px rgba(69, 195, 210, 0.4);
 }
 
 .btnLogout {
@@ -210,11 +210,11 @@
 }
 
 .btnProfile:hover {
-    background: #667eea;
+    background: #45c3d2;
     color: white;
-    border-color: #667eea;
+    border-color: #45c3d2;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 12px rgba(69, 195, 210, 0.3);
 }
 
 /* ===== MAIN CONTENT ===== */

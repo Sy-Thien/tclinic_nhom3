@@ -1,10 +1,12 @@
 import pdfMake from 'pdfmake/build/pdfmake';
-import pdfFonts from 'pdfmake/build/vfs_fonts';
+import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 
 // Khởi tạo fonts cho pdfMake - hỗ trợ nhiều phiên bản
 try {
     if (pdfFonts.pdfMake) {
         pdfMake.vfs = pdfFonts.pdfMake.vfs;
+    } else if (pdfFonts.default?.pdfMake) {
+        pdfMake.vfs = pdfFonts.default.pdfMake.vfs;
     } else if (pdfFonts.vfs) {
         pdfMake.vfs = pdfFonts.vfs;
     } else {

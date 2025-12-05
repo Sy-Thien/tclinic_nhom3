@@ -121,9 +121,9 @@ export default function DoctorDetail() {
         <div className={styles.container}>
             {/* Breadcrumb */}
             <div style={{ marginBottom: '16px', fontSize: '14px', color: '#666' }}>
-                <span onClick={() => navigate('/')} style={{ cursor: 'pointer', color: '#667eea' }}>🏠 Trang chủ</span>
+                <span onClick={() => navigate('/')} style={{ cursor: 'pointer', color: '#45c3d2' }}>🏠 Trang chủ</span>
                 {' / '}
-                <span onClick={() => navigate('/doctors')} style={{ cursor: 'pointer', color: '#667eea' }}>Khám chuyên khoa</span>
+                <span onClick={() => navigate('/doctors')} style={{ cursor: 'pointer', color: '#45c3d2' }}>Khám chuyên khoa</span>
                 {' / '}
                 <span>{doctor.specialty_name || 'Tiêu hóa - Bệnh Viêm gan'}</span>
                 {' / '}

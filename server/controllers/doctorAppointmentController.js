@@ -1,4 +1,4 @@
-const { Booking, Patient, Specialty, Appointment, MedicalHistory, Prescription, DoctorSchedule, Service } = require('../models');
+const { Booking, Patient, Specialty, MedicalHistory, Prescription, DoctorSchedule, Service } = require('../models');
 const { Op } = require('sequelize');
 
 // Doctor - Lấy lịch làm việc định kỳ

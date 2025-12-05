@@ -22,14 +22,19 @@ export default function MyAppointments() {
     useStorageSync('patient');
 
     useEffect(() => {
+        // ✅ Kiểm tra đăng nhập - nếu chưa đăng nhập thì redirect
+        const token = localStorage.getItem('token');
         const userStr = localStorage.getItem('user');
-        if (!userStr) {
-            navigate('/login');
+
+        if (!token || !userStr) {
+            navigate('/login', { state: { from: '/my-appointments' } });
             return;
         }
 
         fetchAppointments();
-    }, [navigate]); const fetchAppointments = async () => {
+    }, [navigate]);
+
+    const fetchAppointments = async () => {
         try {
             const response = await api.get('/api/customer/appointments');
             // Backend returns { bookings }, not { data: [...] }
@@ -37,9 +42,7 @@ export default function MyAppointments() {
             setAppointments(appointmentData);
         } catch (error) {
             console.error('Error:', error);
-            if (error.response?.status === 401) {
-                navigate('/login');
-            }
+            // ✅ API interceptor đã xử lý 401 -> redirect về login
         } finally {
             setLoading(false);
         }

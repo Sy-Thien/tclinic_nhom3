@@ -1,4 +1,4 @@
-const { MedicalHistory, Patient, Doctor, Booking, Prescription, PrescriptionDetail, Drug, Specialty } = require('../models');
+const { MedicalHistory, Patient, Doctor, Booking, Prescription, PrescriptionDetail, Drug, Specialty, Service } = require('../models');
 
 // Lưu lịch sử khám bệnh khi bác sĩ hoàn thành khám
 exports.saveMedicalHistory = async (req, res) => {
@@ -61,6 +61,7 @@ exports.saveMedicalHistory = async (req, res) => {
 };
 
 // Xem lịch sử khám bệnh của bệnh nhân (cho bác sĩ)
+// ✅ CHỈ trả về những lần khám mà BÁC SĨ HIỆN TẠI đã khám
 exports.getPatientHistory = async (req, res) => {
     try {
         const { patient_id } = req.params;
@@ -75,9 +76,27 @@ exports.getPatientHistory = async (req, res) => {
             return res.status(404).json({ message: 'Không tìm thấy bệnh nhân' });
         }
 
-        // Lấy lịch sử khám bệnh (tất cả các lần khám)
+        // ✅ Kiểm tra bác sĩ có booking với bệnh nhân này không
+        const hasBooking = await Booking.findOne({
+            where: {
+                patient_id,
+                doctor_id
+            }
+        });
+
+        if (!hasBooking) {
+            return res.status(403).json({
+                success: false,
+                message: 'Bạn chưa từng khám bệnh nhân này nên không có quyền xem hồ sơ'
+            });
+        }
+
+        // ✅ Lấy lịch sử khám của bác sĩ hiện tại với bệnh nhân này
         const histories = await MedicalHistory.findAll({
-            where: { patient_id },
+            where: {
+                patient_id,
+                doctor_id  // ✅ Chỉ lấy record của bác sĩ đang đăng nhập
+            },
             include: [
                 {
                     model: Doctor,
@@ -88,6 +107,14 @@ exports.getPatientHistory = async (req, res) => {
                     ]
                 },
                 {
+                    model: Booking,
+                    as: 'booking',
+                    attributes: ['id', 'service_id'],
+                    include: [
+                        { model: Service, as: 'service', attributes: ['id', 'name', 'price'] }
+                    ]
+                },
+                {
                     model: Prescription,
                     as: 'prescription',
                     include: [
@@ -95,7 +122,7 @@ exports.getPatientHistory = async (req, res) => {
                             model: PrescriptionDetail,
                             as: 'details',
                             include: [
-                                { model: Drug, as: 'drug', attributes: ['name', 'unit'] }
+                                { model: Drug, as: 'drug', attributes: ['id', 'name', 'unit', 'ingredient', 'price'] }
                             ]
                         }
                     ]
@@ -104,14 +131,11 @@ exports.getPatientHistory = async (req, res) => {
             order: [['visit_date', 'DESC'], ['visit_time', 'DESC']]
         });
 
-        // Lấy các lần khám của bác sĩ hiện tại với bệnh nhân này
-        const myHistories = histories.filter(h => h.doctor_id === doctor_id);
-
+        // ✅ Trả về kết quả (có thể rỗng nếu chưa hoàn thành khám)
         res.json({
             success: true,
             patient,
-            allHistories: histories.length,
-            myVisits: myHistories.length,
+            totalVisits: histories.length,
             histories: histories
         });
 
@@ -144,7 +168,10 @@ exports.getHistoryDetail = async (req, res) => {
                 {
                     model: Booking,
                     as: 'booking',
-                    attributes: ['id', 'booking_code', 'status']
+                    attributes: ['id', 'booking_code', 'status', 'service_id'],
+                    include: [
+                        { model: Service, as: 'service', attributes: ['id', 'name', 'price'] }
+                    ]
                 },
                 {
                     model: Prescription,
@@ -154,7 +181,7 @@ exports.getHistoryDetail = async (req, res) => {
                             model: PrescriptionDetail,
                             as: 'details',
                             include: [
-                                { model: Drug, as: 'drug', attributes: ['name', 'unit'] }
+                                { model: Drug, as: 'drug', attributes: ['id', 'name', 'unit', 'ingredient', 'price'] }
                             ]
                         }
                     ]

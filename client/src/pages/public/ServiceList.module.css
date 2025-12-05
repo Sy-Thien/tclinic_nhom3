@@ -27,7 +27,7 @@
     gap: 3rem;
     margin-bottom: 2rem;
     padding: 1.5rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     border-radius: 12px;
 }
 
@@ -71,7 +71,7 @@
 
 .searchBox input:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #45c3d2;
 }
 
 .specialtyFilter select {
@@ -84,7 +84,7 @@
 
 .specialtyFilter select:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #45c3d2;
 }
 
 /* Specialty Section */
@@ -95,12 +95,12 @@
 .specialtyHeader {
     margin-bottom: 2rem;
     padding-bottom: 1rem;
-    border-bottom: 3px solid #667eea;
+    border-bottom: 3px solid #45c3d2;
 }
 
 .specialtyHeader h2 {
     font-size: 2rem;
-    color: #667eea;
+    color: #45c3d2;
     margin-bottom: 0.5rem;
 }
 
@@ -111,8 +111,8 @@
 
 .serviceCount {
     display: inline-block;
-    background: #f0f4ff;
-    color: #667eea;
+    background: #e0f7fa;
+    color: #45c3d2;
     padding: 0.25rem 0.75rem;
     border-radius: 20px;
     font-size: 0.9rem;
@@ -156,7 +156,7 @@
 }
 
 .priceTag {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     color: white;
     padding: 0.5rem 1rem;
     border-radius: 20px;
@@ -205,8 +205,8 @@
     flex: 1;
     padding: 0.75rem;
     background: white;
-    color: #667eea;
-    border: 2px solid #667eea;
+    color: #45c3d2;
+    border: 2px solid #45c3d2;
     border-radius: 8px;
     font-size: 0.95rem;
     font-weight: 600;
@@ -215,14 +215,14 @@
 }
 
 .btnDetail:hover {
-    background: #f0f4ff;
+    background: #e0f7fa;
     transform: scale(1.02);
 }
 
 .btnBook {
     flex: 1;
     padding: 0.75rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     color: white;
     border: none;
     border-radius: 8px;

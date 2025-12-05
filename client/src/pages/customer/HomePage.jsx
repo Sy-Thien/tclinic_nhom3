@@ -535,7 +535,7 @@ export default function HomePage() {
                                 >
                                     <div className={styles.doctorImage}>
                                         <img
-                                            src={doctor.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(doctor.full_name || 'Doctor')}&background=667eea&color=fff&size=200`}
+                                            src={doctor.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(doctor.full_name || 'Doctor')}&background=45c3d2&color=fff&size=200`}
                                             alt={doctor.full_name}
                                         />
                                     </div>
@@ -550,6 +550,11 @@ export default function HomePage() {
                                         <p className={styles.doctorStats}>
                                             <i className="fas fa-check-circle"></i> {doctor.completed_bookings || 0} ca đã khám
                                         </p>
+                                        {parseFloat(doctor.avg_rating) > 0 && (
+                                            <p className={styles.doctorStats}>
+                                                <i className="fas fa-star" style={{ color: '#fbbf24' }}></i> {doctor.avg_rating} ({doctor.review_count} đánh giá)
+                                            </p>
+                                        )}
                                         <button className={styles.doctorBtn}>
                                             Xem chi tiết
                                         </button>

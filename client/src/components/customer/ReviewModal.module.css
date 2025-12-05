@@ -98,7 +98,7 @@
 
 .specialty {
     font-size: 0.875rem;
-    color: #667eea;
+    color: #45c3d2;
     margin: 0;
 }
 
@@ -137,7 +137,7 @@
 .ratingText {
     font-size: 1.125rem;
     font-weight: 600;
-    color: #667eea;
+    color: #45c3d2;
     margin: 0.5rem 0 0;
     min-height: 1.5rem;
 }
@@ -167,8 +167,8 @@
 
 .textarea:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #45c3d2;
+    box-shadow: 0 0 0 3px rgba(69, 195, 210, 0.1);
 }
 
 .charCount {
@@ -210,13 +210,13 @@
 }
 
 .btnSubmit {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     color: white;
 }
 
 .btnSubmit:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 8px 20px rgba(69, 195, 210, 0.4);
 }
 
 .btnSubmit:disabled,

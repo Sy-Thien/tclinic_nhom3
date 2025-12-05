@@ -1,4 +1,4 @@
-const { Patient, Booking, Doctor, Specialty } = require('../models');
+const { Patient, Booking, Doctor, Specialty, MedicalHistory, Prescription, PrescriptionDetail, Drug } = require('../models');
 const { Op } = require('sequelize');
 const bcrypt = require('bcrypt');
 
@@ -70,7 +70,7 @@ exports.getPatientById = async (req, res) => {
     }
 };
 
-// GET - Lấy lịch sử khám của bệnh nhân
+// GET - Lấy lịch sử khám của bệnh nhân (Admin xem TẤT CẢ)
 exports.getPatientHistory = async (req, res) => {
     try {
         const { id } = req.params;
@@ -104,6 +104,110 @@ exports.getPatientHistory = async (req, res) => {
         console.error('❌ Error fetching patient history:', error);
         res.status(500).json({
             message: 'Lỗi khi lấy lịch sử khám',
+            error: error.message
+        });
+    }
+};
+
+// GET - Lấy chi tiết hồ sơ bệnh án (Admin xem TẤT CẢ bệnh án của bệnh nhân)
+exports.getPatientMedicalRecords = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        console.log(`📋 GET /api/admin/patients/${id}/medical-records`);
+
+        // Kiểm tra bệnh nhân tồn tại
+        const patient = await Patient.findByPk(id, {
+            attributes: ['id', 'full_name', 'phone', 'email', 'gender', 'birthday', 'address']
+        });
+
+        if (!patient) {
+            return res.status(404).json({ message: 'Không tìm thấy bệnh nhân' });
+        }
+
+        // Lấy TẤT CẢ hồ sơ bệnh án của bệnh nhân (không lọc theo doctor_id)
+        const medicalRecords = await MedicalHistory.findAll({
+            where: { patient_id: id },
+            include: [
+                {
+                    model: Doctor,
+                    as: 'doctor',
+                    attributes: ['id', 'full_name'],
+                    include: [
+                        { model: Specialty, as: 'specialty', attributes: ['name'] }
+                    ]
+                },
+                {
+                    model: Booking,
+                    as: 'booking',
+                    attributes: ['id', 'booking_code', 'status']
+                },
+                {
+                    model: Prescription,
+                    as: 'prescription',
+                    include: [
+                        {
+                            model: PrescriptionDetail,
+                            as: 'details',
+                            include: [
+                                { model: Drug, as: 'drug', attributes: ['name', 'unit', 'ingredient'] }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            order: [['visit_date', 'DESC'], ['visit_time', 'DESC']]
+        });
+
+        console.log(`✅ Found ${medicalRecords.length} medical records`);
+
+        res.json({
+            success: true,
+            patient,
+            totalRecords: medicalRecords.length,
+            medicalRecords
+        });
+    } catch (error) {
+        console.error('❌ Error fetching patient medical records:', error);
+        res.status(500).json({
+            message: 'Lỗi khi lấy hồ sơ bệnh án',
+            error: error.message
+        });
+    }
+};
+
+// PUT - Admin cập nhật triệu chứng/ghi chú cho bệnh án
+exports.updateMedicalRecord = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { symptoms, diagnosis, conclusion, note } = req.body;
+
+        console.log(`✏️ PUT /api/admin/medical-records/${id}`);
+
+        const record = await MedicalHistory.findByPk(id);
+        if (!record) {
+            return res.status(404).json({ message: 'Không tìm thấy bệnh án' });
+        }
+
+        // Cập nhật
+        await record.update({
+            symptoms: symptoms !== undefined ? symptoms : record.symptoms,
+            diagnosis: diagnosis !== undefined ? diagnosis : record.diagnosis,
+            conclusion: conclusion !== undefined ? conclusion : record.conclusion,
+            note: note !== undefined ? note : record.note
+        });
+
+        console.log('✅ Medical record updated:', id);
+
+        res.json({
+            success: true,
+            message: 'Cập nhật hồ sơ bệnh án thành công',
+            record
+        });
+    } catch (error) {
+        console.error('❌ Error updating medical record:', error);
+        res.status(500).json({
+            message: 'Lỗi khi cập nhật hồ sơ bệnh án',
             error: error.message
         });
     }

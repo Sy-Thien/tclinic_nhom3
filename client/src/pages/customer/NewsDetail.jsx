@@ -21,8 +21,10 @@ const NewsDetail = () => {
         setLoading(true);
         try {
             const response = await api.get(`/api/articles/${slug}`);
-            setArticle(response.data.article);
-            setRelatedArticles(response.data.relatedArticles || []);
+            // API trả về { success: true, data: { article, relatedArticles } }
+            const data = response.data.data || response.data;
+            setArticle(data.article || null);
+            setRelatedArticles(data.relatedArticles || []);
         } catch (error) {
             console.error('❌ Error fetching article:', error);
             if (error.response?.status === 404) {
@@ -36,7 +38,8 @@ const NewsDetail = () => {
     const fetchPopularArticles = async () => {
         try {
             const response = await api.get('/api/articles/popular');
-            setPopularArticles(response.data);
+            // API trả về { success: true, data: [...] }
+            setPopularArticles(response.data.data || response.data || []);
         } catch (error) {
             console.error('❌ Error fetching popular articles:', error);
         }

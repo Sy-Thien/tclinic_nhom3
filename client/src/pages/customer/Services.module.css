@@ -16,7 +16,7 @@
 }
 
 .breadcrumb a {
-    color: #667eea;
+    color: #45c3d2;
     text-decoration: none;
     transition: color 0.2s;
 }
@@ -64,8 +64,8 @@
 
 .filterSelect:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #45c3d2;
+    box-shadow: 0 0 0 3px rgba(69, 195, 210, 0.1);
 }
 
 /* ===== SPECIALTY GRID ===== */
@@ -88,8 +88,8 @@
 
 .specialtyCard:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
-    border-color: #667eea;
+    box-shadow: 0 8px 25px rgba(69, 195, 210, 0.15);
+    border-color: #45c3d2;
 }
 
 .specialtyIcon {
@@ -199,7 +199,7 @@
 
 .btnBook {
     padding: 0.625rem 1.5rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     color: white;
     border: none;
     border-radius: 8px;
@@ -211,17 +211,17 @@
 
 .btnBook:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 4px 12px rgba(69, 195, 210, 0.4);
 }
 
 /* ===== INFO BANNER ===== */
 .infoBanner {
     max-width: 1200px;
     margin: 3rem auto 0;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     border-radius: 16px;
     padding: 2rem;
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 8px 25px rgba(69, 195, 210, 0.3);
 }
 
 .bannerContent {
@@ -255,7 +255,7 @@
     margin-left: auto;
     padding: 0.875rem 2rem;
     background: white;
-    color: #667eea;
+    color: #45c3d2;
     border: none;
     border-radius: 8px;
     font-weight: 700;
@@ -303,7 +303,7 @@
     height: 50px;
     margin: 0 auto 1rem;
     border: 4px solid #e2e8f0;
-    border-top-color: #667eea;
+    border-top-color: #45c3d2;
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }

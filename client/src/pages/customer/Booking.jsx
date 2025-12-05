@@ -40,6 +40,28 @@ export default function Booking() {
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
 
+    // ✅ Auto-fill thông tin người dùng đã đăng nhập
+    useEffect(() => {
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+            try {
+                const user = JSON.parse(userStr);
+                console.log('✅ Auto-filling user info:', user);
+                setFormData(prev => ({
+                    ...prev,
+                    patient_name: prev.patient_name || user.full_name || user.name || '',
+                    patient_email: prev.patient_email || user.email || '',
+                    patient_phone: prev.patient_phone || user.phone || '',
+                    patient_dob: prev.patient_dob || user.birthday || user.date_of_birth || '',
+                    patient_gender: prev.patient_gender || user.gender || 'male',
+                    patient_address: prev.patient_address || user.address || ''
+                }));
+            } catch (error) {
+                console.error('Error parsing user data:', error);
+            }
+        }
+    }, []);
+
     // Load specialties
     useEffect(() => {
         fetchSpecialties();
@@ -478,6 +500,33 @@ export default function Booking() {
                 <h1>📅 Đặt Lịch Khám</h1>
                 <p>Điền thông tin để đặt lịch khám bệnh trực tuyến</p>
             </div>
+
+            {/* ✅ Summary Banner khi có dịch vụ/bác sĩ được chọn sẵn */}
+            {(selectedService || doctorIdFromUrl) && (
+                <div className={styles.bookingSummaryBanner}>
+                    <h3>📋 Thông tin đặt lịch</h3>
+                    <div className={styles.summaryItems}>
+                        {selectedService && (
+                            <div className={styles.summaryItem}>
+                                <span className={styles.summaryLabel}>💉 Dịch vụ:</span>
+                                <span className={styles.summaryValue}>{selectedService.name}</span>
+                                <span className={styles.summaryPrice}>
+                                    {selectedService.price?.toLocaleString('vi-VN')}đ
+                                </span>
+                            </div>
+                        )}
+                        {doctorIdFromUrl && doctorNameFromUrl && (
+                            <div className={styles.summaryItem}>
+                                <span className={styles.summaryLabel}>👨‍⚕️ Bác sĩ:</span>
+                                <span className={styles.summaryValue}>{decodeURIComponent(doctorNameFromUrl)}</span>
+                            </div>
+                        )}
+                    </div>
+                    <p className={styles.summaryNote}>
+                        ✨ Bạn chỉ cần chọn ngày giờ và xác nhận thông tin bên dưới
+                    </p>
+                </div>
+            )}
 
             <form onSubmit={handleSubmit} className={styles.form}>
                 {/* THÔNG TIN BỆNH NHÂN */}

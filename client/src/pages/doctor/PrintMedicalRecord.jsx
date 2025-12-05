@@ -126,28 +126,40 @@ const PrintMedicalRecord = forwardRef(({ patient, history, clinic }, ref) => {
                                     <th className={styles.thStt}>STT</th>
                                     <th className={styles.thName}>Tên thuốc</th>
                                     <th className={styles.thQuantity}>SL</th>
+                                    <th className={styles.thPrice}>Đơn giá</th>
+                                    <th className={styles.thTotal}>Thành tiền</th>
                                     <th className={styles.thDosage}>Cách dùng</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {prescription.details.map((item, idx) => (
-                                    <tr key={idx}>
-                                        <td className={styles.tdStt}>{idx + 1}</td>
-                                        <td className={styles.tdName}>
-                                            <div className={styles.drugName}>{item.drug?.name || 'N/A'}</div>
-                                            {item.drug?.ingredient && (
-                                                <div className={styles.drugIngredient}>({item.drug.ingredient})</div>
-                                            )}
-                                        </td>
-                                        <td className={styles.tdQuantity}>
-                                            {item.quantity} {item.unit || item.drug?.unit || 'viên'}
-                                        </td>
-                                        <td className={styles.tdDosage}>
-                                            {item.dosage || '-'}
-                                            {item.duration && <span> - {item.duration}</span>}
-                                        </td>
-                                    </tr>
-                                ))}
+                                {prescription.details.map((item, idx) => {
+                                    const unitPrice = parseFloat(item.drug?.price) || 0;
+                                    const itemTotal = unitPrice * (item.quantity || 0);
+                                    return (
+                                        <tr key={idx}>
+                                            <td className={styles.tdStt}>{idx + 1}</td>
+                                            <td className={styles.tdName}>
+                                                <div className={styles.drugName}>{item.drug?.name || 'N/A'}</div>
+                                                {item.drug?.ingredient && (
+                                                    <div className={styles.drugIngredient}>({item.drug.ingredient})</div>
+                                                )}
+                                            </td>
+                                            <td className={styles.tdQuantity}>
+                                                {item.quantity} {item.unit || item.drug?.unit || 'viên'}
+                                            </td>
+                                            <td className={styles.tdPrice}>
+                                                {unitPrice.toLocaleString('vi-VN')}đ
+                                            </td>
+                                            <td className={styles.tdTotal}>
+                                                {itemTotal.toLocaleString('vi-VN')}đ
+                                            </td>
+                                            <td className={styles.tdDosage}>
+                                                {item.dosage || '-'}
+                                                {item.duration && <span> - {item.duration}</span>}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
 
@@ -170,6 +182,41 @@ const PrintMedicalRecord = forwardRef(({ patient, history, clinic }, ref) => {
                 ) : (
                     <div className={styles.noPrescription}>Không kê đơn thuốc</div>
                 )}
+            </div>
+
+            {/* Payment Section - Tổng tiền */}
+            <div className={styles.paymentSection}>
+                <div className={styles.sectionTitle}>III. THANH TOÁN</div>
+                <div className={styles.paymentTable}>
+                    <div className={styles.paymentRow}>
+                        <span className={styles.paymentLabel}>Tiền dịch vụ khám:</span>
+                        <span className={styles.paymentValue}>
+                            {(parseFloat(history?.service?.price) || parseFloat(history?.booking?.service?.price) || 0).toLocaleString('vi-VN')}đ
+                        </span>
+                    </div>
+                    <div className={styles.paymentRow}>
+                        <span className={styles.paymentLabel}>Tiền thuốc:</span>
+                        <span className={styles.paymentValue}>
+                            {(prescription?.details?.reduce((sum, item) => {
+                                const price = parseFloat(item.drug?.price) || 0;
+                                return sum + (price * (item.quantity || 0));
+                            }, 0) || 0).toLocaleString('vi-VN')}đ
+                        </span>
+                    </div>
+                    <div className={`${styles.paymentRow} ${styles.paymentTotal}`}>
+                        <span className={styles.paymentLabel}>TỔNG CỘNG:</span>
+                        <span className={styles.paymentValue}>
+                            {(() => {
+                                const servicePrice = parseFloat(history?.service?.price) || parseFloat(history?.booking?.service?.price) || 0;
+                                const drugTotal = prescription?.details?.reduce((sum, item) => {
+                                    const price = parseFloat(item.drug?.price) || 0;
+                                    return sum + (price * (item.quantity || 0));
+                                }, 0) || 0;
+                                return (servicePrice + drugTotal).toLocaleString('vi-VN');
+                            })()}đ
+                        </span>
+                    </div>
+                </div>
             </div>
 
             {/* Footer - Signature */}

@@ -377,7 +377,7 @@ export default function AdminDoctorManagement() {
                                 <tr key={doctor.id}>
                                     <td>{doctor.id}</td>
                                     <td>
-                                        <div className={styles.doctorName} onClick={() => handleOpenDoctorModal(doctor)} style={{ cursor: 'pointer', color: '#667eea' }}>
+                                        <div className={styles.doctorName} onClick={() => handleOpenDoctorModal(doctor)} style={{ cursor: 'pointer', color: '#3b82f6' }}>
                                             {doctor.full_name}
                                         </div>
                                     </td>

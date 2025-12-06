@@ -33,6 +33,10 @@ const ArticleCategory = require('./ArticleCategory')(sequelize, require('sequeli
 // Initialize ConsultationRequest model (factory function)
 const ConsultationRequest = require('./ConsultationRequest')(sequelize, require('sequelize').DataTypes);
 
+// Invoice models
+const Invoice = require('./Invoice');
+const InvoiceItem = require('./InvoiceItem');
+
 console.log('📦 Loading models...');
 
 try {
@@ -335,6 +339,46 @@ try {
         as: 'assignedConsultations'
     });
 
+    // ✅ Invoice <-> Booking
+    Invoice.belongsTo(Booking, {
+        foreignKey: 'booking_id',
+        as: 'booking'
+    });
+    Booking.hasOne(Invoice, {
+        foreignKey: 'booking_id',
+        as: 'invoice'
+    });
+
+    // ✅ Invoice <-> Patient
+    Invoice.belongsTo(Patient, {
+        foreignKey: 'patient_id',
+        as: 'patient'
+    });
+    Patient.hasMany(Invoice, {
+        foreignKey: 'patient_id',
+        as: 'invoices'
+    });
+
+    // ✅ Invoice <-> Doctor
+    Invoice.belongsTo(Doctor, {
+        foreignKey: 'doctor_id',
+        as: 'doctor'
+    });
+    Doctor.hasMany(Invoice, {
+        foreignKey: 'doctor_id',
+        as: 'invoices'
+    });
+
+    // ✅ Invoice <-> InvoiceItem
+    Invoice.hasMany(InvoiceItem, {
+        foreignKey: 'invoice_id',
+        as: 'items'
+    });
+    InvoiceItem.belongsTo(Invoice, {
+        foreignKey: 'invoice_id',
+        as: 'invoice'
+    });
+
     console.log('✅ All models and relationships loaded successfully');
 } catch (error) {
     console.error('❌ Error loading models:', error);
@@ -361,5 +405,7 @@ module.exports = {
     TimeSlot,  // ✅ NEW
     Article,  // ✅ NEW
     ArticleCategory,  // ✅ NEW
-    ConsultationRequest  // ✅ NEW: Support/Consultation system
+    ConsultationRequest,  // ✅ NEW: Support/Consultation system
+    Invoice,  // ✅ NEW: Invoice management
+    InvoiceItem  // ✅ NEW: Invoice items
 };

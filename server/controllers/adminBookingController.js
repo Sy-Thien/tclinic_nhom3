@@ -77,6 +77,14 @@ exports.createBooking = async (req, res) => {
             return res.status(400).json({ message: 'Vui lòng điền đầy đủ thông tin bắt buộc' });
         }
 
+        // ✅ Validate ngày không được là quá khứ
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const selectedDate = new Date(appointment_date + 'T00:00:00');
+        if (selectedDate < today) {
+            return res.status(400).json({ message: 'Không thể đặt lịch cho ngày trong quá khứ' });
+        }
+
         // Generate booking code
         const bookingCode = 'BK' + Date.now().toString().slice(-8);
 
@@ -431,7 +439,7 @@ exports.getAvailableDoctorsForAssignment = async (req, res) => {
 exports.assignDoctorToBooking = async (req, res) => {
     try {
         const { booking_id } = req.params;
-        const { doctor_id, time_slot } = req.body;
+        const { doctor_id } = req.body;
 
         if (!doctor_id) {
             return res.status(400).json({ message: 'Vui lòng chọn bác sĩ' });
@@ -443,15 +451,12 @@ exports.assignDoctorToBooking = async (req, res) => {
             return res.status(404).json({ message: 'Không tìm thấy lịch hẹn' });
         }
 
-        // Nếu có time_slot mới thì kiểm tra conflict với time_slot đó
-        const checkTimeSlot = time_slot || booking.time_slot;
-
-        // Kiểm tra bác sĩ có trống không
+        // Kiểm tra bác sĩ có trống không (cùng ngày, cùng giờ)
         const conflictBooking = await Booking.findOne({
             where: {
                 doctor_id,
                 appointment_date: booking.appointment_date,
-                time_slot: checkTimeSlot,
+                appointment_time: booking.appointment_time,
                 status: { [Op.notIn]: ['cancelled', 'doctor_rejected'] },
                 id: { [Op.ne]: booking_id }
             }
@@ -464,20 +469,10 @@ exports.assignDoctorToBooking = async (req, res) => {
         }
 
         // Gán bác sĩ và chuyển status
-        const updateData = {
+        await booking.update({
             doctor_id,
             status: 'waiting_doctor_confirmation'
-        };
-
-        // Nếu có time_slot mới thì cập nhật luôn
-        if (time_slot) {
-            updateData.time_slot = time_slot;
-            // Parse time_slot để lấy appointment_time (start time)
-            const startTime = time_slot.split('-')[0];
-            updateData.appointment_time = startTime;
-        }
-
-        await booking.update(updateData);
+        });
 
         const updatedBooking = await Booking.findByPk(booking_id, {
             include: [
@@ -486,7 +481,7 @@ exports.assignDoctorToBooking = async (req, res) => {
             ]
         });
 
-        console.log('✅ Admin assigned doctor to booking:', booking_id, 'Doctor:', doctor_id, 'Time:', time_slot || booking.time_slot);
+        console.log('✅ Admin assigned doctor to booking:', booking_id, 'Doctor:', doctor_id);
 
         res.json({
             message: 'Gán bác sĩ thành công! Đang chờ bác sĩ xác nhận.',

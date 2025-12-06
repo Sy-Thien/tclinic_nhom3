@@ -6,6 +6,7 @@ const { Op } = require('sequelize');
 const doctorScheduleViewController = require('../controllers/doctorScheduleViewController');
 const doctorReviewController = require('../controllers/doctorReviewController');
 const doctorAppointmentController = require('../controllers/doctorAppointmentController');
+const doctorWalkInController = require('../controllers/doctorWalkInController');
 
 // Middleware kiểm tra role doctor
 const checkDoctorRole = (req, res, next) => {
@@ -76,6 +77,71 @@ router.get('/my-schedule', verifyToken, checkDoctorRole, doctorAppointmentContro
 
 // GET - Thống kê lịch làm việc theo tuần/tháng
 router.get('/schedule-statistics', verifyToken, checkDoctorRole, doctorScheduleViewController.getDoctorScheduleStatistics);
+
+// GET - Lấy chi tiết 1 booking theo ID (dùng cho examination page)
+router.get('/bookings/:id', verifyToken, checkDoctorRole, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const doctor_id = req.user.id;
+
+        console.log(`📋 GET /api/doctor/bookings/${id}`);
+
+        const booking = await Booking.findOne({
+            where: { id, doctor_id },
+            include: [
+                {
+                    model: Patient,
+                    as: 'patient',
+                    attributes: ['id', 'full_name', 'email', 'phone', 'birthday', 'gender', 'address'],
+                    required: false
+                },
+                {
+                    model: Service,
+                    as: 'service',
+                    attributes: ['id', 'name', 'price'],
+                    required: false
+                },
+                {
+                    model: Specialty,
+                    as: 'specialty',
+                    attributes: ['id', 'name'],
+                    required: false
+                }
+            ]
+        });
+
+        if (!booking) {
+            return res.status(404).json({ success: false, message: 'Không tìm thấy lịch hẹn' });
+        }
+
+        // Format lại data giống như appointments list
+        const formattedBooking = {
+            id: booking.id,
+            booking_code: booking.booking_code,
+            patient_id: booking.patient_id || booking.patient?.id,
+            patient_name: booking.patient_name || booking.patient?.full_name,
+            patient_phone: booking.patient_phone || booking.patient?.phone,
+            patient_email: booking.patient_email || booking.patient?.email,
+            patient_gender: booking.patient_gender || booking.patient?.gender,
+            patient_dob: booking.patient_dob || booking.patient?.birthday,
+            patient_address: booking.patient_address || booking.patient?.address,
+            appointment_date: booking.appointment_date,
+            appointment_time: booking.appointment_time,
+            symptoms: booking.symptoms,
+            diagnosis: booking.diagnosis,
+            conclusion: booking.conclusion,
+            note: booking.note,
+            status: booking.status,
+            service: booking.service,
+            specialty: booking.specialty
+        };
+
+        res.json({ success: true, booking: formattedBooking });
+    } catch (error) {
+        console.error('❌ Error getting booking:', error);
+        res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });
+    }
+});
 
 // PUT - Xác nhận lịch hẹn
 router.put('/appointments/:id/confirm', verifyToken, checkDoctorRole, async (req, res) => {
@@ -262,5 +328,18 @@ router.put('/reviews/:review_id/reply', verifyToken, checkDoctorRole, doctorRevi
 
 // DELETE - Bác sĩ xóa phản hồi
 router.delete('/reviews/:review_id/reply', verifyToken, checkDoctorRole, doctorReviewController.deleteReply);
+
+// ========== WALK-IN (Khám trực tiếp) ==========
+// POST - Tạo bệnh nhân walk-in và booking
+router.post('/walk-in', verifyToken, checkDoctorRole, doctorWalkInController.createWalkInPatient);
+
+// GET - Tìm bệnh nhân theo SĐT
+router.get('/search-patient', verifyToken, checkDoctorRole, doctorWalkInController.searchPatientByPhone);
+
+// GET - Danh sách walk-in hôm nay
+router.get('/walk-in/today', verifyToken, checkDoctorRole, doctorWalkInController.getTodayWalkIns);
+
+// GET - Lịch sử khám của bệnh nhân
+router.get('/patient-history/:patient_id', verifyToken, checkDoctorRole, doctorWalkInController.getPatientHistory);
 
 module.exports = router;

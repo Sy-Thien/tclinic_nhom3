@@ -24,7 +24,7 @@
 
 .btnCreate {
     padding: 0.75rem 1.5rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
     color: white;
     border: none;
     border-radius: 8px;
@@ -54,7 +54,7 @@
     align-items: center;
     gap: 1rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    border-left: 4px solid #667eea;
+    border-left: 4px solid #3b82f6;
 }
 
 .statCard.success {
@@ -110,7 +110,7 @@
 
 .searchInput:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #3b82f6;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
@@ -126,7 +126,7 @@
 
 .filterSelect:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #3b82f6;
 }
 
 .viewToggle {
@@ -147,7 +147,7 @@
 }
 
 .viewBtn.active {
-    background: #667eea;
+    background: #3b82f6;
     color: white;
 }
 
@@ -239,7 +239,7 @@
 .roomCard {
     background: #fafafa;
     border: 1px solid #e2e8f0;
-    border-left: 4px solid #667eea;
+    border-left: 4px solid #3b82f6;
     border-radius: 10px;
     padding: 1rem;
     transition: all 0.2s;
@@ -264,7 +264,7 @@
 }
 
 .roomNumber {
-    background: #667eea;
+    background: #3b82f6;
     color: white;
     padding: 0.2rem 0.6rem;
     border-radius: 4px;
@@ -497,7 +497,7 @@
 .formGroup select:focus,
 .formGroup textarea:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #3b82f6;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
@@ -532,7 +532,7 @@
 
 .btnSubmit {
     padding: 0.75rem 1.5rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
     color: white;
     border: none;
     border-radius: 8px;

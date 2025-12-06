@@ -102,7 +102,7 @@
 
 .cardHeader {
     padding: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
     color: white;
     display: flex;
     justify-content: space-between;
@@ -137,7 +137,7 @@
 .btnAssign {
     padding: 8px 16px;
     background: white;
-    color: #667eea;
+    color: #3b82f6;
     border: none;
     border-radius: 8px;
     cursor: pointer;
@@ -258,7 +258,7 @@
     cursor: pointer;
     font-weight: 500;
     font-size: 14px;
-    background: #667eea;
+    background: #3b82f6;
     color: white;
 }
 
@@ -378,7 +378,7 @@
 
 .btnSave {
     padding: 10px 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
     color: white;
     border: none;
     border-radius: 8px;

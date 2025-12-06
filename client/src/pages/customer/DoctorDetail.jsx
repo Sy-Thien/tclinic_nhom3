@@ -103,9 +103,8 @@ export default function DoctorDetail() {
                             <span className={styles.icon}>💰</span>
                             <div>
                                 <strong>Giá khám</strong>
-                                <p className={styles.price}>
-                                    {doctor.price ? `${doctor.price.toLocaleString()}đ` : 'Liên hệ'}
-                                </p>
+                                <p className={styles.price}>200.000đ</p>
+                                <small style={{ color: '#888', fontSize: '11px' }}>Mặc định, tùy dịch vụ có thể khác</small>
                             </div>
                         </div>
                     </div>

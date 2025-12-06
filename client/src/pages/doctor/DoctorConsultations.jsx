@@ -164,7 +164,7 @@ export default function DoctorConsultations() {
                     <div className={styles.statValue}>{stats.resolved}</div>
                     <div className={styles.statLabel}>Đã giải quyết</div>
                 </div>
-                <div className={styles.statCard} style={{ background: '#667eea' }}>
+                <div className={styles.statCard} style={{ background: '#45c3d2' }}>
                     <div className={styles.statValue}>{stats.total}</div>
                     <div className={styles.statLabel}>Tổng cộng</div>
                 </div>

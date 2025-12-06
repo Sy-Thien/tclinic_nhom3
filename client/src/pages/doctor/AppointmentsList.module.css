@@ -56,7 +56,7 @@
 }
 
 .viewToggle button.active {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     color: white;
 }
 
@@ -96,7 +96,7 @@
 
 .searchInput:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #45c3d2;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
@@ -137,9 +137,9 @@
 }
 
 .todayBtn:hover {
-    background: #667eea;
+    background: #45c3d2;
     color: white;
-    border-color: #667eea;
+    border-color: #45c3d2;
 }
 
 /* Stats */
@@ -161,7 +161,7 @@
 .statValue {
     font-size: 2.5rem;
     font-weight: 700;
-    color: #667eea;
+    color: #45c3d2;
     margin-bottom: 0.5rem;
 }
 
@@ -191,13 +191,13 @@
 }
 
 .filters button:hover {
-    border-color: #667eea;
-    color: #667eea;
+    border-color: #45c3d2;
+    color: #45c3d2;
 }
 
 .filters button.active {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-color: #667eea;
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
+    border-color: #45c3d2;
     color: white;
 }
 
@@ -206,7 +206,7 @@
     text-align: center;
     padding: 4rem;
     font-size: 1.2rem;
-    color: #667eea;
+    color: #45c3d2;
 }
 
 .emptyState {
@@ -250,7 +250,7 @@
 }
 
 .appointmentsTable thead {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     color: white;
 }
 
@@ -279,7 +279,7 @@
 
 .bookingCode {
     font-weight: 700;
-    color: #667eea;
+    color: #45c3d2;
     font-family: 'Courier New', monospace;
 }
 
@@ -396,7 +396,7 @@
 }
 
 .btnExamSmall {
-    background: #667eea;
+    background: #45c3d2;
     color: white;
 }
 
@@ -449,7 +449,7 @@
 }
 
 .time i {
-    color: #667eea;
+    color: #45c3d2;
 }
 
 .date {
@@ -508,7 +508,7 @@
 .patientAvatar {
     width: 56px;
     height: 56px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -613,7 +613,7 @@
 }
 
 .btnExam {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     color: white;
 }
 
@@ -783,7 +783,7 @@
 }
 
 .weekNav button {
-    background: #667eea;
+    background: #45c3d2;
     color: white;
     border: none;
     padding: 0.5rem 0.85rem;
@@ -817,7 +817,7 @@
 
 .dateInput:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #45c3d2;
 }
 
 .weekView {
@@ -840,7 +840,7 @@
 }
 
 .dayColumn.today {
-    border-color: #667eea;
+    border-color: #45c3d2;
     border-width: 2px;
 }
 
@@ -852,7 +852,7 @@
 }
 
 .today .dayHeader {
-    background: #667eea;
+    background: #45c3d2;
     color: white;
 }
 
@@ -897,12 +897,12 @@
 
 .weekAppointmentCard:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    border-color: #667eea;
+    border-color: #45c3d2;
 }
 
 .aptTime {
     font-weight: 700;
-    color: #667eea;
+    color: #45c3d2;
     margin-bottom: 0.25rem;
 }
 
@@ -957,7 +957,7 @@
 }
 
 .btnExam {
-    background: #667eea;
+    background: #45c3d2;
     color: white;
 }
 

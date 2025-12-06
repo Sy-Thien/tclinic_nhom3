@@ -41,6 +41,16 @@ const Drug = sequelize.define('Drug', {
         allowNull: true,
         defaultValue: 0
     },
+    usage_guide: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        comment: 'Hướng dẫn sử dụng thuốc'
+    },
+    note: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        comment: 'Ghi chú về thuốc'
+    },
     created_at: {
         type: DataTypes.DATE,
         allowNull: true,

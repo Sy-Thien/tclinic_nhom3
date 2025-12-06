@@ -182,7 +182,7 @@ export default function AdminRooms() {
     // Get specialty color
     const getSpecialtyColor = (specialtyId) => {
         const colors = [
-            '#667eea', '#f093fb', '#4facfe', '#43e97b', '#fa709a',
+            '#3b82f6', '#f093fb', '#4facfe', '#43e97b', '#fa709a',
             '#ffecd2', '#a8edea', '#d299c2', '#89f7fe', '#cd9cf2'
         ];
         return colors[specialtyId % colors.length];

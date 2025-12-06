@@ -1,12 +1,40 @@
 .layout {
     display: flex;
     min-height: 100vh;
+    background: #f0f2f5;
+}
+
+/* ===== LOADING ===== */
+.loadingContainer {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #0f172a;
+    color: white;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #f97316;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* ===== SIDEBAR ===== */
 .sidebar {
-    width: 280px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    width: 260px;
+    background: #0f172a;
     color: white;
     display: flex;
     flex-direction: column;
@@ -15,153 +43,169 @@
     overflow-y: auto;
 }
 
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+/* ===== BRAND ===== */
 .brand {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 2rem 1.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    gap: 12px;
+    padding: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.logo {
-    width: 52px;
-    height: 52px;
-    border-radius: 12px;
+.logoWrapper {
+    width: 44px;
+    height: 44px;
+    background: white;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
-    background: white;
     padding: 4px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.logo img {
+.logoImg {
     width: 100%;
     height: 100%;
     object-fit: contain;
 }
 
-.brandName {
-    font-size: 1.5rem;
+.brandText {
+    font-size: 18px;
     font-weight: 700;
-    margin: 0;
+    color: white;
 }
 
-.brandSubtext {
-    font-size: 0.85rem;
-    opacity: 0.9;
+/* ===== USER CARD ===== */
+.userCard {
+    margin: 16px;
+    padding: 16px;
+    background: linear-gradient(135deg, #1e3a5f 0%, #1e293b 100%);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
 }
 
+.userAvatar {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 700;
+    color: white;
+    text-transform: uppercase;
+}
+
+.userInfo {
+    text-align: center;
+}
+
+.userName {
+    font-size: 15px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 4px;
+}
+
+.userRole {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.logoutBtnSmall {
+    width: 100%;
+    padding: 10px 16px;
+    background: rgba(249, 115, 22, 0.15);
+    border: 1px solid rgba(249, 115, 22, 0.3);
+    color: #f97316;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s;
+    margin-top: 4px;
+}
+
+.logoutBtnSmall:hover {
+    background: rgba(249, 115, 22, 0.25);
+}
+
+/* ===== NAVIGATION ===== */
 .nav {
     flex: 1;
-    padding: 1.5rem 0;
+    padding: 8px 0;
+}
+
+.navSection {
+    margin-bottom: 8px;
+}
+
+.sectionTitle {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px 20px 8px;
 }
 
 .navItem {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1rem 1.5rem;
-    color: white;
+    gap: 12px;
+    padding: 12px 20px;
+    color: #94a3b8;
     text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
     transition: all 0.2s;
     border-left: 3px solid transparent;
+    margin: 2px 0;
 }
 
 .navItem:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
 }
 
 .navItem.active {
-    background: rgba(255, 255, 255, 0.15);
-    border-left-color: white;
-}
-
-/* ===== MENU GROUP (Submenu) ===== */
-.menuGroup {
-    display: flex;
-    flex-direction: column;
-}
-
-.menuParent {
-    cursor: pointer;
-    justify-content: flex-start;
-    position: relative;
-}
-
-.menuParent .arrow {
-    margin-left: auto;
-    transition: transform 0.3s ease;
-}
-
-.menuParent .arrowOpen {
-    transform: rotate(180deg);
-}
-
-.menuParent.open {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.submenu {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease;
-    background: rgba(0, 0, 0, 0.1);
-}
-
-.submenuOpen {
-    max-height: 200px;
-}
-
-.subItem {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1.5rem 0.75rem 3rem;
-    color: rgba(255, 255, 255, 0.85);
-    text-decoration: none;
-    font-size: 0.9rem;
-    transition: all 0.2s;
-    border-left: 3px solid transparent;
-}
-
-.subItem:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: linear-gradient(90deg, rgba(139, 92, 246, 0.2), transparent);
+    border-left-color: #8b5cf6;
     color: white;
 }
 
-.subItem.active {
-    background: rgba(255, 255, 255, 0.15);
-    border-left-color: white;
-    color: white;
+.navItem svg {
+    flex-shrink: 0;
 }
 
-.logoutBtn {
-    margin: 1.5rem;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    transition: all 0.2s;
-}
-
-.logoutBtn:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
-
-/* ===== MAIN ===== */
+/* ===== MAIN CONTENT ===== */
 .main {
     flex: 1;
-    margin-left: 280px;
-    background: #f3f4f6;
+    margin-left: 260px;
+    min-height: 100vh;
 }
 
 /* ===== RESPONSIVE ===== */
@@ -169,6 +213,11 @@
     .sidebar {
         transform: translateX(-100%);
         z-index: 1000;
+        transition: transform 0.3s ease;
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
     }
 
     .main {

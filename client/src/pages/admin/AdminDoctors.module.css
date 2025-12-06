@@ -18,7 +18,7 @@
 }
 
 .btnAdd {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
     color: white;
     border: none;
     padding: 0.75rem 1.5rem;
@@ -54,7 +54,7 @@
 
 .searchInput:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #3b82f6;
 }
 
 .filterSelect {
@@ -70,7 +70,7 @@
 
 .filterSelect:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #3b82f6;
 }
 
 /* Table */
@@ -87,7 +87,7 @@
 }
 
 .table thead {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
 }
 
 .table thead th {
@@ -117,7 +117,7 @@
 
 .doctorName {
     font-weight: 600;
-    color: #667eea;
+    color: #3b82f6;
 }
 
 /* Status Badge */
@@ -186,7 +186,7 @@
     text-align: center;
     padding: 3rem;
     font-size: 1.2rem;
-    color: #667eea;
+    color: #3b82f6;
 }
 
 .noData {
@@ -326,7 +326,7 @@
 .formGroup select:focus,
 .formGroup textarea:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #3b82f6;
 }
 
 .formGroup textarea {
@@ -369,7 +369,7 @@
 .btnSubmit {
     padding: 0.75rem 1.5rem;
     border: none;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
     color: white;
     border-radius: 8px;
     font-size: 1rem;

@@ -53,7 +53,7 @@ const Booking = sequelize.define('Booking', {
     },
     service_id: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true, // ✅ Cho phép null - service có thể được chọn sau hoặc không bắt buộc
         references: {
             model: 'tn_services',
             key: 'id'

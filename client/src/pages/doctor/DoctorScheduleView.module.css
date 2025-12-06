@@ -8,7 +8,7 @@
 }
 
 .header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     color: white;
     padding: 30px;
     border-radius: 15px;
@@ -110,12 +110,12 @@
 
 .navBtn:hover {
     background: #f8f9fa;
-    border-color: #667eea;
-    color: #667eea;
+    border-color: #45c3d2;
+    color: #45c3d2;
 }
 
 .todayBtn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     color: white;
     border: none;
 }
@@ -163,7 +163,7 @@
 }
 
 .dayHeader {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     color: white;
     padding: 15px;
     text-align: center;
@@ -174,7 +174,7 @@
 }
 
 .dayColumn.dayOff .dayHeader {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
 }
 
 .dayName {
@@ -263,7 +263,7 @@
 
 .bookingItem {
     background: #f8f9fa;
-    border-left: 4px solid #667eea;
+    border-left: 4px solid #45c3d2;
     padding: 10px;
     border-radius: 8px;
     margin-bottom: 8px;
@@ -279,7 +279,7 @@
 .bookingTime {
     font-size: 13px;
     font-weight: 700;
-    color: #667eea;
+    color: #45c3d2;
     margin-bottom: 5px;
 }
 
@@ -380,7 +380,7 @@
 
 .spinner {
     border: 4px solid #f3f3f3;
-    border-top: 4px solid #667eea;
+    border-top: 4px solid #45c3d2;
     border-radius: 50%;
     width: 50px;
     height: 50px;

@@ -207,7 +207,7 @@ export default function DoctorDashboardNew() {
             {/* Statistics Cards */}
             <div className={styles.statsGrid}>
                 <div className={styles.statCard}>
-                    <div className={styles.statIcon} style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+                    <div className={styles.statIcon} style={{ background: 'linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%)' }}>
                         <i className="fas fa-calendar-day"></i>
                     </div>
                     <div className={styles.statContent}>

@@ -51,8 +51,11 @@ import AdminTimeSlots from './pages/admin/AdminTimeSlots';
 import DrugManagement from './pages/admin/DrugManagement';  // ✅ NEW
 import ConsultationRequests from './pages/admin/ConsultationRequests';  // ✅ NEW
 import AdminNews from './pages/admin/AdminNews';  // ✅ NEW: News management
+import RevenueManagement from './pages/admin/RevenueManagement';  // ✅ NEW: Revenue/Payment management
 import DoctorConsultations from './pages/doctor/DoctorConsultations';  // ✅ NEW
 import DoctorReviews from './pages/doctor/DoctorReviews';  // ✅ NEW: Doctor reviews management
+import WalkInRegistration from './pages/doctor/WalkInRegistration';  // ✅ NEW: Walk-in patient registration
+import VNPayReturn from './pages/payment/VNPayReturn';  // ✅ NEW: VNPay payment callback
 
 export default function App() {
     return (
@@ -99,6 +102,7 @@ export default function App() {
                     <Route path="patient-history/:patientId" element={<PatientMedicalHistory />} />
                     <Route path="consultations" element={<DoctorConsultations />} />
                     <Route path="reviews" element={<DoctorReviews />} />
+                    <Route path="walk-in" element={<WalkInRegistration />} />
                 </Route>
 
                 {/* ✅ Admin Routes - CHỈ ADMIN */}
@@ -120,11 +124,15 @@ export default function App() {
                     <Route path="drugs" element={<DrugManagement />} />
                     <Route path="consultations" element={<ConsultationRequests />} />
                     <Route path="news" element={<AdminNews />} />
+                    <Route path="revenue" element={<RevenueManagement />} />
                 </Route>
 
                 {/* Auth Routes - Guest only */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+
+                {/* VNPay Payment Return - không cần auth */}
+                <Route path="/payment/vnpay-return" element={<VNPayReturn />} />
 
                 {/* 404 Page */}
                 <Route path="*" element={

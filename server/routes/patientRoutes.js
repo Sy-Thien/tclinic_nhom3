@@ -140,6 +140,14 @@ router.put('/my-appointments/:id/reschedule', verifyToken, checkPatientRole, asy
             return res.status(400).json({ message: 'Vui lòng chọn ngày và giờ mới' });
         }
 
+        // ✅ Validate ngày không được là quá khứ
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const selectedDate = new Date(new_date + 'T00:00:00');
+        if (selectedDate < today) {
+            return res.status(400).json({ message: 'Không thể đổi sang ngày trong quá khứ' });
+        }
+
         const appointment = await Booking.findOne({
             where: {
                 id,

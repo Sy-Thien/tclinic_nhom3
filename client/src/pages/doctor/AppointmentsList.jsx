@@ -94,7 +94,8 @@ export default function AppointmentsList() {
     };
 
     const handleStartExam = (appointment) => {
-        navigate('/doctor-portal/examination', { state: { appointment } });
+        // Dùng bookingId trong URL để dễ quản lý và share link
+        navigate(`/doctor-portal/examination?bookingId=${appointment.id}`);
     };
 
     const handleViewDetail = (appointment) => {

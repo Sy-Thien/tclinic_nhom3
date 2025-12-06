@@ -33,15 +33,27 @@ export default function PrescriptionFormPro({ appointment, onClose, onSuccess })
     ];
 
     const usagePresets = [
-        { label: 'Uống', value: 'uống', icon: '💊' },
-        { label: 'Tiêm', value: 'tiêm', icon: '💉' },
-        { label: 'Bôi ngoài', value: 'bôi ngoài', icon: '🧴' },
-        { label: 'Nhỏ mắt', value: 'nhỏ mắt', icon: '👁️' },
-        { label: 'Nhỏ mũi', value: 'nhỏ mũi', icon: '👃' },
-        { label: 'Xịt họng', value: 'xịt họng', icon: '🌬️' },
-        { label: 'Đặt hậu môn', value: 'đặt hậu môn', icon: '💠' },
-        { label: 'Ngậm', value: 'ngậm', icon: '👅' },
+        { label: 'Uống', value: 'uống', icon: '💊', needDosage: true },
+        { label: 'Tiêm', value: 'tiêm', icon: '💉', needDosage: true },
+        { label: 'Bôi ngoài', value: 'bôi ngoài', icon: '🧴', needDosage: false, defaultUnit: 'tuýp' },
+        { label: 'Nhỏ mắt', value: 'nhỏ mắt', icon: '👁️', needDosage: false, defaultUnit: 'lọ' },
+        { label: 'Nhỏ mũi', value: 'nhỏ mũi', icon: '👃', needDosage: false, defaultUnit: 'lọ' },
+        { label: 'Xịt họng', value: 'xịt họng', icon: '🌬️', needDosage: false, defaultUnit: 'chai' },
+        { label: 'Đặt hậu môn', value: 'đặt hậu môn', icon: '💠', needDosage: true },
+        { label: 'Ngậm', value: 'ngậm', icon: '👅', needDosage: true },
     ];
+
+    // Check if usage type needs dosage calculation
+    const needsDosageCalculation = (usageType) => {
+        const preset = usagePresets.find(p => p.value === usageType);
+        return preset ? preset.needDosage : true;
+    };
+
+    // Get default unit for usage type
+    const getDefaultUnit = (usageType, drugUnit) => {
+        const preset = usagePresets.find(p => p.value === usageType);
+        return preset?.defaultUnit || drugUnit || 'viên';
+    };
 
     const durationPresets = [
         '3 ngày',
@@ -151,29 +163,53 @@ export default function PrescriptionFormPro({ appointment, onClose, onSuccess })
         const updated = [...prescriptionItems];
         updated[index][field] = value;
 
-        // Auto-generate dosage and calculate quantity when dosage inputs or duration changes
+        // Handle usage_type change - reset dosage if switching to non-dosage type
+        if (field === 'usage_type') {
+            const preset = usagePresets.find(p => p.value === value);
+            if (preset && !preset.needDosage) {
+                // Reset daily doses for non-dosage types
+                updated[index].morning = 0;
+                updated[index].noon = 0;
+                updated[index].afternoon = 0;
+                updated[index].evening = 0;
+                updated[index].dosage = '';
+                // Set default unit for this usage type
+                if (preset.defaultUnit) {
+                    updated[index].unit = preset.defaultUnit;
+                }
+                // Default quantity to 1 if not set
+                if (!updated[index].quantity || updated[index].quantity === 0) {
+                    updated[index].quantity = 1;
+                }
+            }
+        }
+
+        // Auto-generate dosage and calculate quantity ONLY for types that need it
         if (['morning', 'noon', 'afternoon', 'evening', 'duration'].includes(field)) {
             const item = updated[index];
 
-            // Build dosage text
-            const parts = [];
-            if (parseInt(item.morning) > 0) parts.push(`Sáng ${item.morning} ${item.unit}`);
-            if (parseInt(item.noon) > 0) parts.push(`Trưa ${item.noon} ${item.unit}`);
-            if (parseInt(item.afternoon) > 0) parts.push(`Chiều ${item.afternoon} ${item.unit}`);
-            if (parseInt(item.evening) > 0) parts.push(`Tối ${item.evening} ${item.unit}`);
-            updated[index].dosage = parts.join(' - ');
+            // Only calculate if this usage type needs dosage
+            if (needsDosageCalculation(item.usage_type)) {
+                // Build dosage text
+                const parts = [];
+                if (parseInt(item.morning) > 0) parts.push(`Sáng ${item.morning} ${item.unit}`);
+                if (parseInt(item.noon) > 0) parts.push(`Trưa ${item.noon} ${item.unit}`);
+                if (parseInt(item.afternoon) > 0) parts.push(`Chiều ${item.afternoon} ${item.unit}`);
+                if (parseInt(item.evening) > 0) parts.push(`Tối ${item.evening} ${item.unit}`);
+                updated[index].dosage = parts.join(' - ');
 
-            // Auto-calculate total quantity = (sum of doses per day) × (number of days)
-            const totalPerDay = (parseInt(item.morning) || 0) + (parseInt(item.noon) || 0) +
-                (parseInt(item.afternoon) || 0) + (parseInt(item.evening) || 0);
+                // Auto-calculate total quantity = (sum of doses per day) × (number of days)
+                const totalPerDay = (parseInt(item.morning) || 0) + (parseInt(item.noon) || 0) +
+                    (parseInt(item.afternoon) || 0) + (parseInt(item.evening) || 0);
 
-            // Parse duration - extract number from string like "5 ngày", "7 ngày", etc.
-            const durationMatch = String(item.duration).match(/(\d+)/);
-            const durationDays = durationMatch ? parseInt(durationMatch[1]) : 0;
+                // Parse duration - extract number from string like "5 ngày", "7 ngày", etc.
+                const durationMatch = String(item.duration).match(/(\d+)/);
+                const durationDays = durationMatch ? parseInt(durationMatch[1]) : 0;
 
-            // Only auto-calculate if there's dosage info
-            if (totalPerDay > 0 && durationDays > 0) {
-                updated[index].quantity = totalPerDay * durationDays;
+                // Only auto-calculate if there's dosage info
+                if (totalPerDay > 0 && durationDays > 0) {
+                    updated[index].quantity = totalPerDay * durationDays;
+                }
             }
         }
 
@@ -240,6 +276,18 @@ export default function PrescriptionFormPro({ appointment, onClose, onSuccess })
 
     const buildDosageText = (item) => {
         let text = '';
+
+        // For non-dosage types (eye drops, nasal spray, etc.)
+        if (!needsDosageCalculation(item.usage_type)) {
+            const usageLabel = usagePresets.find(p => p.value === item.usage_type)?.label || item.usage_type;
+            text = `${usageLabel} - ${item.quantity} ${item.unit}`;
+            if (item.duration) {
+                text += ` (dùng trong ${item.duration})`;
+            }
+            return text;
+        }
+
+        // For dosage types (oral, injection, etc.)
         const parts = [];
         if (item.morning > 0) parts.push(`Sáng ${item.morning}`);
         if (item.noon > 0) parts.push(`Trưa ${item.noon}`);
@@ -374,52 +422,59 @@ export default function PrescriptionFormPro({ appointment, onClose, onSuccess })
                                             </div>
                                         </div>
 
-                                        {/* Dosage Grid */}
-                                        <div className={styles.dosageGrid}>
-                                            <div className={styles.dosageTitle}>Liều lượng mỗi ngày:</div>
-                                            <div className={styles.dosageInputs}>
-                                                <div className={styles.dosageItem}>
-                                                    <label>🌅 Sáng</label>
-                                                    <input
-                                                        type="number"
-                                                        min="0"
-                                                        value={item.morning || ''}
-                                                        onChange={(e) => updateItem(index, 'morning', e.target.value)}
-                                                        placeholder="0"
-                                                    />
-                                                </div>
-                                                <div className={styles.dosageItem}>
-                                                    <label>☀️ Trưa</label>
-                                                    <input
-                                                        type="number"
-                                                        min="0"
-                                                        value={item.noon || ''}
-                                                        onChange={(e) => updateItem(index, 'noon', e.target.value)}
-                                                        placeholder="0"
-                                                    />
-                                                </div>
-                                                <div className={styles.dosageItem}>
-                                                    <label>🌤️ Chiều</label>
-                                                    <input
-                                                        type="number"
-                                                        min="0"
-                                                        value={item.afternoon || ''}
-                                                        onChange={(e) => updateItem(index, 'afternoon', e.target.value)}
-                                                        placeholder="0"
-                                                    />
-                                                </div>
-                                                <div className={styles.dosageItem}>
-                                                    <label>🌙 Tối</label>
-                                                    <input
-                                                        type="number"
-                                                        min="0"
-                                                        value={item.evening || ''}
-                                                        onChange={(e) => updateItem(index, 'evening', e.target.value)}
-                                                        placeholder="0"
-                                                    />
+                                        {/* Dosage Grid - Only show for types that need dosage */}
+                                        {needsDosageCalculation(item.usage_type) ? (
+                                            <div className={styles.dosageGrid}>
+                                                <div className={styles.dosageTitle}>Liều lượng mỗi ngày:</div>
+                                                <div className={styles.dosageInputs}>
+                                                    <div className={styles.dosageItem}>
+                                                        <label>🌅 Sáng</label>
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            value={item.morning || ''}
+                                                            onChange={(e) => updateItem(index, 'morning', e.target.value)}
+                                                            placeholder="0"
+                                                        />
+                                                    </div>
+                                                    <div className={styles.dosageItem}>
+                                                        <label>☀️ Trưa</label>
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            value={item.noon || ''}
+                                                            onChange={(e) => updateItem(index, 'noon', e.target.value)}
+                                                            placeholder="0"
+                                                        />
+                                                    </div>
+                                                    <div className={styles.dosageItem}>
+                                                        <label>🌤️ Chiều</label>
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            value={item.afternoon || ''}
+                                                            onChange={(e) => updateItem(index, 'afternoon', e.target.value)}
+                                                            placeholder="0"
+                                                        />
+                                                    </div>
+                                                    <div className={styles.dosageItem}>
+                                                        <label>🌙 Tối</label>
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            value={item.evening || ''}
+                                                            onChange={(e) => updateItem(index, 'evening', e.target.value)}
+                                                            placeholder="0"
+                                                        />
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        ) : (
+                                            <div className={styles.directQuantityNote}>
+                                                <div className={styles.noteIcon}>💡</div>
+                                                <span>Thuốc {item.usage_type} - Nhập trực tiếp số lượng bên dưới</span>
+                                            </div>
+                                        )}
 
                                         {/* Duration & Timing */}
                                         <div className={styles.durationRow}>
@@ -463,7 +518,7 @@ export default function PrescriptionFormPro({ appointment, onClose, onSuccess })
                                                     />
                                                     <span className={styles.unitLabel}>{item.unit}</span>
                                                 </div>
-                                                {(() => {
+                                                {needsDosageCalculation(item.usage_type) && (() => {
                                                     const totalPerDay = (parseInt(item.morning) || 0) + (parseInt(item.noon) || 0) +
                                                         (parseInt(item.afternoon) || 0) + (parseInt(item.evening) || 0);
                                                     const durationMatch = String(item.duration).match(/(\d+)/);
@@ -667,6 +722,11 @@ export default function PrescriptionFormPro({ appointment, onClose, onSuccess })
                                             <span>Kho: {drug.quantity || drug.stock_quantity || 0} {drug.unit}</span>
                                             {drug.price > 0 && <span>💰 {formatCurrency(drug.price)}</span>}
                                         </div>
+                                        {drug.usage_guide && (
+                                            <div className={styles.drugUsageGuide}>
+                                                💊 {drug.usage_guide}
+                                            </div>
+                                        )}
                                         {(drug.quantity || drug.stock_quantity || 0) <= (drug.warning_level || 10) && (
                                             <span className={styles.lowStock}>⚠️ Sắp hết</span>
                                         )}

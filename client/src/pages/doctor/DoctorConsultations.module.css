@@ -51,18 +51,18 @@
 .filterBtn,
 .filterActive {
     padding: 10px 20px;
-    border: 2px solid #667eea;
+    border: 2px solid #45c3d2;
     border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
     font-weight: 600;
     background: white;
-    color: #667eea;
+    color: #45c3d2;
     transition: all 0.3s;
 }
 
 .filterActive {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     color: white;
 }
 
@@ -92,7 +92,7 @@
 
 .cardHeader {
     padding: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     color: white;
 }
 
@@ -232,7 +232,7 @@
     cursor: pointer;
     font-weight: 600;
     font-size: 14px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     color: white;
 }
 
@@ -348,7 +348,7 @@
 
 .formGroup textarea:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #45c3d2;
 }
 
 .modalFooter {
@@ -374,7 +374,7 @@
 
 .btnSend {
     padding: 10px 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
     color: white;
     border: none;
     border-radius: 8px;

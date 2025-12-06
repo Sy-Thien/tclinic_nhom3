@@ -16,7 +16,7 @@
     width: 40px;
     height: 40px;
     border: 4px solid #e2e8f0;
-    border-top-color: #667eea;
+    border-top-color: #3b82f6;
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -53,7 +53,7 @@
 
 .btnAdd {
     padding: 0.75rem 1.5rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
     color: white;
     border: none;
     border-radius: 8px;
@@ -71,8 +71,8 @@
 .btnCategory {
     padding: 0.75rem 1.25rem;
     background: #f0f4ff;
-    color: #667eea;
-    border: 2px solid #667eea;
+    color: #3b82f6;
+    border: 2px solid #3b82f6;
     border-radius: 8px;
     font-size: 1rem;
     font-weight: 600;
@@ -81,7 +81,7 @@
 }
 
 .btnCategory:hover {
-    background: #667eea;
+    background: #3b82f6;
     color: white;
 }
 
@@ -163,13 +163,13 @@
 
 .searchBox input:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #3b82f6;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .searchBtn {
     padding: 0 1rem;
-    background: #667eea;
+    background: #3b82f6;
     color: white;
     border: none;
     border-radius: 0 8px 8px 0;
@@ -192,7 +192,7 @@
 
 .filterSelect:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #3b82f6;
 }
 
 /* Table */
@@ -264,7 +264,7 @@
     display: inline-block;
     padding: 0.25rem 0.75rem;
     background: #f0f4ff;
-    color: #667eea;
+    color: #3b82f6;
     border-radius: 20px;
     font-size: 0.85rem;
     font-weight: 500;
@@ -375,9 +375,9 @@
 }
 
 .pageBtn:hover:not(:disabled) {
-    background: #667eea;
+    background: #3b82f6;
     color: white;
-    border-color: #667eea;
+    border-color: #3b82f6;
 }
 
 .pageBtn:disabled {
@@ -499,7 +499,7 @@
 .formGroup select:focus,
 .formGroup textarea:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #3b82f6;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
@@ -560,7 +560,7 @@
 .btnSubmit {
     flex: 2;
     padding: 0.75rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
     color: white;
     border: none;
     border-radius: 8px;
@@ -599,7 +599,7 @@
 
 .categoryForm input:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #3b82f6;
 }
 
 .categoryList {

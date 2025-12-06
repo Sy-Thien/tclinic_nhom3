@@ -44,6 +44,62 @@ export default function Appointments() {
     });
     const navigate = useNavigate();
 
+    // ✅ Handle form change với ràng buộc ngày
+    const handleFormChange = (field, value) => {
+        // Ràng buộc ngày khám - không cho chọn ngày quá khứ
+        if (field === 'appointment_date' && value) {
+            const dateMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            if (!dateMatch) {
+                setFormData(prev => ({ ...prev, [field]: value }));
+                return;
+            }
+
+            const year = parseInt(dateMatch[1], 10);
+            // Chỉ bỏ qua nếu đang gõ năm (< 1000)
+            if (year < 1000) {
+                setFormData(prev => ({ ...prev, [field]: value }));
+                return;
+            }
+
+            const selectedDate = new Date(value + 'T00:00:00');
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (selectedDate < today) {
+                alert('⚠️ Không thể chọn ngày trong quá khứ.');
+                setFormData(prev => ({ ...prev, [field]: new Date().toISOString().split('T')[0] }));
+                return;
+            }
+        }
+
+        // Ràng buộc ngày sinh - không cho chọn ngày tương lai
+        if (field === 'patient_dob' && value) {
+            const dateMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            if (!dateMatch) {
+                setFormData(prev => ({ ...prev, [field]: value }));
+                return;
+            }
+
+            const year = parseInt(dateMatch[1], 10);
+            // Chỉ bỏ qua nếu đang gõ năm (< 1000)
+            if (year < 1000) {
+                setFormData(prev => ({ ...prev, [field]: value }));
+                return;
+            }
+
+            const selectedDate = new Date(value + 'T00:00:00');
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (selectedDate > today) {
+                alert('⚠️ Ngày sinh không thể là ngày trong tương lai.');
+                return;
+            }
+        }
+
+        setFormData(prev => ({ ...prev, [field]: value }));
+    };
+
     useEffect(() => {
         fetchDoctors();
         fetchSpecialties();
@@ -638,7 +694,7 @@ export default function Appointments() {
                                         <input
                                             type="date"
                                             value={formData.patient_dob}
-                                            onChange={(e) => setFormData({ ...formData, patient_dob: e.target.value })}
+                                            onChange={(e) => handleFormChange('patient_dob', e.target.value)}
                                         />
                                     </div>
                                     <div className={styles.formGroup}>
@@ -671,7 +727,8 @@ export default function Appointments() {
                                         <input
                                             type="date"
                                             value={formData.appointment_date}
-                                            onChange={(e) => setFormData({ ...formData, appointment_date: e.target.value })}
+                                            onChange={(e) => handleFormChange('appointment_date', e.target.value)}
+                                            min={new Date().toISOString().split('T')[0]}
                                             required
                                         />
                                     </div>

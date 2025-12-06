@@ -17,9 +17,20 @@ export default function DrugManagement() {
         unit: 'viên',
         expiry_date: '',
         warning_level: 10,
-        price: 0
+        price: 0,
+        usage_guide: '',
+        note: ''
     });
     const navigate = useNavigate();
+
+    // Format giá tiền giống Services
+    const formatPrice = (price) => {
+        if (!price) return 'Liên hệ';
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND'
+        }).format(price);
+    };
 
     useEffect(() => {
         const user = localStorage.getItem('user');
@@ -70,7 +81,9 @@ export default function DrugManagement() {
                 unit: 'viên',
                 expiry_date: '',
                 warning_level: 10,
-                price: 0
+                price: 0,
+                usage_guide: '',
+                note: ''
             });
             setShowForm(false);
             setEditingId(null);
@@ -247,6 +260,26 @@ export default function DrugManagement() {
                             />
                         </div>
 
+                        <div className={styles.formRowFull}>
+                            <label>Hướng dẫn sử dụng</label>
+                            <textarea
+                                placeholder="VD: Uống 2 viên/lần, 3 lần/ngày sau ăn..."
+                                value={formData.usage_guide || ''}
+                                onChange={(e) => setFormData({ ...formData, usage_guide: e.target.value })}
+                                rows={3}
+                            />
+                        </div>
+
+                        <div className={styles.formRowFull}>
+                            <label>Ghi chú</label>
+                            <textarea
+                                placeholder="VD: Bảo quản nơi khô ráo, thoáng mát..."
+                                value={formData.note || ''}
+                                onChange={(e) => setFormData({ ...formData, note: e.target.value })}
+                                rows={2}
+                            />
+                        </div>
+
                         <div className={styles.formActions}>
                             <button type="submit" className={styles.btnSave}>
                                 {editingId ? 'Cập nhật' : 'Thêm'}
@@ -309,6 +342,20 @@ export default function DrugManagement() {
                                     <tr key={drug.id} className={isLowStock || isExpiringSoon ? styles.warning : ''}>
                                         <td className={styles.drugName}>
                                             <strong>{drug.name}</strong>
+                                            {(drug.usage_guide || drug.note) && (
+                                                <div className={styles.drugMeta}>
+                                                    {drug.usage_guide && (
+                                                        <span className={styles.usageGuide} title={drug.usage_guide}>
+                                                            📋 HD
+                                                        </span>
+                                                    )}
+                                                    {drug.note && (
+                                                        <span className={styles.noteIcon} title={drug.note}>
+                                                            📝 GC
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            )}
                                         </td>
                                         <td className={styles.ingredient}>{drug.ingredient || '-'}</td>
                                         <td className={styles.quantity}>
@@ -324,7 +371,7 @@ export default function DrugManagement() {
                                             {isExpiringSoon && <span className={styles.badge}>Gần hạn</span>}
                                         </td>
                                         <td className={styles.price}>
-                                            {drug.price ? `${drug.price.toLocaleString('vi-VN')}đ` : '-'}
+                                            {formatPrice(drug.price)}
                                         </td>
                                         <td className={styles.actions}>
                                             <button

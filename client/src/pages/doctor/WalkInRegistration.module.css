@@ -1,0 +1,373 @@
+.container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.header {
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.backBtn {
+    padding: 0.75rem 1.25rem;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    color: #4a5568;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.backBtn:hover {
+    background: #f7fafc;
+    border-color: #cbd5e0;
+}
+
+.header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1a202c;
+    margin: 0;
+}
+
+/* Search Section */
+.searchSection {
+    margin-bottom: 2rem;
+}
+
+.searchCard {
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    color: white;
+}
+
+.searchCard h3 {
+    font-size: 1.25rem;
+    margin: 0 0 0.5rem 0;
+}
+
+.searchHint {
+    opacity: 0.9;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+}
+
+.searchInput {
+    position: relative;
+}
+
+.searchInput input {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    background: rgba(255, 255, 255, 0.95);
+    color: #1a202c;
+}
+
+.searchInput input::placeholder {
+    color: #718096;
+}
+
+.searchInput input:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+}
+
+.searchingText {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #718096;
+    font-size: 0.9rem;
+}
+
+.searchResults {
+    margin-top: 0.75rem;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.resultItem {
+    padding: 1rem 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    border-bottom: 1px solid #e2e8f0;
+    transition: background 0.2s;
+}
+
+.resultItem:last-child {
+    border-bottom: none;
+}
+
+.resultItem:hover {
+    background: #f7fafc;
+}
+
+.resultInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    color: #1a202c;
+}
+
+.resultInfo strong {
+    font-size: 1rem;
+}
+
+.resultInfo span {
+    font-size: 0.9rem;
+    color: #718096;
+}
+
+.selectBtn {
+    padding: 0.5rem 1rem;
+    background: #45c3d2;
+    color: white;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Selected Patient */
+.selectedPatient {
+    margin-top: 1rem;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.selectedInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.badge {
+    font-size: 0.85rem;
+    opacity: 0.9;
+}
+
+.selectedInfo strong {
+    font-size: 1.1rem;
+}
+
+.clearBtn {
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.clearBtn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Form */
+.form {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.formGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+}
+
+@media (max-width: 900px) {
+    .formGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.formSection {
+    padding: 2rem;
+}
+
+.formSection:first-child {
+    border-right: 1px solid #e2e8f0;
+}
+
+@media (max-width: 900px) {
+    .formSection:first-child {
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+    }
+}
+
+.formSection h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1a202c;
+    margin: 0 0 1.5rem 0;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #45c3d2;
+}
+
+.formGroup {
+    margin-bottom: 1.25rem;
+}
+
+.formGroup label {
+    display: block;
+    font-weight: 500;
+    color: #4a5568;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.required {
+    color: #e53e3e;
+}
+
+.formGroup input,
+.formGroup select,
+.formGroup textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.2s;
+    background: #f8fafc;
+}
+
+.formGroup input:focus,
+.formGroup select:focus,
+.formGroup textarea:focus {
+    outline: none;
+    border-color: #45c3d2;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(69, 195, 210, 0.1);
+}
+
+.formGroup textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.inputError {
+    border-color: #e53e3e !important;
+    background: #fff5f5 !important;
+}
+
+.error {
+    display: block;
+    color: #e53e3e;
+    font-size: 0.85rem;
+    margin-top: 0.35rem;
+}
+
+.hint {
+    display: block;
+    color: #718096;
+    font-size: 0.85rem;
+    margin-top: 0.35rem;
+    font-style: italic;
+}
+
+.formRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+@media (max-width: 600px) {
+    .formRow {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Form Actions */
+.formActions {
+    padding: 1.5rem 2rem;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.cancelBtn {
+    padding: 0.875rem 1.5rem;
+    background: white;
+    border: 1px solid #e2e8f0;
+    color: #4a5568;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.cancelBtn:hover {
+    background: #f7fafc;
+    border-color: #cbd5e0;
+}
+
+.submitBtn {
+    padding: 0.875rem 1.75rem;
+    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
+    border: none;
+    color: white;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.submitBtn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(69, 195, 210, 0.4);
+}
+
+.submitBtn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

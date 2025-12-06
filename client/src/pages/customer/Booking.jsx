@@ -69,19 +69,23 @@ export default function Booking() {
         if (serviceIdFromUrl) {
             fetchServiceInfo(serviceIdFromUrl);
         }
-    }, []);
+    }, [serviceIdFromUrl]);
 
     // ✅ NEW: Fetch service info when coming from service page
     const fetchServiceInfo = async (serviceId) => {
         try {
+            console.log('📋 Fetching service info for ID:', serviceId);
             const response = await api.get(`/api/public/services/${serviceId}`);
+            console.log('✅ Service loaded:', response.data);
             setSelectedService(response.data);
-            // Auto-set specialty if not already set
-            if (response.data.specialty_id && !formData.specialty_id) {
-                setFormData(prev => ({ ...prev, specialty_id: response.data.specialty_id }));
-            }
+            // Auto-set specialty and service_id
+            setFormData(prev => ({
+                ...prev,
+                service_id: Number(serviceId),
+                specialty_id: response.data.specialty_id || prev.specialty_id
+            }));
         } catch (error) {
-            console.error('Error fetching service:', error);
+            console.error('❌ Error fetching service:', error);
         }
     };
 
@@ -123,6 +127,13 @@ export default function Booking() {
     // Load giờ rảnh khi chọn ngày
     useEffect(() => {
         if (formData.appointment_date) {
+            // ✅ Chỉ fetch slots khi ngày có format hợp lệ (YYYY-MM-DD)
+            const dateMatch = formData.appointment_date.match(/^\d{4}-\d{2}-\d{2}$/);
+            if (!dateMatch) {
+                // Ngày chưa nhập đầy đủ, bỏ qua
+                return;
+            }
+
             if (selectedDoctor) {
                 // Nếu chọn bác sĩ, lấy giờ rảnh của bác sĩ đó
                 fetchAvailableSlotsForDoctor(selectedDoctor, formData.appointment_date);
@@ -165,6 +176,30 @@ export default function Booking() {
 
     // Lấy giờ rảnh mặc định (tất cả bác sĩ trong chuyên khoa)
     const fetchDefaultSlots = async (date) => {
+        // ✅ Kiểm tra format ngày hợp lệ (YYYY-MM-DD)
+        const dateMatch = date?.match(/^\d{4}-\d{2}-\d{2}$/);
+        if (!dateMatch) {
+            // Ngày chưa nhập đầy đủ, bỏ qua
+            return;
+        }
+
+        // ✅ Kiểm tra ngày quá khứ trước
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const selectedDate = new Date(date + 'T00:00:00');
+
+        if (selectedDate < today) {
+            // Ngày quá khứ - không hiển thị slots
+            setDoctorTimeSlots({
+                isWorking: false,
+                slots: [],
+                date,
+                message: 'Không thể đặt lịch cho ngày trong quá khứ'
+            });
+            setAvailableSlots([]);
+            return;
+        }
+
         // Tạo slots mặc định với format giống API (8h-17h, nghỉ 12h-13h)
         const defaultSlots = [];
         const workingHours = [
@@ -173,11 +208,9 @@ export default function Booking() {
         ];
 
         // ✅ Kiểm tra nếu là hôm nay thì lọc bỏ giờ đã qua
-        const today = new Date();
-        const selectedDate = new Date(date + 'T00:00:00');
-        const isToday = selectedDate.toDateString() === today.toDateString();
-        const currentHour = today.getHours();
-        const currentMinute = today.getMinutes();
+        const isToday = selectedDate.toDateString() === new Date().toDateString();
+        const currentHour = new Date().getHours();
+        const currentMinute = new Date().getMinutes();
 
         for (const startTime of workingHours) {
             const [hour, min] = startTime.split(':').map(Number);
@@ -241,6 +274,29 @@ export default function Booking() {
             return;
         }
 
+        // ✅ Kiểm tra format ngày hợp lệ (YYYY-MM-DD)
+        const dateMatch = date?.match(/^\d{4}-\d{2}-\d{2}$/);
+        if (!dateMatch) {
+            // Ngày chưa nhập đầy đủ, bỏ qua
+            return;
+        }
+
+        // ✅ Kiểm tra ngày quá khứ trước khi gọi API
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const selectedDate = new Date(date + 'T00:00:00');
+
+        if (selectedDate < today) {
+            setDoctorTimeSlots({
+                isWorking: false,
+                slots: [],
+                date,
+                message: 'Không thể đặt lịch cho ngày trong quá khứ'
+            });
+            setAvailableSlots([]);
+            return;
+        }
+
         try {
             setLoading(true);
             console.log('Fetching time slots for doctor:', doctorId, 'date:', date);
@@ -252,11 +308,10 @@ export default function Booking() {
 
             if (response.data.success && response.data.data.isWorking) {
                 // ✅ Xử lý isPastTime cho slots từ API
-                const today = new Date();
-                const selectedDate = new Date(date + 'T00:00:00');
-                const isToday = selectedDate.toDateString() === today.toDateString();
-                const currentHour = today.getHours();
-                const currentMinute = today.getMinutes();
+                const todayCheck = new Date();
+                const isToday = selectedDate.toDateString() === todayCheck.toDateString();
+                const currentHour = todayCheck.getHours();
+                const currentMinute = todayCheck.getMinutes();
 
                 const processedData = {
                     ...response.data.data,
@@ -309,10 +364,22 @@ export default function Booking() {
 
         // ✅ Kiểm tra ngày quá khứ ngay khi chọn - CHỈ cho appointment_date
         if (name === 'appointment_date' && value) {
-            // Kiểm tra format ngày hợp lệ (YYYY-MM-DD) và năm >= 2020
+            // Kiểm tra format ngày hợp lệ (YYYY-MM-DD)
             const dateMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-            if (!dateMatch || parseInt(dateMatch[1]) < 2020) {
-                // Ngày chưa nhập đầy đủ hoặc năm không hợp lệ, chỉ cập nhật state
+            if (!dateMatch) {
+                // Ngày chưa nhập đầy đủ, chỉ cập nhật state
+                setFormData(prev => ({ ...prev, [name]: value }));
+                return;
+            }
+
+            // ✅ Kiểm tra năm đang được gõ (chưa đủ 4 số hợp lệ)
+            const year = parseInt(dateMatch[1], 10);
+            const currentYear = new Date().getFullYear();
+
+            // Chỉ bỏ qua validation nếu năm đang gõ dở (ví dụ: 0002, 0020, 0202)
+            // Năm hợp lệ phải >= currentYear (không cho đặt lịch năm trước)
+            if (year < 1000) {
+                // Đang gõ năm, chưa đủ 4 số
                 setFormData(prev => ({ ...prev, [name]: value }));
                 return;
             }
@@ -321,9 +388,12 @@ export default function Booking() {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
+            // Kiểm tra ngày quá khứ
             if (selectedDate < today) {
                 alert('⚠️ Không thể chọn ngày trong quá khứ. Vui lòng chọn ngày hôm nay hoặc sau.');
-                return; // Không cập nhật state nếu ngày không hợp lệ
+                // Reset về ngày hôm nay
+                setFormData(prev => ({ ...prev, [name]: new Date().toISOString().split('T')[0] }));
+                return;
             }
 
             // Nếu chọn ngày hôm nay, kiểm tra còn giờ nào không

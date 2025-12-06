@@ -232,8 +232,8 @@ export default function DoctorDetail() {
                     <div className={styles.infoCard}>
                         <h3><span className={styles.icon}>💰</span> GIÁ KHÁM</h3>
                         <div className={styles.locationInfo}>
-                            <p><strong>500.000đ</strong></p>
-                            <p style={{ fontSize: '12px', color: '#999' }}>Giá có thể thay đổi tùy dịch vụ</p>
+                            <p><strong>200.000đ</strong></p>
+                            <p style={{ fontSize: '12px', color: '#999' }}>Giá mặc định, có thể thay đổi tùy dịch vụ</p>
                         </div>
                     </div>
 

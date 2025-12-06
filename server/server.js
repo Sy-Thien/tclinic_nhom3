@@ -87,6 +87,8 @@ app.use('/api/articles', require('./routes/articleRoutes'));  // ✅ NEW: News &
 app.use('/api/consultation-requests', consultationRequestRoutes);  // ✅ NEW: Consultation/Support
 app.use('/api/admin/consultations', adminConsultationRoutes);  // ✅ NEW: Admin manage consultations
 app.use('/api/doctor/consultations', doctorConsultationRoutes);  // ✅ NEW: Doctor consultations
+app.use('/api/invoices', require('./routes/invoiceRoutes'));  // ✅ NEW: Invoice management
+app.use('/api/vnpay', require('./routes/vnpayRoutes'));  // ✅ NEW: VNPay payment
 
 // Health check
 app.get('/health', (req, res) => {

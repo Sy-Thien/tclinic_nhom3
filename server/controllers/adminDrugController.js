@@ -19,7 +19,7 @@ exports.getAllDrugs = async (req, res) => {
         const drugs = await Drug.findAll({
             where,
             order: [[sortBy || 'name', 'ASC']],
-            attributes: ['id', 'name', 'ingredient', 'quantity', 'unit', 'expiry_date', 'warning_level', 'price', 'created_at', 'updated_at']
+            attributes: ['id', 'name', 'ingredient', 'quantity', 'unit', 'expiry_date', 'warning_level', 'price', 'usage_guide', 'note', 'created_at', 'updated_at']
         });
 
         console.log(`✅ Found ${drugs.length} drugs`);

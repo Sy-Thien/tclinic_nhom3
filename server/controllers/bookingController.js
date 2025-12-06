@@ -26,6 +26,14 @@ exports.createBooking = async (req, res) => {
             return res.status(400).json({ message: 'Vui lòng điền đầy đủ thông tin bắt buộc' });
         }
 
+        // ✅ Validate ngày không được là quá khứ
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const selectedDate = new Date(appointment_date + 'T00:00:00');
+        if (selectedDate < today) {
+            return res.status(400).json({ message: 'Không thể đặt lịch cho ngày trong quá khứ' });
+        }
+
         // Generate booking code
         const bookingCode = 'BK' + Date.now().toString().slice(-8);
 

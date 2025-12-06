@@ -10,6 +10,10 @@ export default function Services() {
     const [selectedSpecialty, setSelectedSpecialty] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
+    const [selectedService, setSelectedService] = useState(null);
+    const [selectedDoctor, setSelectedDoctor] = useState(null); // ✅ NEW: Selected doctor
+    const [doctors, setDoctors] = useState([]); // ✅ NEW: Doctors list
+    const [loadingDoctors, setLoadingDoctors] = useState(false);
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
 
@@ -69,6 +73,65 @@ export default function Services() {
         navigate(`/booking?service=${serviceId}`);
     };
 
+    // ✅ NEW: Select service first before booking
+    const handleSelectService = (service) => {
+        setSelectedService(service);
+        setSelectedDoctor(null); // Reset doctor when service changes
+        // Fetch doctors for this service's specialty
+        if (service.specialty_id) {
+            fetchDoctorsBySpecialty(service.specialty_id);
+        }
+        // Scroll to top to show selected service
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // ✅ NEW: Fetch doctors by specialty
+    const fetchDoctorsBySpecialty = async (specialtyId) => {
+        try {
+            setLoadingDoctors(true);
+            const response = await api.get('/api/bookings/doctors-by-specialty', {
+                params: { specialtyId }
+            });
+            setDoctors(response.data || []);
+        } catch (error) {
+            console.error('Error fetching doctors:', error);
+            setDoctors([]);
+        } finally {
+            setLoadingDoctors(false);
+        }
+    };
+
+    // ✅ NEW: Select doctor
+    const handleSelectDoctor = (doctor) => {
+        setSelectedDoctor(doctor);
+    };
+
+    // ✅ NEW: Clear selected service
+    const handleClearService = () => {
+        setSelectedService(null);
+        setSelectedDoctor(null);
+        setDoctors([]);
+    };
+
+    // ✅ NEW: Clear selected doctor
+    const handleClearDoctor = () => {
+        setSelectedDoctor(null);
+    };
+
+    // ✅ NEW: Proceed to booking with selected service and doctor
+    const handleProceedBooking = () => {
+        if (selectedService) {
+            let url = `/booking?service=${selectedService.id}`;
+            if (selectedService.specialty_id) {
+                url += `&specialty=${selectedService.specialty_id}`;
+            }
+            if (selectedDoctor) {
+                url += `&doctor=${selectedDoctor.id}&doctor_name=${encodeURIComponent(selectedDoctor.full_name)}`;
+            }
+            navigate(url);
+        }
+    };
+
     const getSpecialtyIcon = (specialtyName) => {
         const icons = {
             'Cơ Xương Khớp': '🦴',
@@ -106,6 +169,120 @@ export default function Services() {
                 <span>/</span>
                 <span>Dịch vụ</span>
             </div>
+
+            {/* ✅ SELECTED SERVICE BANNER */}
+            {selectedService && (
+                <div className={styles.selectedServiceBanner}>
+                    <div className={styles.selectedServiceContent}>
+                        <div className={styles.selectedServiceIcon}>
+                            <span>💉</span>
+                        </div>
+                        <div className={styles.selectedServiceInfo}>
+                            <span className={styles.selectedLabel}>DỊCH VỤ ĐÃ CHỌN:</span>
+                            <h3 className={styles.selectedName}>{selectedService.name}</h3>
+                            <span className={styles.selectedPrice}>
+                                💰 {selectedService.price?.toLocaleString('vi-VN')}đ
+                            </span>
+                        </div>
+                        <button
+                            className={styles.btnChangeService}
+                            onClick={handleClearService}
+                        >
+                            Đổi dịch vụ
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* ✅ SELECTED DOCTOR BANNER */}
+            {selectedService && selectedDoctor && (
+                <div className={styles.selectedDoctorBanner}>
+                    <div className={styles.selectedDoctorContent}>
+                        <div className={styles.selectedDoctorIcon}>
+                            <span>👨‍⚕️</span>
+                        </div>
+                        <div className={styles.selectedDoctorInfo}>
+                            <span className={styles.selectedLabel}>BÁC SĨ ĐÃ CHỌN:</span>
+                            <h3 className={styles.selectedName}>{selectedDoctor.full_name}</h3>
+                            <span className={styles.selectedSpecialty}>
+                                {selectedDoctor.specialty?.name || selectedService.specialty?.name}
+                            </span>
+                        </div>
+                        <button
+                            className={styles.btnChangeDoctor}
+                            onClick={handleClearDoctor}
+                        >
+                            Đổi bác sĩ
+                        </button>
+                    </div>
+                    <p className={styles.bookingNote}>
+                        ✨ Bạn chỉ cần chọn <strong>ngày khám</strong> và <strong>khung giờ</strong> phù hợp
+                    </p>
+                </div>
+            )}
+
+            {/* ✅ DOCTORS LIST - Show when service selected but no doctor yet */}
+            {selectedService && !selectedDoctor && (
+                <div className={styles.doctorsSection}>
+                    <h3 className={styles.doctorsSectionTitle}>
+                        👨‍⚕️ Chọn bác sĩ {selectedService.specialty?.name && `- ${selectedService.specialty.name}`}
+                    </h3>
+                    {loadingDoctors ? (
+                        <div className={styles.loadingDoctors}>
+                            <div className={styles.spinner}></div>
+                            <p>Đang tải danh sách bác sĩ...</p>
+                        </div>
+                    ) : doctors.length > 0 ? (
+                        <div className={styles.doctorGrid}>
+                            {doctors.map(doctor => (
+                                <div
+                                    key={doctor.id}
+                                    className={styles.doctorCard}
+                                    onClick={() => handleSelectDoctor(doctor)}
+                                >
+                                    <div className={styles.doctorAvatar}>
+                                        👨‍⚕️
+                                    </div>
+                                    <div className={styles.doctorInfo}>
+                                        <h4>{doctor.full_name}</h4>
+                                        <p>{doctor.specialty?.name}</p>
+                                    </div>
+                                    <button className={styles.btnSelectDoctor}>
+                                        Chọn
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className={styles.noDoctors}>
+                            <p>Không có bác sĩ nào cho chuyên khoa này</p>
+                        </div>
+                    )}
+
+                    {/* Button to skip doctor selection */}
+                    <div className={styles.skipDoctorSection}>
+                        <p>Hoặc để phòng khám sắp xếp bác sĩ cho bạn</p>
+                        <button
+                            className={styles.btnSkipDoctor}
+                            onClick={handleProceedBooking}
+                        >
+                            ⚡ Đặt lịch ngay (không chọn bác sĩ)
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Proceed booking button when both selected */}
+            {selectedService && selectedDoctor && (
+                <div className={styles.proceedSection}>
+                    <button
+                        className={styles.btnProceedBooking}
+                        onClick={handleProceedBooking}
+                    >
+                        📅 Tiếp tục đặt lịch →
+                    </button>
+                </div>
+            )}
 
             {/* SPECIALTIES GRID */}
             <section className={styles.specialtiesSection}>
@@ -188,10 +365,10 @@ export default function Services() {
                                             </span>
                                         </div>
                                         <button
-                                            className={styles.btnBook}
-                                            onClick={() => handleBooking(service.id)}
+                                            className={`${styles.btnBook} ${selectedService?.id === service.id ? styles.btnSelected : ''}`}
+                                            onClick={() => handleSelectService(service)}
                                         >
-                                            Đặt lịch
+                                            {selectedService?.id === service.id ? '✓ Đã chọn' : 'Chọn dịch vụ'}
                                         </button>
                                     </div>
                                 </div>

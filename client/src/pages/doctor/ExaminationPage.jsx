@@ -1,13 +1,18 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import api from '../../utils/api';
 import styles from './ExaminationPage.module.css';
 import PrescriptionFormPro from './PrescriptionFormPro';
+import PaymentModal from './PaymentModal';
 
 export default function ExaminationPage() {
     const navigate = useNavigate();
     const location = useLocation();
-    const appointment = location.state?.appointment;
+    const [searchParams] = useSearchParams();
+
+    // Có thể nhận appointment từ state hoặc load từ bookingId trong URL
+    const [appointment, setAppointment] = useState(location.state?.appointment || null);
+    const [loadingAppointment, setLoadingAppointment] = useState(false);
 
     const [formData, setFormData] = useState({
         diagnosis: '',
@@ -16,15 +21,44 @@ export default function ExaminationPage() {
     });
     const [saving, setSaving] = useState(false);
     const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [prescriptionId, setPrescriptionId] = useState(null);
     const [medicalHistories, setMedicalHistories] = useState([]);
     const [loadingHistory, setLoadingHistory] = useState(false);
 
+    // Load appointment từ bookingId nếu không có trong state
     useEffect(() => {
-        if (!appointment) {
+        const bookingId = searchParams.get('bookingId');
+
+        if (!appointment && bookingId) {
+            loadAppointmentById(bookingId);
+        } else if (!appointment && !bookingId) {
             alert('Không tìm thấy thông tin lịch hẹn!');
             navigate('/doctor-portal/appointments');
-            return;
         }
+    }, [searchParams]);
+
+    const loadAppointmentById = async (bookingId) => {
+        try {
+            setLoadingAppointment(true);
+            const response = await api.get(`/api/doctor/bookings/${bookingId}`);
+            if (response.data.success) {
+                setAppointment(response.data.booking);
+            } else {
+                alert('Không tìm thấy lịch hẹn!');
+                navigate('/doctor-portal/appointments');
+            }
+        } catch (error) {
+            console.error('Error loading appointment:', error);
+            alert('Lỗi khi tải thông tin lịch hẹn!');
+            navigate('/doctor-portal/appointments');
+        } finally {
+            setLoadingAppointment(false);
+        }
+    };
+
+    useEffect(() => {
+        if (!appointment) return;
 
         // Load existing data if any
         if (appointment.diagnosis) setFormData(prev => ({ ...prev, diagnosis: appointment.diagnosis }));
@@ -125,6 +159,18 @@ export default function ExaminationPage() {
         return d.toLocaleDateString('vi-VN');
     };
 
+    // Loading state
+    if (loadingAppointment) {
+        return (
+            <div className={styles.container}>
+                <div className={styles.loadingState}>
+                    <div className={styles.spinner}></div>
+                    <p>Đang tải thông tin lịch hẹn...</p>
+                </div>
+            </div>
+        );
+    }
+
     if (!appointment) return null;
 
     return (
@@ -207,6 +253,46 @@ export default function ExaminationPage() {
                                 <i className="fas fa-barcode"></i>
                                 <span>Mã booking: {appointment.booking_code}</span>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Service Info - NEW */}
+                <div className={styles.serviceCard}>
+                    <div className={styles.cardHeader}>
+                        <h2><i className="fas fa-concierge-bell"></i> Dịch Vụ Khám</h2>
+                    </div>
+                    <div className={styles.cardBody}>
+                        <div className={styles.serviceInfo}>
+                            {appointment.service ? (
+                                <>
+                                    <div className={styles.serviceName}>
+                                        <i className="fas fa-stethoscope"></i>
+                                        <span>{appointment.service.name}</span>
+                                    </div>
+                                    <div className={styles.servicePrice}>
+                                        <i className="fas fa-money-bill-wave"></i>
+                                        <span>Giá dịch vụ: <strong>{Number(appointment.service.price || 0).toLocaleString('vi-VN')}đ</strong></span>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className={styles.serviceName}>
+                                        <i className="fas fa-stethoscope"></i>
+                                        <span>Khám tổng quát</span>
+                                    </div>
+                                    <div className={styles.servicePrice}>
+                                        <i className="fas fa-money-bill-wave"></i>
+                                        <span>Phí khám mặc định: <strong>200,000đ</strong></span>
+                                    </div>
+                                </>
+                            )}
+                            {appointment.specialty && (
+                                <div className={styles.specialtyName}>
+                                    <i className="fas fa-hospital"></i>
+                                    <span>Chuyên khoa: {appointment.specialty.name}</span>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -295,6 +381,13 @@ export default function ExaminationPage() {
                         Kê Đơn Thuốc
                     </button>
                     <button
+                        className={styles.btnPayment}
+                        onClick={() => setShowPaymentModal(true)}
+                    >
+                        <i className="fas fa-credit-card"></i>
+                        Thanh Toán
+                    </button>
+                    <button
                         className={styles.btnComplete}
                         onClick={handleComplete}
                     >
@@ -312,8 +405,25 @@ export default function ExaminationPage() {
                         diagnosis: formData.diagnosis // Pass current diagnosis
                     }}
                     onClose={() => setShowPrescriptionModal(false)}
-                    onSuccess={() => {
+                    onSuccess={(prescriptionData) => {
                         console.log('✅ Prescription saved successfully');
+                        if (prescriptionData?.id) {
+                            setPrescriptionId(prescriptionData.id);
+                        }
+                    }}
+                />
+            )}
+
+            {/* Payment Modal */}
+            {showPaymentModal && (
+                <PaymentModal
+                    isOpen={showPaymentModal}
+                    onClose={() => setShowPaymentModal(false)}
+                    bookingId={appointment.id}
+                    prescriptionId={prescriptionId}
+                    onPaymentComplete={() => {
+                        console.log('✅ Payment completed');
+                        alert('Thanh toán thành công!');
                     }}
                 />
             )}

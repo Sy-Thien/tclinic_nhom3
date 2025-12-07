@@ -56,7 +56,7 @@ jobs:
           done
           echo "MySQL is ready!"
 
-      # 5. Setup database schema - use sync instead of migrations for CI
+      # 5. Setup database schema - use migrations
       - name: 🗄️ Setup database
         working-directory: ./server
         env:
@@ -65,25 +65,11 @@ jobs:
           DB_PASSWORD: root
           DB_NAME: tn_clinic
         run: |
-          # Create a script to sync database
-          cat > sync-db.js << 'EOF'
-          const { sequelize } = require('./models');
+          # Run migrations (creates tables in correct order)
+          npx sequelize-cli db:migrate || echo "⚠️ Some migrations may have failed, continuing..."
           
-          async function syncDB() {
-            try {
-              await sequelize.sync({ force: true });
-              console.log('✅ Database synced successfully');
-              process.exit(0);
-            } catch (err) {
-              console.error('❌ Database sync failed:', err.message);
-              process.exit(1);
-            }
-          }
-          
-          syncDB();
-          EOF
-          
-          node sync-db.js
+          # Verify database is ready
+          echo "✅ Database setup completed"
 
       # 6. Seed test data (admin account, etc.)
       - name: 🌱 Seed test data

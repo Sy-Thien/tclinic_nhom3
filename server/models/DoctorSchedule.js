@@ -40,7 +40,7 @@ module.exports = (sequelize, DataTypes) => {
         }
     }, {
         tableName: 'doctor_schedules',
-        timestamps: true
+        timestamps: false  // ✅ FIX: Bảng không có created_at/updated_at
     });
 
     DoctorSchedule.associate = (models) => {

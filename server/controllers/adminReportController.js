@@ -1,4 +1,4 @@
-const { Booking, Doctor, Specialty, Service } = require('../models');
+const { Booking, Doctor, Specialty, Service, Invoice } = require('../models');
 const { Op, fn, col, literal } = require('sequelize');
 const moment = require('moment');
 const ExcelJS = require('exceljs');
@@ -9,6 +9,7 @@ const sequelize = require('../config/database');
 exports.getSummaryStats = async (req, res) => {
     try {
         const { from, to } = req.query;
+
         const where = {};
         if (from && to) {
             where.appointment_date = { [Op.between]: [from, to] };
@@ -30,10 +31,17 @@ exports.getSummaryStats = async (req, res) => {
             where: { ...where, status: { [Op.in]: ['pending', 'confirmed', 'waiting_doctor_confirmation', 'waiting_doctor_assignment'] } }
         });
 
-        // ✅ Tính doanh thu thực từ price trong booking (đã hoàn thành)
-        const revenueResult = await Booking.findOne({
-            attributes: [[fn('SUM', col('price')), 'totalRevenue']],
-            where: { ...where, status: 'completed' },
+        // ✅ Tính doanh thu thực từ Invoice (đã thanh toán) - dùng DATE(created_at) để tránh timezone issue
+        const invoiceWhere = { payment_status: 'paid' };
+        if (from && to) {
+            invoiceWhere[Op.and] = [
+                literal(`DATE(created_at) >= '${from}'`),
+                literal(`DATE(created_at) <= '${to}'`)
+            ];
+        }
+        const revenueResult = await Invoice.findOne({
+            attributes: [[fn('SUM', col('total_amount')), 'totalRevenue']],
+            where: invoiceWhere,
             raw: true
         });
         const totalRevenue = parseFloat(revenueResult?.totalRevenue) || 0;
@@ -64,34 +72,35 @@ exports.getSummaryStats = async (req, res) => {
     }
 };
 
-// ✅ NEW: Thống kê doanh thu theo ngày/tháng
+// ✅ NEW: Thống kê doanh thu theo ngày/tháng (từ Invoice)
 exports.getRevenueStats = async (req, res) => {
     try {
         const { type = 'day', from, to } = req.query;
 
         let groupFormat;
-        let labelFormat;
         if (type === 'day') {
             groupFormat = '%Y-%m-%d';
-            labelFormat = 'DD/MM/YYYY';
         } else if (type === 'month') {
             groupFormat = '%Y-%m';
-            labelFormat = 'MM/YYYY';
         } else {
             groupFormat = '%Y-%m-%d';
-            labelFormat = 'DD/MM/YYYY';
         }
 
-        const where = { status: 'completed' };
+        // Dùng DATE(created_at) để tránh timezone issue
+        const where = { payment_status: 'paid' };
         if (from && to) {
-            where.appointment_date = { [Op.between]: [from, to] };
+            where[Op.and] = [
+                literal(`DATE(created_at) >= '${from}'`),
+                literal(`DATE(created_at) <= '${to}'`)
+            ];
         }
 
-        const stats = await Booking.findAll({
+        // Lấy doanh thu từ Invoice - group by DATE(created_at)
+        const stats = await Invoice.findAll({
             attributes: [
-                [fn('DATE_FORMAT', col('appointment_date'), groupFormat), 'period'],
-                [fn('COUNT', col('Booking.id')), 'count'],
-                [fn('SUM', col('price')), 'revenue']
+                [fn('DATE_FORMAT', col('created_at'), groupFormat), 'period'],
+                [fn('COUNT', col('id')), 'count'],
+                [fn('SUM', col('total_amount')), 'revenue']
             ],
             where,
             group: [literal('period')],

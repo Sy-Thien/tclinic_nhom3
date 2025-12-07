@@ -5,7 +5,11 @@
         "database": "tn_clinic",
         "host": "localhost",
         "dialect": "mysql",
-        "port": 3306
+        "port": 3306,
+        "timezone": "+07:00",
+        "dialectOptions": {
+            "timezone": "+07:00"
+        }
     },
     "test": {
         "username": "root",
@@ -13,7 +17,11 @@
         "database": "tn_clinic_test",
         "host": "localhost",
         "dialect": "mysql",
-        "port": 3306
+        "port": 3306,
+        "timezone": "+07:00",
+        "dialectOptions": {
+            "timezone": "+07:00"
+        }
     },
     "production": {
         "username": "root",
@@ -21,6 +29,10 @@
         "database": "tn_clinic",
         "host": "localhost",
         "dialect": "mysql",
-        "port": 3306
+        "port": 3306,
+        "timezone": "+07:00",
+        "dialectOptions": {
+            "timezone": "+07:00"
+        }
     }
 }

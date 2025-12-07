@@ -16,6 +16,12 @@ sequelize.authenticate()
     .then(() => {
         console.log('✅ Kết nối MySQL thành công');
         console.log('📊 Database:', sequelize.config.database);
+
+        // ✅ Set timezone cho MySQL session (Vietnam time)
+        return sequelize.query("SET time_zone = '+07:00'");
+    })
+    .then(() => {
+        console.log('🕐 MySQL timezone set to +07:00 (Vietnam)');
     })
     .catch(err => {
         console.error('❌ Lỗi kết nối MySQL:', err);

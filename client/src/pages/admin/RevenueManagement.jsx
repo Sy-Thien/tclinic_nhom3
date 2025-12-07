@@ -148,7 +148,7 @@ export default function RevenueManagement() {
                     <h3>📌 Tổng kết {period === 'month' ? 'tháng này' : period === 'year' ? 'năm nay' : period === 'week' ? 'tuần này' : 'hôm nay'}</h3>
                     <div className={styles.summaryGrid}>
                         <div className={styles.summaryItem}>
-                            <span className={styles.summaryLabel}>Đã thu</span>
+                            <span className={styles.summaryLabel}>Tổng doanh thu</span>
                             <span className={`${styles.summaryValue} ${styles.total}`}>
                                 {formatCurrency(stats.totalRevenue)}
                             </span>
@@ -172,6 +172,33 @@ export default function RevenueManagement() {
                             </span>
                         </div>
                     </div>
+
+                    {/* Payment Method Breakdown */}
+                    {stats.byPaymentMethod?.length > 0 && (
+                        <div className={styles.paymentMethodSection}>
+                            <h4>💳 Doanh thu theo phương thức thanh toán</h4>
+                            <div className={styles.paymentMethodGrid}>
+                                {stats.byPaymentMethod.map((method, idx) => (
+                                    <div key={idx} className={`${styles.methodCard} ${styles[method.payment_method]}`}>
+                                        <div className={styles.methodIcon}>
+                                            {method.payment_method === 'cash' ? '💵' :
+                                                method.payment_method === 'vnpay' ? '📱' :
+                                                    method.payment_method === 'transfer' ? '🏦' : '💳'}
+                                        </div>
+                                        <div className={styles.methodInfo}>
+                                            <span className={styles.methodName}>
+                                                {method.payment_method === 'cash' ? 'Tiền mặt' :
+                                                    method.payment_method === 'vnpay' ? 'VNPay' :
+                                                        method.payment_method === 'transfer' ? 'Chuyển khoản' : 'Thẻ'}
+                                            </span>
+                                            <span className={styles.methodCount}>{method.count} giao dịch</span>
+                                            <span className={styles.methodTotal}>{formatCurrency(method.total)}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -235,6 +262,7 @@ export default function RevenueManagement() {
                                         <th>Phí khám</th>
                                         <th>Tiền thuốc</th>
                                         <th>Tổng</th>
+                                        <th>Phương thức</th>
                                         <th>Trạng thái</th>
                                         <th>Ngày tạo</th>
                                     </tr>
@@ -247,6 +275,13 @@ export default function RevenueManagement() {
                                             <td>{formatCurrency(inv.service_fee)}</td>
                                             <td>{formatCurrency(inv.drug_fee)}</td>
                                             <td className={styles.totalCell}>{formatCurrency(inv.total_amount)}</td>
+                                            <td>
+                                                <span className={`${styles.paymentMethod} ${styles[inv.payment_method]}`}>
+                                                    {inv.payment_method === 'cash' ? '💵 Tiền mặt' :
+                                                        inv.payment_method === 'vnpay' ? '📱 VNPay' :
+                                                            inv.payment_method === 'transfer' ? '🏦 CK' : '💳 Thẻ'}
+                                                </span>
+                                            </td>
                                             <td>
                                                 <span className={`${styles.status} ${styles[inv.payment_status]}`}>
                                                     {inv.payment_status === 'paid' ? '✅ Đã TT' :

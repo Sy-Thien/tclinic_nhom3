@@ -34,13 +34,21 @@ export default function DoctorDetail() {
             navigate('/login');
             return;
         }
-        // Navigate đến trang booking với params
+
+        // ✅ Validate doctor trước khi navigate
+        if (!doctor) {
+            alert('❌ Không tìm thấy thông tin bác sĩ');
+            return;
+        }
+
+        // Navigate đến trang booking với params (KHÔNG truyền date/time)
         const params = new URLSearchParams();
         params.set('doctor', id);
         params.set('doctor_name', doctor.name || doctor.full_name);
         if (doctor.specialty?.id || doctor.specialty_id) {
             params.set('specialty', doctor.specialty?.id || doctor.specialty_id);
         }
+        // ❌ KHÔNG truyền date/time - để user chọn trong Booking page
         navigate(`/booking?${params.toString()}`);
     };
 

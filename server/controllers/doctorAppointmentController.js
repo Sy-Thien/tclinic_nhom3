@@ -5,6 +5,12 @@ const { Op } = require('sequelize');
 exports.getWorkSchedule = async (req, res) => {
     try {
         const doctor_id = req.user.doctor_id || req.user.id;
+        console.log('📅 GET work schedule for doctor:', doctor_id);
+
+        if (!DoctorSchedule) {
+            console.error('❌ DoctorSchedule model is undefined!');
+            return res.status(500).json({ message: 'DoctorSchedule model not loaded' });
+        }
 
         const schedules = await DoctorSchedule.findAll({
             where: { doctor_id },
@@ -12,6 +18,8 @@ exports.getWorkSchedule = async (req, res) => {
                 ['day_of_week', 'ASC']
             ]
         });
+
+        console.log('✅ Found schedules:', schedules.length);
 
         // Sắp xếp theo thứ tự thực tế (Thứ 2 trước, Chủ nhật cuối)
         const dayOrder = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật'];
@@ -21,7 +29,8 @@ exports.getWorkSchedule = async (req, res) => {
 
     } catch (error) {
         console.error('❌ Get work schedule error:', error);
-        res.status(500).json({ message: 'Lỗi server', error: error.message });
+        console.error('Error stack:', error.stack);
+        res.status(500).json({ message: 'Lỗi server', error: error.message, stack: error.stack });
     }
 };
 

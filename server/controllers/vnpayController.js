@@ -7,10 +7,10 @@ const crypto = require('crypto');
 const querystring = require('qs');
 const moment = require('moment');
 const vnpayConfig = require('../config/vnpay');
-const { Invoice } = require('../models');
+const { Invoice, InvoiceItem } = require('../models');
 
 /**
- * Sắp xếp object theo key
+ * Sắp xếp object theo key - ĐÚNG THEO CODE MẪU VNPAY
  */
 function sortObject(obj) {
     let sorted = {};
@@ -34,6 +34,8 @@ function sortObject(obj) {
  */
 exports.createPayment = async (req, res) => {
     try {
+        process.env.TZ = 'Asia/Ho_Chi_Minh';
+
         const { invoice_id, amount, order_info, bank_code } = req.body;
 
         if (!invoice_id || !amount) {
@@ -57,32 +59,29 @@ exports.createPayment = async (req, res) => {
 
         const tmnCode = vnpayConfig.vnp_TmnCode;
         const secretKey = vnpayConfig.vnp_HashSecret;
-        const vnpUrl = vnpayConfig.vnp_Url;
+        let vnpUrl = vnpayConfig.vnp_Url;
         const returnUrl = vnpayConfig.vnp_ReturnUrl;
 
         const date = new Date();
         const createDate = moment(date).format('YYYYMMDDHHmmss');
-        const orderId = `INV${invoice_id}_${moment(date).format('HHmmss')}`;
-        const expireDate = moment(date).add(15, 'minutes').format('YYYYMMDDHHmmss');
+        // Tạo orderId unique: invoice_id + timestamp để tránh trùng
+        const orderId = `${invoice_id}${moment(date).format('HHmmss')}`;
 
-        let vnp_Params = {
-            'vnp_Version': vnpayConfig.vnp_Version,
-            'vnp_Command': vnpayConfig.vnp_Command,
-            'vnp_TmnCode': tmnCode,
-            'vnp_Locale': vnpayConfig.vnp_Locale,
-            'vnp_CurrCode': vnpayConfig.vnp_CurrCode,
-            'vnp_TxnRef': orderId,
-            'vnp_OrderInfo': order_info || `Thanh toan hoa don ${invoice.invoice_code}`,
-            'vnp_OrderType': vnpayConfig.vnp_OrderType,
-            'vnp_Amount': Math.round(amount * 100), // VNPay yêu cầu số tiền * 100
-            'vnp_ReturnUrl': returnUrl,
-            'vnp_IpAddr': ipAddr,
-            'vnp_CreateDate': createDate,
-            'vnp_ExpireDate': expireDate
-        };
+        let vnp_Params = {};
+        vnp_Params['vnp_Version'] = '2.1.0';
+        vnp_Params['vnp_Command'] = 'pay';
+        vnp_Params['vnp_TmnCode'] = tmnCode;
+        vnp_Params['vnp_Locale'] = 'vn';
+        vnp_Params['vnp_CurrCode'] = 'VND';
+        vnp_Params['vnp_TxnRef'] = orderId;
+        vnp_Params['vnp_OrderInfo'] = 'Thanh toan hoa don ' + invoice.invoice_code;
+        vnp_Params['vnp_OrderType'] = 'other';
+        vnp_Params['vnp_Amount'] = amount * 100;
+        vnp_Params['vnp_ReturnUrl'] = returnUrl;
+        vnp_Params['vnp_IpAddr'] = ipAddr;
+        vnp_Params['vnp_CreateDate'] = createDate;
 
-        // Thêm bank code nếu có
-        if (bank_code) {
+        if (bank_code && bank_code !== '') {
             vnp_Params['vnp_BankCode'] = bank_code;
         }
 
@@ -93,7 +92,7 @@ exports.createPayment = async (req, res) => {
         const signed = hmac.update(Buffer.from(signData, 'utf-8')).digest("hex");
         vnp_Params['vnp_SecureHash'] = signed;
 
-        const paymentUrl = vnpUrl + '?' + querystring.stringify(vnp_Params, { encode: false });
+        vnpUrl += '?' + querystring.stringify(vnp_Params, { encode: false });
 
         // Lưu transaction reference vào invoice
         await invoice.update({
@@ -102,10 +101,11 @@ exports.createPayment = async (req, res) => {
         });
 
         console.log('✅ VNPay payment URL created:', orderId);
+        console.log('🔗 Payment URL:', vnpUrl);
 
         res.json({
             success: true,
-            paymentUrl: paymentUrl,
+            paymentUrl: vnpUrl,
             orderId: orderId
         });
 
@@ -166,6 +166,14 @@ exports.vnpayReturn = async (req, res) => {
                     notes: `Thanh toán VNPay thành công. Bank: ${bankCode}. Amount: ${amount.toLocaleString('vi-VN')}đ`
                 });
 
+                // Lấy chi tiết hóa đơn bao gồm items
+                const invoiceWithItems = await Invoice.findByPk(invoice.id, {
+                    include: [{
+                        model: InvoiceItem,
+                        as: 'items'
+                    }]
+                });
+
                 console.log('✅ VNPay payment successful:', transactionNo);
 
                 res.json({
@@ -173,11 +181,13 @@ exports.vnpayReturn = async (req, res) => {
                     code: responseCode,
                     message: 'Thanh toán thành công',
                     data: {
-                        invoice_id: invoice.id,
-                        invoice_code: invoice.invoice_code,
+                        invoice_id: invoiceWithItems.id,
+                        invoice_code: invoiceWithItems.invoice_code,
                         amount: amount,
                         transaction_no: transactionNo,
-                        bank_code: bankCode
+                        bank_code: bankCode,
+                        // Thêm thông tin chi tiết hóa đơn
+                        invoice: invoiceWithItems.toJSON()
                     }
                 });
             } else {

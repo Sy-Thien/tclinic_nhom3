@@ -90,7 +90,34 @@ export default function DoctorDetail() {
         if (doctor.specialty_id) {
             params.set('specialty', doctor.specialty_id);
         }
+
+        // ✅ Validate ngày/giờ trước khi truyền params
         if (slot && selectedDate) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const slotDate = new Date(selectedDate + 'T00:00:00');
+
+            // Kiểm tra ngày không quá khứ
+            if (slotDate < today) {
+                alert('⚠️ Không thể đặt lịch cho ngày trong quá khứ');
+                return;
+            }
+
+            // Kiểm tra giờ không quá khứ (nếu là hôm nay)
+            if (slotDate.toDateString() === today.toDateString()) {
+                const startTime = slot.start_time?.substring(0, 5);
+                if (startTime) {
+                    const [hours, minutes] = startTime.split(':').map(Number);
+                    const slotMinutes = hours * 60 + minutes;
+                    const currentMinutes = new Date().getHours() * 60 + new Date().getMinutes() + 30;
+
+                    if (slotMinutes < currentMinutes) {
+                        alert('⚠️ Khung giờ này đã qua. Vui lòng chọn giờ khác.');
+                        return;
+                    }
+                }
+            }
+
             params.set('date', selectedDate);
             params.set('time', slot.start_time?.substring(0, 5));
         }

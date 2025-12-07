@@ -26,12 +26,42 @@ exports.createBooking = async (req, res) => {
             return res.status(400).json({ message: 'Vui lòng điền đầy đủ thông tin bắt buộc' });
         }
 
+        // ✅ Validate specialty tồn tại
+        const specialty = await Specialty.findByPk(specialty_id);
+        if (!specialty) {
+            return res.status(404).json({ message: 'Chuyên khoa không tồn tại' });
+        }
+
+        // ✅ Validate service nếu có
+        if (service_id) {
+            const service = await Service.findByPk(service_id);
+            if (!service) {
+                return res.status(404).json({ message: 'Dịch vụ không tồn tại' });
+            }
+            if (service.specialty_id && service.specialty_id !== Number(specialty_id)) {
+                return res.status(400).json({ message: 'Dịch vụ không thuộc chuyên khoa được chọn' });
+            }
+        }
+
         // ✅ Validate ngày không được là quá khứ
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const selectedDate = new Date(appointment_date + 'T00:00:00');
         if (selectedDate < today) {
             return res.status(400).json({ message: 'Không thể đặt lịch cho ngày trong quá khứ' });
+        }
+
+        // ✅ Validate giờ không quá khứ (nếu là hôm nay)
+        if (appointment_time && selectedDate.toDateString() === today.toDateString()) {
+            const [hours, minutes] = appointment_time.split(':').map(Number);
+            const appointmentMinutes = hours * 60 + minutes;
+            const currentMinutes = new Date().getHours() * 60 + new Date().getMinutes() + 30; // +30 phút buffer
+
+            if (appointmentMinutes < currentMinutes) {
+                return res.status(400).json({
+                    message: `Không thể đặt lịch cho giờ ${appointment_time} (đã qua). Vui lòng chọn giờ sau ${Math.floor(currentMinutes / 60)}:${String(currentMinutes % 60).padStart(2, '0')}.`
+                });
+            }
         }
 
         // Generate booking code
@@ -43,6 +73,18 @@ exports.createBooking = async (req, res) => {
             const patientExists = await Patient.findByPk(req.user.id);
             if (patientExists) {
                 patient_id = req.user.id;
+            }
+        }
+
+        // ✅ Validate doctor nếu có
+        if (doctor_id) {
+            const doctor = await Doctor.findByPk(doctor_id);
+            if (!doctor) {
+                return res.status(404).json({ message: 'Bác sĩ không tồn tại' });
+            }
+            // Kiểm tra doctor có thuộc specialty không (nếu doctor có specialty_id)
+            if (doctor.specialty_id && doctor.specialty_id !== Number(specialty_id)) {
+                return res.status(400).json({ message: 'Bác sĩ không thuộc chuyên khoa được chọn' });
             }
         }
 

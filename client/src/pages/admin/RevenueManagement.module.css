@@ -390,6 +390,114 @@
     color: #d97706;
 }
 
+/* Payment Method Section */
+.paymentMethodSection {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.paymentMethodSection h4 {
+    margin: 0 0 1rem;
+    font-size: 1rem;
+    color: #475569;
+}
+
+.paymentMethodGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.methodCard {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s;
+}
+
+.methodCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.methodCard.cash {
+    border-left: 4px solid #16a34a;
+}
+
+.methodCard.vnpay {
+    border-left: 4px solid #2563eb;
+}
+
+.methodCard.transfer {
+    border-left: 4px solid #8b5cf6;
+}
+
+.methodCard.card {
+    border-left: 4px solid #f59e0b;
+}
+
+.methodIcon {
+    font-size: 2rem;
+}
+
+.methodInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.methodName {
+    font-weight: 600;
+    color: #334155;
+}
+
+.methodCount {
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.methodTotal {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #16a34a;
+}
+
+/* Payment Method Badge in Table */
+.paymentMethod {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.paymentMethod.cash {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.paymentMethod.vnpay {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.paymentMethod.transfer {
+    background: #ede9fe;
+    color: #7c3aed;
+}
+
+.paymentMethod.card {
+    background: #fef3c7;
+    color: #b45309;
+}
+
 .noInvoices {
     text-align: center;
     padding: 2rem;

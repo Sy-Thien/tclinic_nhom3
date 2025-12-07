@@ -12,6 +12,7 @@ export default function WalkInRegistration() {
     const [selectedPatient, setSelectedPatient] = useState(null);
     const [specialties, setSpecialties] = useState([]);
     const [services, setServices] = useState([]);
+    const [doctorInfo, setDoctorInfo] = useState(null); // ✅ Thông tin bác sĩ hiện tại
 
     const [formData, setFormData] = useState({
         full_name: '',
@@ -29,9 +30,38 @@ export default function WalkInRegistration() {
     const [errors, setErrors] = useState({});
 
     useEffect(() => {
+        fetchDoctorInfo(); // ✅ Lấy thông tin bác sĩ trước
         fetchSpecialties();
         fetchServices();
     }, []);
+
+    // ✅ Lấy thông tin bác sĩ hiện tại
+    const fetchDoctorInfo = async () => {
+        try {
+            const user = JSON.parse(localStorage.getItem('user'));
+            console.log('👤 Current user:', user); // Debug
+
+            if (user && user.role === 'doctor') {
+                // Lấy thông tin chi tiết bác sĩ từ API
+                const response = await api.get('/api/doctor/profile');
+                const doctor = response.data;
+                console.log('👨‍⚕️ Doctor profile:', doctor); // Debug
+                setDoctorInfo(doctor);
+
+                // ✅ Tự động set chuyên khoa của bác sĩ
+                if (doctor.specialty_id) {
+                    console.log('✅ Setting specialty_id:', doctor.specialty_id); // Debug
+                    setFormData(prev => ({
+                        ...prev,
+                        specialty_id: doctor.specialty_id.toString()
+                    }));
+                }
+            }
+        } catch (error) {
+            console.error('❌ Error fetching doctor info:', error);
+            console.error('Error details:', error.response?.data);
+        }
+    };
 
     // Tìm kiếm bệnh nhân khi nhập SĐT
     useEffect(() => {
@@ -350,12 +380,22 @@ export default function WalkInRegistration() {
                         <div className={styles.formRow}>
                             <div className={styles.formGroup}>
                                 <label>Chuyên khoa</label>
-                                <select name="specialty_id" value={formData.specialty_id} onChange={handleChange}>
+                                <select
+                                    name="specialty_id"
+                                    value={formData.specialty_id}
+                                    onChange={handleChange}
+                                    disabled={!!doctorInfo?.specialty_id} // ✅ Disable nếu đã có chuyên khoa mặc định
+                                >
                                     <option value="">-- Chọn chuyên khoa --</option>
                                     {specialties.map(spec => (
                                         <option key={spec.id} value={spec.id}>{spec.name}</option>
                                     ))}
                                 </select>
+                                {doctorInfo?.specialty_id && (
+                                    <span className={styles.hint}>
+                                        ✓ Tự động chọn chuyên khoa của bạn
+                                    </span>
+                                )}
                             </div>
 
                             <div className={styles.formGroup}>

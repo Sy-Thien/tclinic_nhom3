@@ -62,6 +62,60 @@ export default function Booking() {
         }
     }, []);
 
+    // ✅ Validate params từ URL ngay khi load
+    useEffect(() => {
+        const validateURLParams = () => {
+            let hasInvalidParams = false;
+            const newParams = new URLSearchParams(searchParams);
+
+            // Validate date từ URL
+            const dateParam = searchParams.get('date');
+            if (dateParam) {
+                const selectedDate = new Date(dateParam + 'T00:00:00');
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                if (selectedDate < today) {
+                    console.warn('⚠️ Ngày trong URL đã qua:', dateParam);
+                    newParams.delete('date');
+                    setFormData(prev => ({ ...prev, appointment_date: '' }));
+                    hasInvalidParams = true;
+                }
+            }
+
+            // Validate time từ URL (nếu là hôm nay)
+            const timeParam = searchParams.get('time');
+            if (timeParam && dateParam) {
+                const selectedDate = new Date(dateParam + 'T00:00:00');
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                if (selectedDate.toDateString() === today.toDateString()) {
+                    const [hours, minutes] = timeParam.split(':').map(Number);
+                    if (!isNaN(hours) && !isNaN(minutes)) {
+                        const slotTimeInMinutes = hours * 60 + minutes;
+                        const currentTimeInMinutes = new Date().getHours() * 60 + new Date().getMinutes() + 30;
+
+                        if (slotTimeInMinutes < currentTimeInMinutes) {
+                            console.warn('⚠️ Giờ trong URL đã qua:', timeParam);
+                            newParams.delete('time');
+                            setFormData(prev => ({ ...prev, appointment_time: '' }));
+                            hasInvalidParams = true;
+                        }
+                    }
+                }
+            }
+
+            // Nếu có params không hợp lệ, update URL
+            if (hasInvalidParams) {
+                navigate({ search: newParams.toString() }, { replace: true });
+                alert('⚠️ Một số thông tin từ URL không hợp lệ (ngày/giờ đã qua) và đã được loại bỏ. Vui lòng chọn lại.');
+            }
+        };
+
+        validateURLParams();
+    }, []);
+
     // Load specialties
     useEffect(() => {
         fetchSpecialties();

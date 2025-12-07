@@ -247,12 +247,19 @@ export default function ServiceDetail() {
                                 <button
                                     className={styles.btnSelectDoctor}
                                     onClick={() => {
-                                        // Navigate đến trang booking với params
+                                        // ✅ Validate trước khi navigate
+                                        if (!doctor || !service) {
+                                            alert('❌ Thông tin không đầy đủ');
+                                            return;
+                                        }
+
+                                        // Navigate đến trang booking với params (KHÔNG truyền date/time)
                                         const params = new URLSearchParams();
                                         params.set('doctor', doctor.id);
                                         params.set('specialty', service.specialty_id);
                                         params.set('service', service.id);
                                         params.set('doctor_name', doctor.full_name);
+                                        // ❌ KHÔNG truyền date/time - để user chọn trong Booking page
                                         navigate(`/booking?${params.toString()}`);
                                     }}
                                 >

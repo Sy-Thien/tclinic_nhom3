@@ -54,6 +54,8 @@ export default function VNPayReturn() {
         );
     }
 
+    const invoice = result?.data?.invoice;
+
     return (
         <div className={styles.container}>
             <div className={styles.card}>
@@ -61,15 +63,85 @@ export default function VNPayReturn() {
                     <div className={styles.success}>
                         <div className={styles.icon}>✅</div>
                         <h1>Thanh toán thành công!</h1>
-                        <div className={styles.details}>
-                            <div className={styles.row}>
-                                <span>Mã hóa đơn:</span>
-                                <strong>{result.data?.invoice_code}</strong>
+
+                        {/* Thông tin hóa đơn */}
+                        <div className={styles.invoiceSection}>
+                            <h2>📋 Hóa đơn</h2>
+                            <div className={styles.invoiceHeader}>
+                                <div className={styles.row}>
+                                    <span>Mã hóa đơn:</span>
+                                    <strong>{result.data?.invoice_code}</strong>
+                                </div>
+                                <div className={styles.row}>
+                                    <span>Bệnh nhân:</span>
+                                    <strong>{invoice?.patient_name}</strong>
+                                </div>
+                                {invoice?.patient_phone && (
+                                    <div className={styles.row}>
+                                        <span>Điện thoại:</span>
+                                        <strong>{invoice.patient_phone}</strong>
+                                    </div>
+                                )}
+                                <div className={styles.row}>
+                                    <span>Bác sĩ:</span>
+                                    <strong>{invoice?.doctor_name}</strong>
+                                </div>
                             </div>
-                            <div className={styles.row}>
-                                <span>Số tiền:</span>
-                                <strong>{Number(result.data?.amount).toLocaleString('vi-VN')}đ</strong>
+
+                            {/* Chi tiết items */}
+                            {invoice?.items && invoice.items.length > 0 && (
+                                <div className={styles.itemsSection}>
+                                    <h3>Chi tiết dịch vụ và thuốc</h3>
+                                    <div className={styles.itemsList}>
+                                        {invoice.items.map((item, idx) => (
+                                            <div key={idx} className={styles.itemRow}>
+                                                <span className={styles.itemIcon}>
+                                                    {item.item_type === 'service' ? '🏥' : '💊'}
+                                                </span>
+                                                <div className={styles.itemInfo}>
+                                                    <div className={styles.itemName}>{item.item_name}</div>
+                                                    {item.note && (
+                                                        <div className={styles.itemNote}>{item.note}</div>
+                                                    )}
+                                                </div>
+                                                <div className={styles.itemQty}>
+                                                    {item.quantity} {item.unit}
+                                                </div>
+                                                <div className={styles.itemPrice}>
+                                                    {Number(item.total_price).toLocaleString('vi-VN')}đ
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Tổng tiền */}
+                            <div className={styles.feeBreakdown}>
+                                <div className={styles.feeRow}>
+                                    <span>Phí khám:</span>
+                                    <span>{Number(invoice?.service_fee || 0).toLocaleString('vi-VN')}đ</span>
+                                </div>
+                                <div className={styles.feeRow}>
+                                    <span>Tiền thuốc:</span>
+                                    <span>{Number(invoice?.drug_fee || 0).toLocaleString('vi-VN')}đ</span>
+                                </div>
+                                {invoice?.discount > 0 && (
+                                    <div className={`${styles.feeRow} ${styles.discount}`}>
+                                        <span>Giảm giá:</span>
+                                        <span>-{Number(invoice.discount).toLocaleString('vi-VN')}đ</span>
+                                    </div>
+                                )}
+                                <div className={`${styles.feeRow} ${styles.total}`}>
+                                    <span>Tổng cộng:</span>
+                                    <strong>{Number(invoice?.total_amount || result.data?.amount).toLocaleString('vi-VN')}đ</strong>
+                                </div>
                             </div>
+                        </div>
+
+                        {/* Thông tin thanh toán */}
+                        <div className={styles.paymentInfo}>
+                            <h3>💳 Thông tin thanh toán</h3>
                             <div className={styles.row}>
                                 <span>Mã giao dịch:</span>
                                 <strong>{result.data?.transaction_no}</strong>
@@ -78,7 +150,12 @@ export default function VNPayReturn() {
                                 <span>Ngân hàng:</span>
                                 <strong>{result.data?.bank_code}</strong>
                             </div>
+                            <div className={styles.row}>
+                                <span>Phương thức:</span>
+                                <strong>VNPay</strong>
+                            </div>
                         </div>
+
                         <p className={styles.message}>{result.message}</p>
                     </div>
                 ) : (
@@ -96,6 +173,14 @@ export default function VNPayReturn() {
                     <button className={styles.primaryBtn} onClick={handleGoBack}>
                         ← Quay lại
                     </button>
+                    {result?.success && invoice && (
+                        <button
+                            className={styles.printBtn}
+                            onClick={() => window.print()}
+                        >
+                            🖨️ In hóa đơn
+                        </button>
+                    )}
                     {!result?.success && (
                         <button
                             className={styles.secondaryBtn}

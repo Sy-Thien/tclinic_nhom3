@@ -22,7 +22,8 @@ exports.createWalkInPatient = async (req, res) => {
 
         const doctor_id = req.user.id;
 
-        console.log('🚶 POST /api/doctor/walk-in', { full_name, phone, doctor_id });
+        console.log('🚶 POST /api/doctor/walk-in - Request body:', req.body);
+        console.log('👤 Doctor ID:', doctor_id);
 
         // Validate required fields
         if (!full_name || !phone || !symptoms) {
@@ -41,9 +42,14 @@ exports.createWalkInPatient = async (req, res) => {
             });
         }
 
-        // Kiểm tra bệnh nhân đã tồn tại (theo SĐT)
+        // Kiểm tra bệnh nhân đã tồn tại (theo SĐT hoặc Email)
         let patient = await Patient.findOne({
-            where: { phone }
+            where: {
+                [Op.or]: [
+                    { phone },
+                    ...(email ? [{ email }] : [])
+                ]
+            }
         });
 
         let isNewPatient = false;
@@ -68,6 +74,7 @@ exports.createWalkInPatient = async (req, res) => {
             // Cập nhật thông tin nếu có thay đổi
             await patient.update({
                 full_name,
+                phone: phone || patient.phone, // Cập nhật phone nếu khác
                 email: email || patient.email,
                 gender: gender || patient.gender,
                 birthday: birthday || patient.birthday,
@@ -95,7 +102,7 @@ exports.createWalkInPatient = async (req, res) => {
             patient_address: address || null,
             doctor_id: doctor_id,
             specialty_id: specialty_id || doctor.specialty_id,
-            service_id: service_id || 1,
+            service_id: service_id || null, // ✅ Cho phép null nếu không chọn dịch vụ
             appointment_date: appointmentDate,
             appointment_time: currentTime,
             symptoms,

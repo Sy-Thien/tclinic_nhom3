@@ -73,8 +73,7 @@ export default function PaymentModal({
                 const response = await api.post('/api/invoices', {
                     booking_id: bookingId,
                     prescription_id: prescriptionId,
-                    payment_method: paymentMethod,
-                    discount: discount
+                    payment_method: paymentMethod
                 });
                 currentInvoice = response.data.invoice;
                 setInvoice(currentInvoice);
@@ -244,37 +243,17 @@ export default function PaymentModal({
                                             </div>
                                         )}
 
-                                        {/* Discount input */}
-                                        <div className={styles.discountGroup}>
-                                            <label>🏷️ Giảm giá (VNĐ):</label>
-                                            <input
-                                                type="number"
-                                                value={discount}
-                                                onChange={(e) => setDiscount(Number(e.target.value))}
-                                                min="0"
-                                            />
-                                        </div>
-
                                         {/* Total preview */}
                                         <div className={`${styles.feeRow} ${styles.totalPreview}`}>
                                             <span>💰 Tổng cộng:</span>
                                             <span className={styles.totalAmount}>
-                                                {(Number(previewData.service_fee || 0) + Number(previewData.drug_fee || 0) - Number(discount || 0)).toLocaleString('vi-VN')}đ
+                                                {(Number(previewData.service_fee || 0) + Number(previewData.drug_fee || 0)).toLocaleString('vi-VN')}đ
                                             </span>
                                         </div>
                                     </div>
                                 ) : (
                                     <div className={styles.noPreview}>
                                         <p>Không có thông tin chi phí</p>
-                                        <div className={styles.discountGroup}>
-                                            <label>Giảm giá (VNĐ):</label>
-                                            <input
-                                                type="number"
-                                                value={discount}
-                                                onChange={(e) => setDiscount(Number(e.target.value))}
-                                                min="0"
-                                            />
-                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -304,26 +283,6 @@ export default function PaymentModal({
                                             onChange={(e) => setPaymentMethod(e.target.value)}
                                         />
                                         📱 VNPay
-                                    </label>
-                                    <label className={paymentMethod === 'transfer' ? styles.active : ''}>
-                                        <input
-                                            type="radio"
-                                            name="method"
-                                            value="transfer"
-                                            checked={paymentMethod === 'transfer'}
-                                            onChange={(e) => setPaymentMethod(e.target.value)}
-                                        />
-                                        🏦 Chuyển khoản
-                                    </label>
-                                    <label className={paymentMethod === 'card' ? styles.active : ''}>
-                                        <input
-                                            type="radio"
-                                            name="method"
-                                            value="card"
-                                            checked={paymentMethod === 'card'}
-                                            onChange={(e) => setPaymentMethod(e.target.value)}
-                                        />
-                                        💳 Thẻ
                                     </label>
                                 </div>
                             </div>

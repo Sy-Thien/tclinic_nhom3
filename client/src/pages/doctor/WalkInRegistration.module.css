@@ -293,6 +293,38 @@
     font-style: italic;
 }
 
+.autoFilled {
+    background-color: #f7fafc !important;
+    color: #2d3748 !important;
+    font-weight: 600;
+    border: 2px solid #cbd5e0 !important;
+    cursor: not-allowed;
+}
+
+.priceInfo {
+    margin-top: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.priceLabel {
+    color: white;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.priceValue {
+    color: #ffd700;
+    font-weight: 700;
+    font-size: 1.2rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
 .formRow {
     display: grid;
     grid-template-columns: 1fr 1fr;

@@ -13,6 +13,7 @@ export default function WalkInRegistration() {
     const [specialties, setSpecialties] = useState([]);
     const [services, setServices] = useState([]);
     const [doctorInfo, setDoctorInfo] = useState(null); // ✅ Thông tin bác sĩ hiện tại
+    const [selectedService, setSelectedService] = useState(null); // ✅ Dịch vụ được chọn (để lấy giá)
 
     const [formData, setFormData] = useState({
         full_name: '',
@@ -44,7 +45,7 @@ export default function WalkInRegistration() {
             if (user && user.role === 'doctor') {
                 // Lấy thông tin chi tiết bác sĩ từ API
                 const response = await api.get('/api/doctor/profile');
-                const doctor = response.data;
+                const doctor = response.data.data; // ✅ Lấy data.data vì response có {success, data}
                 console.log('👨‍⚕️ Doctor profile:', doctor); // Debug
                 setDoctorInfo(doctor);
 
@@ -173,6 +174,12 @@ export default function WalkInRegistration() {
         // Nếu thay đổi chuyên khoa, reset dịch vụ
         if (name === 'specialty_id') {
             setFormData(prev => ({ ...prev, [name]: value, service_id: '' }));
+            setSelectedService(null);
+        } else if (name === 'service_id') {
+            // Khi chọn dịch vụ, tự động lấy thông tin giá
+            const service = services.find(s => s.id === parseInt(value));
+            setSelectedService(service);
+            setFormData(prev => ({ ...prev, [name]: value }));
         } else {
             setFormData(prev => ({ ...prev, [name]: value }));
         }
@@ -187,6 +194,14 @@ export default function WalkInRegistration() {
     const filteredServices = formData.specialty_id
         ? services.filter(svc => svc.specialty_id === parseInt(formData.specialty_id))
         : services;
+
+    // Debug: Log ra để kiểm tra
+    console.log('🔍 Filter Info:', {
+        specialty_id: formData.specialty_id,
+        total_services: services.length,
+        filtered_services: filteredServices.length,
+        doctorSpecialtyId: doctorInfo?.specialty_id
+    });
 
     const validateForm = () => {
         const newErrors = {};
@@ -205,6 +220,11 @@ export default function WalkInRegistration() {
             newErrors.symptoms = 'Vui lòng nhập triệu chứng/lý do khám';
         }
 
+        // ✅ Validate service_id (bắt buộc chọn dịch vụ)
+        if (!formData.service_id) {
+            newErrors.service_id = 'Vui lòng chọn dịch vụ khám';
+        }
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -218,7 +238,17 @@ export default function WalkInRegistration() {
 
         try {
             setLoading(true);
-            const response = await api.post('/api/doctor/walk-in', formData);
+
+            // ✅ Chuẩn bị data - convert string sang number cho specialty_id và service_id
+            const submitData = {
+                ...formData,
+                specialty_id: formData.specialty_id ? parseInt(formData.specialty_id) : null,
+                service_id: formData.service_id ? parseInt(formData.service_id) : null
+            };
+
+            console.log('📤 Submitting walk-in data:', submitData);
+
+            const response = await api.post('/api/doctor/walk-in', submitData);
 
             if (response.data.success) {
                 alert(response.data.message);
@@ -380,31 +410,25 @@ export default function WalkInRegistration() {
                         <div className={styles.formRow}>
                             <div className={styles.formGroup}>
                                 <label>Chuyên khoa</label>
-                                <select
-                                    name="specialty_id"
-                                    value={formData.specialty_id}
-                                    onChange={handleChange}
-                                    disabled={!!doctorInfo?.specialty_id} // ✅ Disable nếu đã có chuyên khoa mặc định
-                                >
-                                    <option value="">-- Chọn chuyên khoa --</option>
-                                    {specialties.map(spec => (
-                                        <option key={spec.id} value={spec.id}>{spec.name}</option>
-                                    ))}
-                                </select>
-                                {doctorInfo?.specialty_id && (
-                                    <span className={styles.hint}>
-                                        ✓ Tự động chọn chuyên khoa của bạn
-                                    </span>
-                                )}
+                                <input
+                                    type="text"
+                                    value={doctorInfo?.Specialty?.name || 'Đang tải...'}
+                                    disabled
+                                    className={styles.autoFilled}
+                                />
+                                <span className={styles.hint}>
+                                    ✓ Tự động lấy theo chuyên khoa của bạn
+                                </span>
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label>Dịch vụ</label>
+                                <label>Dịch vụ <span className={styles.required}>*</span></label>
                                 <select
                                     name="service_id"
                                     value={formData.service_id}
                                     onChange={handleChange}
                                     disabled={!formData.specialty_id}
+                                    className={errors.service_id ? styles.inputError : ''}
                                 >
                                     <option value="">
                                         {formData.specialty_id
@@ -412,11 +436,22 @@ export default function WalkInRegistration() {
                                             : '-- Chọn chuyên khoa trước --'}
                                     </option>
                                     {filteredServices.map(svc => (
-                                        <option key={svc.id} value={svc.id}>{svc.name}</option>
+                                        <option key={svc.id} value={svc.id}>
+                                            {svc.name} - {parseInt(svc.price).toLocaleString('vi-VN')}đ
+                                        </option>
                                     ))}
                                 </select>
+                                {errors.service_id && <span className={styles.error}>{errors.service_id}</span>}
                                 {formData.specialty_id && filteredServices.length === 0 && (
                                     <span className={styles.hint}>Không có dịch vụ cho chuyên khoa này</span>
+                                )}
+                                {selectedService && (
+                                    <div className={styles.priceInfo}>
+                                        <span className={styles.priceLabel}>💰 Chi phí khám:</span>
+                                        <span className={styles.priceValue}>
+                                            {parseInt(selectedService.price).toLocaleString('vi-VN')} VNĐ
+                                        </span>
+                                    </div>
                                 )}
                             </div>
                         </div>

@@ -1,4 +1,4 @@
-const { Doctor } = require('../models');
+const { Doctor, Specialty } = require('../models');
 const bcrypt = require('bcrypt');
 
 // ✅ GET - Lấy thông tin bác sĩ
@@ -8,7 +8,14 @@ exports.getDoctorProfile = async (req, res) => {
         console.log(`📋 GET /api/doctor/profile/${doctor_id}`);
 
         const doctor = await Doctor.findByPk(doctor_id, {
-            attributes: { exclude: ['password'] }
+            attributes: { exclude: ['password'] },
+            include: [
+                {
+                    model: Specialty,
+                    as: 'specialty',
+                    attributes: ['id', 'name', 'description']
+                }
+            ]
         });
 
         if (!doctor) {
@@ -18,10 +25,15 @@ exports.getDoctorProfile = async (req, res) => {
             });
         }
 
-        console.log(`✅ Found doctor: ${doctor.full_name}`);
+        console.log(`✅ Found doctor: ${doctor.full_name}, Specialty: ${doctor.specialty?.name}`);
+
+        // Convert to plain object and map specialty to Specialty for frontend compatibility
+        const doctorData = doctor.toJSON();
+        doctorData.Specialty = doctorData.specialty;
+
         res.json({
             success: true,
-            data: doctor
+            data: doctorData
         });
     } catch (error) {
         console.error('❌ Error fetching doctor profile:', error);

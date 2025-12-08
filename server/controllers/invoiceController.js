@@ -188,6 +188,15 @@ exports.updatePaymentStatus = async (req, res) => {
 
         await invoice.update(updateData);
 
+        // ✅ Tự động cập nhật booking thành completed khi thanh toán xong
+        if (payment_status === 'paid' && invoice.booking_id) {
+            const booking = await Booking.findByPk(invoice.booking_id);
+            if (booking && booking.status !== 'completed') {
+                await booking.update({ status: 'completed' });
+                console.log(`✅ Booking ${booking.booking_code} marked as completed`);
+            }
+        }
+
         console.log(`✅ Updated invoice ${invoice.invoice_code} status to ${payment_status}`);
 
         res.json({ message: 'Cập nhật thành công', invoice });

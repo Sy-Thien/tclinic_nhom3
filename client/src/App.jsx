@@ -48,6 +48,7 @@ import AdminServices from './pages/admin/Services';
 import AdminReports from './pages/admin/AdminReports';
 import AdminDoctorSchedule from './pages/admin/AdminDoctorSchedule';
 import AdminTimeSlots from './pages/admin/AdminTimeSlots';
+import AccountManagement from './pages/admin/AccountManagement';
 import DrugManagement from './pages/admin/DrugManagement';  // ✅ NEW
 import ConsultationRequests from './pages/admin/ConsultationRequests';  // ✅ NEW
 import AdminNews from './pages/admin/AdminNews';  // ✅ NEW: News management
@@ -56,6 +57,7 @@ import DoctorConsultations from './pages/doctor/DoctorConsultations';  // ✅ NE
 import DoctorReviews from './pages/doctor/DoctorReviews';  // ✅ NEW: Doctor reviews management
 import WalkInRegistration from './pages/doctor/WalkInRegistration';  // ✅ NEW: Walk-in patient registration
 import VNPayReturn from './pages/payment/VNPayReturn';  // ✅ NEW: VNPay payment callback
+import ChangePassword from './pages/common/ChangePassword';  // ✅ NEW: Change password for all roles
 
 export default function App() {
     return (
@@ -78,6 +80,7 @@ export default function App() {
                     <Route path="doctors" element={<PublicDoctorList />} />
                     <Route path="doctors/:id" element={<PublicDoctorDetail />} />
                     <Route path="profile" element={<PatientProfile />} />
+                    <Route path="change-password" element={<ChangePassword />} />
                     <Route path="medical-history" element={<MedicalHistory />} />
                     <Route path="reviews" element={<Reviews />} />
                     <Route path="news" element={<News />} />
@@ -98,6 +101,7 @@ export default function App() {
                     <Route path="examination" element={<ExaminationPage />} />
                     <Route path="schedule" element={<DoctorScheduleView />} />
                     <Route path="profile" element={<DoctorProfile />} />
+                    <Route path="change-password" element={<ChangePassword />} />
                     <Route path="patients" element={<DoctorPatients />} />
                     <Route path="patient-history/:patientId" element={<PatientMedicalHistory />} />
                     <Route path="consultations" element={<DoctorConsultations />} />
@@ -121,6 +125,8 @@ export default function App() {
                     <Route path="rooms" element={<AdminRooms />} />
                     <Route path="services" element={<AdminServices />} />
                     <Route path="reports" element={<AdminReports />} />
+                    <Route path="accounts" element={<AccountManagement />} />
+                    <Route path="change-password" element={<ChangePassword />} />
                     <Route path="drugs" element={<DrugManagement />} />
                     <Route path="consultations" element={<ConsultationRequests />} />
                     <Route path="news" element={<AdminNews />} />

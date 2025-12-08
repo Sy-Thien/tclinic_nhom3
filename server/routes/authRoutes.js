@@ -269,4 +269,58 @@ router.post('/logout', verifyToken, async (req, res) => {
     }
 });
 
+// ✅ POST - Change Password (for all roles)
+router.post('/change-password', verifyToken, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const userId = req.user.id;
+        const userRole = req.user.role;
+
+        // Validation
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ message: 'Vui lòng điền đầy đủ thông tin' });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({ message: 'Mật khẩu mới phải có ít nhất 6 ký tự' });
+        }
+
+        // Determine which model to use
+        let Model, user;
+        if (userRole === 'admin') {
+            Model = Admin;
+        } else if (userRole === 'doctor') {
+            Model = Doctor;
+        } else if (userRole === 'patient') {
+            Model = Patient;
+        } else {
+            return res.status(400).json({ message: 'Role không hợp lệ' });
+        }
+
+        // Find user
+        user = await Model.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'Không tìm thấy người dùng' });
+        }
+
+        // Verify current password
+        const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+        if (!isValidPassword) {
+            return res.status(401).json({ message: 'Mật khẩu hiện tại không đúng' });
+        }
+
+        // Hash new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Update password
+        await user.update({ password: hashedPassword });
+
+        console.log('✅ Password changed for user:', userId, 'role:', userRole);
+        res.json({ message: 'Đổi mật khẩu thành công' });
+    } catch (error) {
+        console.error('❌ Change password error:', error);
+        res.status(500).json({ message: 'Lỗi khi đổi mật khẩu', error: error.message });
+    }
+});
+
 module.exports = router;

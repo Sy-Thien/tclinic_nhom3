@@ -7,7 +7,7 @@ const crypto = require('crypto');
 const querystring = require('qs');
 const moment = require('moment');
 const vnpayConfig = require('../config/vnpay');
-const { Invoice, InvoiceItem } = require('../models');
+const { Invoice, InvoiceItem, Booking } = require('../models');
 
 /**
  * Sắp xếp object theo key - ĐÚNG THEO CODE MẪU VNPAY
@@ -64,8 +64,8 @@ exports.createPayment = async (req, res) => {
 
         const date = new Date();
         const createDate = moment(date).format('YYYYMMDDHHmmss');
-        // Tạo orderId unique: invoice_id + timestamp để tránh trùng
-        const orderId = `${invoice_id}${moment(date).format('HHmmss')}`;
+        // ✅ Dùng invoice_id trực tiếp làm mã giao dịch
+        const orderId = invoice_id.toString();
 
         let vnp_Params = {};
         vnp_Params['vnp_Version'] = '2.1.0';
@@ -94,9 +94,9 @@ exports.createPayment = async (req, res) => {
 
         vnpUrl += '?' + querystring.stringify(vnp_Params, { encode: false });
 
-        // Lưu transaction reference vào invoice
+        // Lưu invoice_id vào transaction_id để callback tìm được
         await invoice.update({
-            transaction_id: orderId,
+            transaction_id: invoice_id.toString(),
             payment_method: 'vnpay'
         });
 
@@ -140,10 +140,13 @@ exports.vnpayReturn = async (req, res) => {
         const transactionNo = vnp_Params['vnp_TransactionNo'];
         const bankCode = vnp_Params['vnp_BankCode'];
 
-        // Tìm invoice từ transaction reference
-        const invoice = await Invoice.findOne({
-            where: { transaction_id: txnRef }
-        });
+        console.log('🔍 VNPay callback - txnRef:', txnRef, 'responseCode:', responseCode);
+
+        // ✅ Tìm invoice theo id (vnp_TxnRef chính là invoice_id)
+        const invoiceId = parseInt(txnRef);
+        const invoice = await Invoice.findByPk(invoiceId);
+
+        console.log('📋 Invoice found:', invoice ? `ID ${invoice.id} - ${invoice.invoice_code}` : 'NOT FOUND');
 
         if (!invoice) {
             console.error('❌ Invoice not found for txnRef:', txnRef);
@@ -165,6 +168,17 @@ exports.vnpayReturn = async (req, res) => {
                     paid_at: new Date(),
                     notes: `Thanh toán VNPay thành công. Bank: ${bankCode}. Amount: ${amount.toLocaleString('vi-VN')}đ`
                 });
+
+                // ✅ Tự động cập nhật booking thành completed
+                if (invoice.booking_id) {
+                    const booking = await Booking.findByPk(invoice.booking_id);
+                    if (booking) {
+                        await booking.update({
+                            status: 'completed'
+                        });
+                        console.log(`✅ Booking ${booking.booking_code} marked as completed`);
+                    }
+                }
 
                 // Lấy chi tiết hóa đơn bao gồm items
                 const invoiceWithItems = await Invoice.findByPk(invoice.id, {

@@ -14,7 +14,31 @@ export default function RevenueManagement() {
 
     useEffect(() => {
         fetchRevenueStats();
+        fetchDashboardStats();
     }, [period, year, month]);
+
+    const fetchDashboardStats = async () => {
+        try {
+            // Fetch today's revenue
+            const todayResponse = await api.get('/api/invoices/stats/revenue', {
+                params: { period: 'today' }
+            });
+
+            // Fetch month's revenue
+            const monthResponse = await api.get('/api/invoices/stats/revenue', {
+                params: { period: 'month' }
+            });
+
+            setDashboardStats({
+                todayRevenue: todayResponse.data.totalRevenue || 0,
+                monthRevenue: monthResponse.data.totalRevenue || 0,
+                pendingCount: monthResponse.data.statusCounts?.find(s => s.payment_status === 'pending')?.count || 0,
+                paidTodayCount: todayResponse.data.statusCounts?.find(s => s.payment_status === 'paid')?.count || 0
+            });
+        } catch (error) {
+            console.error('Error fetching dashboard stats:', error);
+        }
+    };
 
     const fetchRevenueStats = async () => {
         try {
@@ -23,13 +47,6 @@ export default function RevenueManagement() {
                 params: { period }
             });
             setStats(response.data);
-            // Set dashboard stats from the same API
-            setDashboardStats({
-                todayRevenue: response.data.totalRevenue,
-                monthRevenue: response.data.totalRevenue,
-                pendingCount: response.data.statusCounts?.find(s => s.payment_status === 'pending')?.count || 0,
-                paidTodayCount: response.data.statusCounts?.find(s => s.payment_status === 'paid')?.count || 0
-            });
         } catch (error) {
             console.error('Error fetching revenue stats:', error);
         } finally {

@@ -76,6 +76,48 @@ exports.createBooking = async (req, res) => {
             }
         }
 
+        // ✅ RÀNG BUỘC 1: Không cho đặt trùng ngày cho cùng bệnh nhân
+        if (patient_id) {
+            const existingPatientBooking = await Booking.findOne({
+                where: {
+                    patient_id: patient_id,
+                    appointment_date: appointment_date,
+                    status: { [Op.in]: ['pending', 'confirmed', 'waiting_doctor_assignment', 'waiting_doctor_confirmation'] }
+                }
+            });
+
+            if (existingPatientBooking) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Bạn đã có lịch hẹn trong ngày này. Vui lòng chọn ngày khác hoặc hủy lịch cũ trước.',
+                    existing_booking: {
+                        id: existingPatientBooking.id,
+                        booking_code: existingPatientBooking.booking_code,
+                        time: existingPatientBooking.appointment_time
+                    }
+                });
+            }
+        }
+
+        // ✅ RÀNG BUỘC 2: Giới hạn tối đa 3 booking tương lai
+        if (patient_id) {
+            const futureBookingsCount = await Booking.count({
+                where: {
+                    patient_id: patient_id,
+                    appointment_date: { [Op.gte]: new Date() },
+                    status: { [Op.in]: ['pending', 'confirmed', 'waiting_doctor_assignment', 'waiting_doctor_confirmation'] }
+                }
+            });
+
+            if (futureBookingsCount >= 3) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Bạn đã có 3 lịch hẹn chưa hoàn thành. Vui lòng hoàn tất hoặc hủy trước khi đặt lịch mới.',
+                    future_bookings: futureBookingsCount
+                });
+            }
+        }
+
         // ✅ Validate doctor nếu có
         if (doctor_id) {
             const doctor = await Doctor.findByPk(doctor_id);

@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const consultationRequestController = require('../controllers/consultationRequestController');
-const { verifyToken } = require('../middleware/authMiddleware');
+const { verifyToken, optionalAuth } = require('../middleware/authMiddleware');
 
 // Public route - Tạo yêu cầu (cả logged in và guest)
-router.post('/', consultationRequestController.createRequest);
+// ✅ optionalAuth sẽ đọc token nếu có, gán req.user nếu đăng nhập
+router.post('/', optionalAuth, consultationRequestController.createRequest);
 
 // Protected routes - Người dùng đã đăng nhập
 router.get('/my-requests', verifyToken, consultationRequestController.getMyRequests);

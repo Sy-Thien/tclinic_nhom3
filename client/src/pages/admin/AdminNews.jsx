@@ -268,7 +268,7 @@ export default function AdminNews() {
                         📂 Danh mục
                     </button>
                     <button className={styles.btnAdd} onClick={handleAdd}>
-                        ➕ Thêm bài viết
+                        Thêm bài viết
                     </button>
                 </div>
             </div>
@@ -415,14 +415,14 @@ export default function AdminNews() {
                                             onClick={() => handleEdit(article)}
                                             title="Sửa"
                                         >
-                                            ✏️
+                                            Sửa
                                         </button>
                                         <button
                                             className={styles.btnDelete}
                                             onClick={() => handleDelete(article)}
                                             title="Xóa"
                                         >
-                                            🗑️
+                                            Xóa
                                         </button>
                                     </td>
                                 </tr>
@@ -460,7 +460,7 @@ export default function AdminNews() {
                 <div className={styles.modalOverlay} onClick={() => setShowModal(false)}>
                     <div className={styles.modal} onClick={e => e.stopPropagation()}>
                         <div className={styles.modalHeader}>
-                            <h2>{modalMode === 'add' ? '➕ Thêm bài viết mới' : '✏️ Sửa bài viết'}</h2>
+                            <h2>{modalMode === 'add' ? 'Thêm bài viết mới' : 'Sửa bài viết'}</h2>
                             <button className={styles.closeBtn} onClick={() => setShowModal(false)}>✕</button>
                         </div>
 
@@ -549,7 +549,7 @@ export default function AdminNews() {
                                     Hủy
                                 </button>
                                 <button type="submit" className={styles.btnSubmit} disabled={submitting}>
-                                    {submitting ? '⏳ Đang lưu...' : (modalMode === 'add' ? '➕ Thêm' : '💾 Lưu')}
+                                    {submitting ? 'Đang lưu...' : (modalMode === 'add' ? 'Thêm' : 'Lưu')}
                                 </button>
                             </div>
                         </form>
@@ -596,7 +596,7 @@ export default function AdminNews() {
                                                 onClick={() => handleDeleteCategory(cat)}
                                                 title="Xóa danh mục"
                                             >
-                                                🗑️
+                                                Xóa
                                             </button>
                                         </div>
                                     ))

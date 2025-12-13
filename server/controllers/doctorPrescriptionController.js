@@ -25,6 +25,30 @@ exports.createPrescription = async (req, res) => {
             });
         }
 
+        // ✅ RÀNG BUỘC 3: Chỉ cho kê đơn khi booking đã hoàn thành
+        if (booking.status !== 'completed') {
+            return res.status(400).json({
+                success: false,
+                message: 'Chỉ có thể kê đơn thuốc khi đã hoàn thành khám bệnh',
+                current_status: booking.status,
+                booking_id: booking.id
+            });
+        }
+
+        // ✅ Kiểm tra đã có prescription chưa (tránh duplicate)
+        const existingPrescription = await Prescription.findOne({
+            where: { booking_id }
+        });
+
+        if (existingPrescription) {
+            return res.status(400).json({
+                success: false,
+                message: 'Lịch khám này đã có đơn thuốc',
+                prescription_id: existingPrescription.id,
+                prescription_code: existingPrescription.prescription_code
+            });
+        }
+
         // Tạo đơn thuốc
         const prescriptionCode = 'RX' + Date.now().toString().slice(-8);
         const prescription = await Prescription.create({

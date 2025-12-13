@@ -466,7 +466,7 @@ export default function AdminPatients() {
                                                             onClick={() => handleEditRecord(record)}
                                                             title="Chỉnh sửa"
                                                         >
-                                                            ✏️
+                                                            Sửa
                                                         </button>
                                                     </div>
 

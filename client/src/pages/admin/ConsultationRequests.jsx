@@ -15,7 +15,10 @@ export default function ConsultationRequests() {
         search: ''
     });
     const [showAssignModal, setShowAssignModal] = useState(false);
+    const [showResponseModal, setShowResponseModal] = useState(false);  // ✅ NEW
     const [selectedRequest, setSelectedRequest] = useState(null);
+    const [responseText, setResponseText] = useState('');  // ✅ NEW
+    const [responding, setResponding] = useState(false);  // ✅ NEW
     const [assignForm, setAssignForm] = useState({
         doctor_id: '',
         specialty_id: '',
@@ -85,6 +88,39 @@ export default function ConsultationRequests() {
             admin_notes: request.admin_notes || ''
         });
         setShowAssignModal(true);
+    };
+
+    // ✅ NEW: Mở modal trả lời
+    const handleOpenResponseModal = (request) => {
+        setSelectedRequest(request);
+        setResponseText(request.doctor_response || '');
+        setShowResponseModal(true);
+    };
+
+    // ✅ NEW: Admin gửi phản hồi
+    const handleSubmitResponse = async () => {
+        if (!responseText.trim()) {
+            alert('Vui lòng nhập nội dung phản hồi!');
+            return;
+        }
+
+        try {
+            setResponding(true);
+            await api.post(`/api/admin/consultations/${selectedRequest.id}/respond`, {
+                admin_response: responseText,
+                status: 'in_progress'
+            });
+
+            alert('Đã gửi phản hồi thành công!');
+            setShowResponseModal(false);
+            fetchStats();
+            fetchRequests();
+        } catch (error) {
+            console.error('Error submitting response:', error);
+            alert('Lỗi: ' + (error.response?.data?.message || 'Có lỗi xảy ra!'));
+        } finally {
+            setResponding(false);
+        }
     };
 
     const handleAssignDoctor = async () => {
@@ -298,6 +334,14 @@ export default function ConsultationRequests() {
                                 </div>
                                 <div className={styles.headerRight}>
                                     <button
+                                        className={styles.btnRespond}
+                                        onClick={() => handleOpenResponseModal(request)}
+                                        disabled={request.status === 'closed'}
+                                        style={{ background: '#9c27b0', color: 'white', marginRight: '8px' }}
+                                    >
+                                        Trả lời
+                                    </button>
+                                    <button
                                         className={styles.btnAssign}
                                         onClick={() => handleOpenAssignModal(request)}
                                         disabled={request.status === 'closed'}
@@ -452,6 +496,52 @@ export default function ConsultationRequests() {
                         <div className={styles.modalFooter}>
                             <button className={styles.btnCancel} onClick={() => setShowAssignModal(false)}>Hủy</button>
                             <button className={styles.btnSave} onClick={handleAssignDoctor}>Chỉ định</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ✅ NEW: Response Modal - Admin trả lời trực tiếp */}
+            {showResponseModal && selectedRequest && (
+                <div className={styles.modalOverlay} onClick={() => setShowResponseModal(false)}>
+                    <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+                        <div className={styles.modalHeader}>
+                            <h2>Trả lời Yêu cầu</h2>
+                            <button className={styles.closeBtn} onClick={() => setShowResponseModal(false)}>Đóng</button>
+                        </div>
+
+                        <div className={styles.modalBody}>
+                            <div className={styles.requestInfo}>
+                                <p><strong>Chủ đề:</strong> {selectedRequest.subject}</p>
+                                <p><strong>Người gửi:</strong> {selectedRequest.patient?.full_name || selectedRequest.guest_name}</p>
+                                <p><strong>Nội dung:</strong></p>
+                                <div style={{ background: '#f5f5f5', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
+                                    {selectedRequest.message}
+                                </div>
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label>Nội dung phản hồi *</label>
+                                <textarea
+                                    value={responseText}
+                                    onChange={(e) => setResponseText(e.target.value)}
+                                    rows="6"
+                                    placeholder="Nhập nội dung phản hồi cho khách hàng..."
+                                    style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }}
+                                />
+                            </div>
+                        </div>
+
+                        <div className={styles.modalFooter}>
+                            <button className={styles.btnCancel} onClick={() => setShowResponseModal(false)}>Hủy</button>
+                            <button
+                                className={styles.btnSave}
+                                onClick={handleSubmitResponse}
+                                disabled={responding}
+                                style={{ background: '#9c27b0' }}
+                            >
+                                {responding ? 'Đang gửi...' : 'Gửi phản hồi'}
+                            </button>
                         </div>
                     </div>
                 </div>

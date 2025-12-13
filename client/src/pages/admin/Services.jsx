@@ -184,11 +184,11 @@ export default function Services() {
             {/* Header */}
             <div className={styles.header}>
                 <div className={styles.headerLeft}>
-                    <h1>💊 Quản lý Dịch vụ</h1>
+                    <h1>Quản lý Dịch vụ</h1>
                     <p>Quản lý danh sách dịch vụ khám chữa bệnh</p>
                 </div>
                 <button className={styles.btnAdd} onClick={handleAdd}>
-                    ➕ Thêm dịch vụ
+                    Thêm dịch vụ
                 </button>
             </div>
 
@@ -302,14 +302,14 @@ export default function Services() {
                                             onClick={() => handleEdit(service)}
                                             title="Sửa"
                                         >
-                                            ✏️
+                                            Sửa
                                         </button>
                                         <button
                                             className={styles.btnDelete}
                                             onClick={() => handleDelete(service)}
                                             title="Xóa"
                                         >
-                                            🗑️
+                                            Xóa
                                         </button>
                                     </td>
                                 </tr>
@@ -324,7 +324,7 @@ export default function Services() {
                 <div className={styles.modalOverlay} onClick={() => setShowModal(false)}>
                     <div className={styles.modal} onClick={e => e.stopPropagation()}>
                         <div className={styles.modalHeader}>
-                            <h2>{modalMode === 'add' ? '➕ Thêm dịch vụ mới' : '✏️ Sửa dịch vụ'}</h2>
+                            <h2>{modalMode === 'add' ? 'Thêm dịch vụ mới' : 'Sửa dịch vụ'}</h2>
                             <button
                                 className={styles.closeBtn}
                                 onClick={() => setShowModal(false)}
@@ -406,7 +406,7 @@ export default function Services() {
                                     className={styles.btnSubmit}
                                     disabled={submitting}
                                 >
-                                    {submitting ? '⏳ Đang lưu...' : (modalMode === 'add' ? '➕ Thêm' : '💾 Lưu')}
+                                    {submitting ? 'Đang lưu...' : (modalMode === 'add' ? 'Thêm' : 'Lưu')}
                                 </button>
                             </div>
                         </form>

@@ -178,6 +178,17 @@ exports.updatePaymentStatus = async (req, res) => {
             return res.status(404).json({ message: 'Không tìm thấy hóa đơn' });
         }
 
+        // ✅ RÀNG BUỘC 4: Không cho thanh toán trùng lặp
+        if (invoice.payment_status === 'paid' && payment_status === 'paid') {
+            return res.status(400).json({
+                success: false,
+                message: 'Hóa đơn này đã được thanh toán',
+                invoice_code: invoice.invoice_code,
+                paid_at: invoice.paid_at,
+                payment_method: invoice.payment_method
+            });
+        }
+
         const updateData = { payment_status };
         if (payment_method) updateData.payment_method = payment_method;
         if (transaction_id) updateData.transaction_id = transaction_id;

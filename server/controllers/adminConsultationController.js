@@ -256,4 +256,52 @@ exports.deleteRequest = async (req, res) => {
     }
 };
 
+// ✅ NEW: Admin - Trả lời yêu cầu tư vấn
+exports.respondToRequest = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { admin_response, status } = req.body;
+        const admin_id = req.user.id;
+
+        if (!admin_response || admin_response.trim() === '') {
+            return res.status(400).json({
+                success: false,
+                message: 'Vui lòng nhập nội dung phản hồi!'
+            });
+        }
+
+        const request = await ConsultationRequest.findByPk(id);
+        if (!request) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy yêu cầu'
+            });
+        }
+
+        // Admin trả lời sẽ lưu vào doctor_response (để khách hàng thấy được)
+        await request.update({
+            doctor_response: admin_response,
+            responded_at: new Date(),
+            status: status || 'in_progress',
+            admin_notes: `[Admin đã trả lời] ${request.admin_notes || ''}`
+        });
+
+        console.log(`✅ Admin responded to consultation request #${id}`);
+
+        res.json({
+            success: true,
+            message: 'Đã gửi phản hồi thành công!',
+            data: request
+        });
+
+    } catch (error) {
+        console.error('❌ Admin respond error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi server',
+            error: error.message
+        });
+    }
+};
+
 module.exports = exports;

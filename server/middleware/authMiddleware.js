@@ -56,8 +56,28 @@ const isPatient = (req, res, next) => {
     }
 };
 
+// ✅ NEW: Optional auth - đọc token nếu có, không bắt buộc
+const optionalAuth = (req, res, next) => {
+    const token = req.headers.authorization?.split(' ')[1];
+
+    if (token) {
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+            req.user = decoded;
+            console.log('🔐 Optional auth: User identified as', decoded.role);
+        } catch (error) {
+            // Token không hợp lệ - tiếp tục như guest
+            console.log('⚠️ Optional auth: Invalid token, continuing as guest');
+            req.user = null;
+        }
+    } else {
+        req.user = null;
+    }
+    next();
+};
+
 // Aliases for compatibility
 const checkDoctorRole = isDoctor;
 const checkAdminRole = isAdmin;
 
-module.exports = { verifyToken, isAdmin, isDoctor, isPatient, checkDoctorRole, checkAdminRole };
+module.exports = { verifyToken, isAdmin, isDoctor, isPatient, checkDoctorRole, checkAdminRole, optionalAuth };

@@ -1,11 +1,13 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import api from '../../utils/api';
 import styles from './CustomerLayout.module.css';
 
 export default function CustomerLayout() {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [showMyDropdown, setShowMyDropdown] = useState(false);
+    const dropdownRef = useRef(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -27,6 +29,17 @@ export default function CustomerLayout() {
         setLoading(false);
     }, []);
 
+    // ✅ Đóng dropdown khi click ra ngoài
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setShowMyDropdown(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
     const handleLogout = () => {
         // Clear all auth data
         localStorage.removeItem('token');
@@ -36,16 +49,6 @@ export default function CustomerLayout() {
         // Force reload để đảm bảo clean state
         window.location.href = '/';
     };
-
-    const navLinks = [
-        { path: '/', label: 'Trang chủ' },
-        { path: '/booking', label: 'Đặt lịch' },
-        { path: '/my-appointments', label: 'Lịch của tôi' }, // ✅ Thêm link này
-        { path: '/services', label: 'Dịch vụ' },
-        { path: '/doctors', label: 'Bác sĩ' },
-        { path: '/about', label: 'Giới thiệu' }, // ✅ Thêm
-        { path: '/contact', label: 'Liên hệ' } // ✅ Thêm
-    ];
 
     return (
         <div className={styles.layout}>
@@ -67,15 +70,40 @@ export default function CustomerLayout() {
                     <nav className={styles.nav}>
                         <Link to="/">Trang chủ</Link>
                         <Link to="/booking">Đặt lịch</Link>
-                        <Link to="/my-appointments">Lịch của tôi</Link>
-                        <Link to="/my-consultations">Lịch sử tư vấn</Link>
-                        <Link to="/medical-history">Lịch sử khám</Link>
-                        <Link to="/reviews">Đánh giá</Link>
+
+                        {/* ✅ Dropdown "Của tôi" - chỉ hiện khi đăng nhập */}
+                        {user && (
+                            <div className={styles.dropdown} ref={dropdownRef}>
+                                <button
+                                    className={styles.dropdownToggle}
+                                    onClick={() => setShowMyDropdown(!showMyDropdown)}
+                                >
+                                    Lịch của tôi <span className={styles.arrow}>▼</span>
+                                </button>
+                                {showMyDropdown && (
+                                    <div className={styles.dropdownMenu}>
+                                        <Link to="/my-appointments" onClick={() => setShowMyDropdown(false)}>
+                                            Lịch hẹn
+                                        </Link>
+                                        <Link to="/my-consultations" onClick={() => setShowMyDropdown(false)}>
+                                            Lịch sử tư vấn
+                                        </Link>
+                                        <Link to="/medical-history" onClick={() => setShowMyDropdown(false)}>
+                                            Lịch sử khám
+                                        </Link>
+                                        <Link to="/reviews" onClick={() => setShowMyDropdown(false)}>
+                                            Đánh giá của tôi
+                                        </Link>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         <Link to="/services">Dịch vụ</Link>
                         <Link to="/doctors">Bác sĩ</Link>
                         <Link to="/news">Tin tức</Link>
-                        <Link to="/about">Giới thiệu</Link> {/* ✅ Thêm */}
-                        <Link to="/contact">Liên hệ</Link> {/* ✅ Thêm */}
+                        <Link to="/about">Giới thiệu</Link>
+                        <Link to="/contact">Liên hệ</Link>
                     </nav>
 
                     <div className={styles.actions}>

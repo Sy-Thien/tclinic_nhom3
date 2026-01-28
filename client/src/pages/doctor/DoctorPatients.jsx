@@ -23,44 +23,9 @@ export default function DoctorPatients() {
     const fetchMyPatients = async () => {
         try {
             setLoading(true);
-            // Lấy tất cả lịch hẹn của bác sĩ
-            const response = await api.get('/api/doctor/appointments');
-            const appointments = response.data.appointments || response.data.bookings || [];
-
-            // Tạo map bệnh nhân unique và đếm số lần khám
-            const patientMap = new Map();
-
-            appointments.forEach(apt => {
-                const patientId = apt.patient?.id || apt.patient_id;
-                if (!patientId) return;
-
-                if (patientMap.has(patientId)) {
-                    const existing = patientMap.get(patientId);
-                    existing.visitCount++;
-                    // Cập nhật lần khám gần nhất
-                    if (new Date(apt.appointment_date) > new Date(existing.lastVisit)) {
-                        existing.lastVisit = apt.appointment_date;
-                        existing.lastDiagnosis = apt.diagnosis;
-                    }
-                } else {
-                    patientMap.set(patientId, {
-                        id: patientId,
-                        full_name: apt.patient?.full_name || apt.patient_name || 'N/A',
-                        phone: apt.patient?.phone || apt.patient_phone || '',
-                        email: apt.patient?.email || apt.patient_email || '',
-                        gender: apt.patient?.gender || apt.patient_gender || '',
-                        birthday: apt.patient?.birthday || apt.patient_dob || '',
-                        address: apt.patient?.address || '',
-                        visitCount: 1,
-                        lastVisit: apt.appointment_date,
-                        lastDiagnosis: apt.diagnosis
-                    });
-                }
-            });
-
-            // Chuyển thành array và sort theo lần khám gần nhất
-            const patientList = Array.from(patientMap.values())
-                .sort((a, b) => new Date(b.lastVisit) - new Date(a.lastVisit));
+            // ✅ Gọi API mới - lấy tất cả bệnh nhân của bác sĩ (không giới hạn ngày)
+            const response = await api.get('/api/doctor/appointments/my-patients');
+            const patientList = response.data.patients || [];
 
             setPatients(patientList);
             setFilteredPatients(patientList);

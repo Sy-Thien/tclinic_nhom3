@@ -267,7 +267,7 @@ export default function DoctorScheduleView() {
                                                 🕐 {booking.appointment_time?.substring(0, 5) || 'Chưa xác định'}
                                             </div>
                                             <div className={styles.bookingPatient}>
-                                                👤 {booking.patient?.full_name || booking.patient_name || 'N/A'}
+                                                👤 {booking.patient_name || booking.patient?.full_name || 'N/A'}
                                             </div>
                                             {booking.service?.name && (
                                                 <div className={styles.bookingService}>

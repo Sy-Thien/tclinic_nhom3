@@ -63,7 +63,7 @@ exports.checkAndSendReminders = async () => {
                 // Chuẩn bị dữ liệu email
                 const appointmentData = {
                     booking_code: booking.booking_code,
-                    patient_name: booking.patient?.full_name || booking.patient_name,
+                    patient_name: booking.patient_name || booking.patient?.full_name,
                     patient_email: booking.patient?.email || booking.patient_email,
                     appointment_date: booking.appointment_date,
                     appointment_time: booking.appointment_time || 'Chưa xác định',

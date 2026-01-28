@@ -1,4 +1,5 @@
 const { MedicalHistory, Patient, Doctor, Booking, Prescription, PrescriptionDetail, Drug, Specialty, Service } = require('../models');
+const { Op } = require('sequelize');
 
 // Lưu lịch sử khám bệnh khi bác sĩ hoàn thành khám
 exports.saveMedicalHistory = async (req, res) => {
@@ -67,29 +68,39 @@ exports.getPatientHistory = async (req, res) => {
         const { patient_id } = req.params;
         const doctor_id = req.user.id;
 
-        // Lấy thông tin bệnh nhân
-        const patient = await Patient.findByPk(patient_id, {
-            attributes: ['id', 'full_name', 'phone', 'email', 'gender', 'birthday', 'address']
-        });
-
-        if (!patient) {
-            return res.status(404).json({ message: 'Không tìm thấy bệnh nhân' });
-        }
-
-        // ✅ Kiểm tra bác sĩ có booking với bệnh nhân này không
-        const hasBooking = await Booking.findOne({
+        // ✅ Lấy thông tin từ booking gần nhất của bác sĩ với bệnh nhân này
+        const latestBooking = await Booking.findOne({
             where: {
                 patient_id,
                 doctor_id
-            }
+            },
+            order: [['appointment_date', 'DESC']],
+            include: [
+                {
+                    model: Patient,
+                    as: 'patient',
+                    attributes: ['id', 'full_name', 'phone', 'email', 'gender', 'birthday', 'address']
+                }
+            ]
         });
 
-        if (!hasBooking) {
+        if (!latestBooking) {
             return res.status(403).json({
                 success: false,
                 message: 'Bạn chưa từng khám bệnh nhân này nên không có quyền xem hồ sơ'
             });
         }
+
+        // ✅ Ưu tiên lấy thông tin từ booking (patient_name) thay vì Patient table
+        const patient = {
+            id: latestBooking.patient?.id || patient_id,
+            full_name: latestBooking.patient_name || latestBooking.patient?.full_name || 'N/A',
+            phone: latestBooking.patient_phone || latestBooking.patient?.phone || '',
+            email: latestBooking.patient_email || latestBooking.patient?.email || '',
+            gender: latestBooking.patient_gender || latestBooking.patient?.gender || '',
+            birthday: latestBooking.patient_dob || latestBooking.patient?.birthday || null,
+            address: latestBooking.patient_address || latestBooking.patient?.address || ''
+        };
 
         // ✅ Lấy lịch sử khám của bác sĩ hiện tại với bệnh nhân này
         const histories = await MedicalHistory.findAll({
@@ -131,12 +142,63 @@ exports.getPatientHistory = async (req, res) => {
             order: [['visit_date', 'DESC'], ['visit_time', 'DESC']]
         });
 
+        // ✅ Cũng lấy booking completed có diagnosis (dù chưa có MedicalHistory record)
+        const completedBookings = await Booking.findAll({
+            where: {
+                patient_id,
+                doctor_id,
+                status: 'completed',
+                diagnosis: { [Op.ne]: null }
+            },
+            include: [
+                { model: Service, as: 'service', attributes: ['id', 'name', 'price'] },
+                { model: Specialty, as: 'specialty', attributes: ['id', 'name'] },
+                {
+                    model: Prescription,
+                    as: 'prescription',
+                    include: [
+                        {
+                            model: PrescriptionDetail,
+                            as: 'details',
+                            include: [
+                                { model: Drug, as: 'drug', attributes: ['id', 'name', 'unit', 'ingredient', 'price'] }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            order: [['appointment_date', 'DESC']]
+        });
+
+        // ✅ Merge: booking completed chưa có history
+        const historyBookingIds = histories.map(h => h.booking_id);
+        const additionalHistories = completedBookings
+            .filter(b => !historyBookingIds.includes(b.id))
+            .map(b => ({
+                id: `booking_${b.id}`,
+                booking_id: b.id,
+                patient_id: b.patient_id,
+                doctor_id: b.doctor_id,
+                visit_date: b.appointment_date,
+                visit_time: b.appointment_time,
+                symptoms: b.symptoms,
+                diagnosis: b.diagnosis,
+                conclusion: b.conclusion,
+                note: b.note,
+                booking: b,
+                prescription: b.prescription, // ✅ Thêm prescription
+                isFromBooking: true // Flag để frontend biết đây là từ booking
+            }));
+
+        const allHistories = [...histories, ...additionalHistories]
+            .sort((a, b) => new Date(b.visit_date) - new Date(a.visit_date));
+
         // ✅ Trả về kết quả (có thể rỗng nếu chưa hoàn thành khám)
         res.json({
             success: true,
             patient,
-            totalVisits: histories.length,
-            histories: histories
+            totalVisits: allHistories.length,
+            histories: allHistories
         });
 
     } catch (error) {

@@ -178,7 +178,7 @@ exports.getDoctorStatus = async (req, res) => {
                 avatar: doctor.avatar,
                 specialty: doctor.specialty?.name || 'Chưa phân công',
                 status: currentBooking ? 'busy' : 'available',
-                current_patient: currentBooking ? (currentBooking.patient?.full_name || currentBooking.patient_name) : null,
+                current_patient: currentBooking ? (currentBooking.patient_name || currentBooking.patient?.full_name) : null,
                 appointment_time: currentBooking ? currentBooking.appointment_time : null,
                 today_appointments: todayAppointments
             };

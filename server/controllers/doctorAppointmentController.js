@@ -1,6 +1,87 @@
 const { Booking, Patient, Specialty, MedicalHistory, Prescription, DoctorSchedule, Service } = require('../models');
 const { Op } = require('sequelize');
 
+// ✅ NEW: Doctor - Lấy TẤT CẢ bệnh nhân đã từng khám với bác sĩ này
+exports.getMyPatients = async (req, res) => {
+    try {
+        const doctor_id = req.user.doctor_id || req.user.id;
+        console.log('👥 GET my patients for doctor:', doctor_id);
+
+        // Lấy tất cả booking của bác sĩ này (không giới hạn ngày)
+        const bookings = await Booking.findAll({
+            where: {
+                doctor_id,
+                status: { [Op.in]: ['completed', 'confirmed', 'pending', 'waiting_doctor_confirmation'] }
+            },
+            include: [
+                {
+                    model: Patient,
+                    as: 'patient',
+                    attributes: ['id', 'full_name', 'phone', 'email', 'gender', 'birthday', 'address'],
+                    required: false
+                }
+            ],
+            order: [['appointment_date', 'DESC']]
+        });
+
+        // Tạo map bệnh nhân unique
+        const patientMap = new Map();
+
+        bookings.forEach(booking => {
+            const patientId = booking.patient?.id || booking.patient_id;
+            // ✅ ƯU TIÊN dùng patient_name từ booking (tên thực tế khi đặt lịch)
+            // vì có thể user đăng nhập đặt hộ người khác
+            const patientName = booking.patient_name || booking.patient?.full_name;
+
+            if (!patientId && !patientName) return;
+
+            // ✅ Dùng patient_name làm key để phân biệt các bệnh nhân khác nhau
+            const key = patientName || patientId;
+
+            if (patientMap.has(key)) {
+                const existing = patientMap.get(key);
+                existing.visitCount++;
+                // Cập nhật lần khám gần nhất
+                if (new Date(booking.appointment_date) > new Date(existing.lastVisit)) {
+                    existing.lastVisit = booking.appointment_date;
+                    existing.lastDiagnosis = booking.diagnosis;
+                }
+            } else {
+                patientMap.set(key, {
+                    id: patientId,
+                    full_name: patientName || 'N/A',
+                    // ✅ Ưu tiên thông tin từ booking (người khám thực tế)
+                    phone: booking.patient_phone || booking.patient?.phone || '',
+                    email: booking.patient_email || booking.patient?.email || '',
+                    gender: booking.patient_gender || booking.patient?.gender || '',
+                    birthday: booking.patient_dob || booking.patient?.birthday || '',
+                    address: booking.patient_address || booking.patient?.address || '',
+                    visitCount: 1,
+                    lastVisit: booking.appointment_date,
+                    lastDiagnosis: booking.diagnosis
+                });
+            }
+        });
+
+        // Chuyển thành array
+        const patients = Array.from(patientMap.values())
+            .sort((a, b) => new Date(b.lastVisit) - new Date(a.lastVisit));
+
+        console.log(`✅ Found ${patients.length} unique patients for doctor ${doctor_id}`);
+        console.log('📋 Patients list:', patients.map(p => `${p.full_name} (${p.lastVisit})`));
+
+        res.json({
+            success: true,
+            patients,
+            total: patients.length
+        });
+
+    } catch (error) {
+        console.error('❌ Get my patients error:', error);
+        res.status(500).json({ message: 'Lỗi server', error: error.message });
+    }
+};
+
 // Doctor - Lấy lịch làm việc định kỳ
 exports.getWorkSchedule = async (req, res) => {
     try {

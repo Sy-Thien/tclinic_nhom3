@@ -362,7 +362,7 @@ export default function AppointmentsList() {
                                                 onClick={() => handleViewDetail(apt)}
                                                 title="Xem chi tiết"
                                             >
-                                                👁️
+                                                Xem
                                             </button>
                                             {apt.status === 'waiting_doctor_confirmation' && (
                                                 <>
@@ -371,14 +371,14 @@ export default function AppointmentsList() {
                                                         className={styles.btnConfirmSmall}
                                                         title="Xác nhận"
                                                     >
-                                                        ✓
+                                                        Duyệt
                                                     </button>
                                                     <button
                                                         onClick={() => handleReject(apt.id)}
                                                         className={styles.btnRejectSmall}
                                                         title="Từ chối"
                                                     >
-                                                        ✕
+                                                        Từ chối
                                                     </button>
                                                 </>
                                             )}
@@ -388,7 +388,7 @@ export default function AppointmentsList() {
                                                     className={styles.btnExamSmall}
                                                     title="Bắt đầu khám"
                                                 >
-                                                    🩺
+                                                    Khám
                                                 </button>
                                             )}
                                         </div>
@@ -419,19 +419,19 @@ export default function AppointmentsList() {
                                         dayAppointments.map(apt => (
                                             <div key={apt.id} className={styles.weekAppointmentCard}>
                                                 <div className={styles.aptTime}>{formatTime(apt.appointment_time)}</div>
-                                                <div className={styles.aptPatient}>{apt.patient?.full_name || 'N/A'}</div>
+                                                <div className={styles.aptPatient}>{apt.patient_name || apt.patient?.full_name || 'N/A'}</div>
                                                 <div className={styles.aptStatus}>{getStatusBadge(apt.status)}</div>
                                                 <div className={styles.aptActions}>
                                                     {apt.status === 'waiting_doctor_confirmation' && (
                                                         <>
-                                                            <button onClick={() => handleConfirm(apt.id)} className={styles.btnConfirm}>✓</button>
-                                                            <button onClick={() => handleReject(apt.id)} className={styles.btnReject}>✕</button>
+                                                            <button onClick={() => handleConfirm(apt.id)} className={styles.btnConfirm}>Duyệt</button>
+                                                            <button onClick={() => handleReject(apt.id)} className={styles.btnReject}>Từ chối</button>
                                                         </>
                                                     )}
                                                     {apt.status === 'confirmed' && (
                                                         <button onClick={() => handleStartExam(apt)} className={styles.btnExam}>Khám</button>
                                                     )}
-                                                    <button onClick={() => handleViewDetail(apt)} className={styles.btnDetail}>👁</button>
+                                                    <button onClick={() => handleViewDetail(apt)} className={styles.btnDetail}>Xem</button>
                                                 </div>
                                             </div>
                                         ))

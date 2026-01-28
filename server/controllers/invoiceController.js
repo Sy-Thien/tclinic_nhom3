@@ -125,12 +125,13 @@ exports.createInvoice = async (req, res) => {
         const invoice_code = await generateInvoiceCode();
 
         // Create invoice
+        // ✅ Ưu tiên patient_name từ booking (tên người khám thực tế)
         const invoice = await Invoice.create({
             invoice_code,
             booking_id,
             patient_id: booking.patient_id,
-            patient_name: booking.patient?.full_name || booking.patient_name,
-            patient_phone: booking.patient?.phone || booking.patient_phone,
+            patient_name: booking.patient_name || booking.patient?.full_name,
+            patient_phone: booking.patient_phone || booking.patient?.phone,
             doctor_id: booking.doctor_id,
             doctor_name: booking.doctor?.full_name || 'N/A',
             service_fee,

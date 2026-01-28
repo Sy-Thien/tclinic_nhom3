@@ -337,10 +337,10 @@ export default function DoctorDashboardNew() {
                                         </div>
                                     </div>
                                     <div className={styles.appointmentInfo}>
-                                        <h4>{apt.patient?.full_name || apt.patient_name || 'N/A'}</h4>
+                                        <h4>{apt.patient_name || apt.patient?.full_name || 'N/A'}</h4>
                                         <p className={styles.symptoms}>{apt.symptoms || apt.specialty?.name || 'Khám tổng quát'}</p>
                                         <div className={styles.phone}>
-                                            <i className="fas fa-phone"></i> {apt.patient?.phone || apt.patient_phone || 'N/A'}
+                                            <i className="fas fa-phone"></i> {apt.patient_phone || apt.patient?.phone || 'N/A'}
                                         </div>
                                     </div>
                                     <div className={styles.appointmentStatus}>
@@ -376,7 +376,7 @@ export default function DoctorDashboardNew() {
                                         <i className="fas fa-user"></i>
                                     </div>
                                     <div className={styles.patientInfo}>
-                                        <h4>{apt.patient?.full_name || apt.patient_name || 'N/A'}</h4>
+                                        <h4>{apt.patient_name || apt.patient?.full_name || 'N/A'}</h4>
                                         <p className={styles.diagnosis}>
                                             {apt.diagnosis || apt.specialty?.name || 'Khám tổng quát'}
                                         </p>

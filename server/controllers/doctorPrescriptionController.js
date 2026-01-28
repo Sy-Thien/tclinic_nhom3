@@ -25,11 +25,12 @@ exports.createPrescription = async (req, res) => {
             });
         }
 
-        // ✅ RÀNG BUỘC 3: Chỉ cho kê đơn khi booking đã hoàn thành
-        if (booking.status !== 'completed') {
+        // ✅ Cho phép kê đơn khi booking đã xác nhận hoặc hoàn thành (đang khám)
+        const allowedStatuses = ['confirmed', 'completed', 'in_progress'];
+        if (!allowedStatuses.includes(booking.status)) {
             return res.status(400).json({
                 success: false,
-                message: 'Chỉ có thể kê đơn thuốc khi đã hoàn thành khám bệnh',
+                message: 'Chỉ có thể kê đơn khi đã xác nhận lịch khám',
                 current_status: booking.status,
                 booking_id: booking.id
             });

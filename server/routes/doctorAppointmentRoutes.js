@@ -7,6 +7,7 @@ const { verifyToken, isDoctor } = require('../middleware/authMiddleware');
 router.use(verifyToken);
 router.use(isDoctor);
 
+router.get('/my-patients', doctorController.getMyPatients);  // ✅ NEW: Lấy tất cả bệnh nhân của bác sĩ
 router.get('/appointments', doctorController.getMyAppointments);
 router.get('/appointments/:id', doctorController.getBookingDetail);
 router.put('/appointments/:id/confirm-booking', doctorController.confirmBooking);

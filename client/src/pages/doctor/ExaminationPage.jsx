@@ -374,26 +374,26 @@ export default function ExaminationPage() {
                         {saving ? 'Đang lưu...' : 'Lưu Thông Tin'}
                     </button>
                     <button
-                        className={styles.btnPrescription}
+                        className={`${styles.btnPrescription} ${prescriptionId ? styles.btnSuccess : ''}`}
                         onClick={handleOpenPrescription}
                     >
                         <i className="fas fa-prescription"></i>
-                        Kê Đơn Thuốc
+                        {prescriptionId ? '✓ Đã Kê Đơn' : 'Kê Đơn Thuốc'}
                     </button>
                     <button
                         className={styles.btnPayment}
                         onClick={() => setShowPaymentModal(true)}
+                        disabled={!formData.diagnosis.trim()}
+                        title={!formData.diagnosis.trim() ? 'Vui lòng nhập chẩn đoán trước' : 'Thanh toán và hoàn thành khám'}
                     >
                         <i className="fas fa-credit-card"></i>
-                        Thanh Toán
+                        Thanh Toán & Hoàn Thành
                     </button>
-                    <button
-                        className={styles.btnComplete}
-                        onClick={handleComplete}
-                    >
-                        <i className="fas fa-check-circle"></i>
-                        Hoàn Thành
-                    </button>
+                </div>
+
+                {/* Flow guide */}
+                <div className={styles.flowGuide}>
+                    <p>📋 <strong>Quy trình:</strong> Nhập chẩn đoán → Kê đơn thuốc (nếu cần) → Thanh toán → Tự động hoàn thành</p>
                 </div>
             </div>
 
@@ -421,9 +421,23 @@ export default function ExaminationPage() {
                     onClose={() => setShowPaymentModal(false)}
                     bookingId={appointment.id}
                     prescriptionId={prescriptionId}
-                    onPaymentComplete={() => {
+                    onPaymentComplete={async () => {
                         console.log('✅ Payment completed');
-                        alert('Thanh toán thành công!');
+
+                        // Lưu lịch sử bệnh án nếu có patient_id
+                        if (appointment.patient_id) {
+                            try {
+                                await api.post('/api/medical-history/save', {
+                                    booking_id: appointment.id
+                                });
+                                console.log('✅ Medical history saved');
+                            } catch (historyError) {
+                                console.warn('⚠️ Could not save medical history:', historyError.message);
+                            }
+                        }
+
+                        alert('Thanh toán thành công! Lịch khám đã hoàn thành.');
+                        navigate('/doctor-portal/appointments');
                     }}
                 />
             )}

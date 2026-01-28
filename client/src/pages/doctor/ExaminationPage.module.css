@@ -359,6 +359,10 @@
     box-shadow: 0 4px 12px rgba(245, 87, 108, 0.3);
 }
 
+.btnPrescription.btnSuccess {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
 .btnPayment {
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     color: white;
@@ -369,6 +373,13 @@
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
+.btnPayment:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
 .btnComplete {
     background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
     color: white;
@@ -377,6 +388,21 @@
 .btnComplete:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(67, 233, 123, 0.3);
+}
+
+/* Flow Guide */
+.flowGuide {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%);
+    border-radius: 8px;
+    border-left: 4px solid #14b8a6;
+}
+
+.flowGuide p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #0f766e;
 }
 
 /* Modal */

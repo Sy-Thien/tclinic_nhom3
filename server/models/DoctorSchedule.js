@@ -37,6 +37,27 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING(50),
             allowNull: true,
             comment: 'Phòng khám'
+        },
+        approval_status: {
+            type: DataTypes.ENUM('pending', 'approved', 'rejected'),
+            allowNull: false,
+            defaultValue: 'approved',
+            comment: 'Trạng thái phê duyệt: pending (chờ duyệt), approved (đã duyệt), rejected (từ chối)'
+        },
+        approved_by: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            comment: 'ID admin phê duyệt'
+        },
+        approved_at: {
+            type: DataTypes.DATE,
+            allowNull: true,
+            comment: 'Thời gian phê duyệt'
+        },
+        rejection_reason: {
+            type: DataTypes.TEXT,
+            allowNull: true,
+            comment: 'Lý do từ chối (nếu rejected)'
         }
     }, {
         tableName: 'doctor_schedules',

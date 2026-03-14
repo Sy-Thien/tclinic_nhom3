@@ -27,6 +27,7 @@ import AppointmentsList from './pages/doctor/AppointmentsList';
 import ExaminationPage from './pages/doctor/ExaminationPage';
 import DoctorProfile from './pages/doctor/DoctorProfile';
 import DoctorScheduleView from './pages/doctor/DoctorScheduleView';
+import DoctorSelfSchedule from './pages/doctor/DoctorSelfSchedule';
 import PatientMedicalHistory from './pages/doctor/PatientMedicalHistory';
 import DoctorPatients from './pages/doctor/DoctorPatients';
 import PatientProfile from './pages/customer/PatientProfile';
@@ -39,7 +40,6 @@ import MyConsultations from './pages/customer/MyConsultations';
 // Admin Pages
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminAppointments from './pages/admin/Appointments';
-import AdminDoctorsManagement from './pages/admin/AdminDoctors';
 import AdminDoctorManagement from './pages/admin/AdminDoctorManagement';  // ✅ NEW: Combined Doctors + Schedule
 import AdminPatientsManagement from './pages/admin/AdminPatients';
 import AdminSpecialties from './pages/admin/AdminSpecialties';
@@ -47,6 +47,7 @@ import AdminRooms from './pages/admin/AdminRooms';
 import AdminServices from './pages/admin/Services';
 import AdminReports from './pages/admin/AdminReports';
 import AdminDoctorSchedule from './pages/admin/AdminDoctorSchedule';
+import ScheduleApproval from './pages/admin/ScheduleApproval';
 import AdminTimeSlots from './pages/admin/AdminTimeSlots';
 import AccountManagement from './pages/admin/AccountManagement';
 import DrugManagement from './pages/admin/DrugManagement';  // ✅ NEW
@@ -100,6 +101,7 @@ export default function App() {
                     <Route path="appointments" element={<AppointmentsList />} />
                     <Route path="examination" element={<ExaminationPage />} />
                     <Route path="schedule" element={<DoctorScheduleView />} />
+                    <Route path="manage-schedule" element={<DoctorSelfSchedule />} />
                     <Route path="profile" element={<DoctorProfile />} />
                     <Route path="change-password" element={<ChangePassword />} />
                     <Route path="patients" element={<DoctorPatients />} />
@@ -119,6 +121,7 @@ export default function App() {
                     <Route path="appointments" element={<AdminAppointments />} />
                     <Route path="doctors" element={<AdminDoctorManagement />} />
                     <Route path="doctor-schedules" element={<AdminDoctorSchedule />} />
+                    <Route path="schedule-approval" element={<ScheduleApproval />} />
                     <Route path="time-slots" element={<AdminTimeSlots />} />
                     <Route path="patients" element={<AdminPatientsManagement />} />
                     <Route path="specialties" element={<AdminSpecialties />} />

@@ -31,4 +31,17 @@ router.delete('/doctor-schedules-doctor/:doctorId', verifyToken, adminDoctorSche
 // ✅ NEW: Lấy time slots của bác sĩ với booking count
 router.get('/doctor-time-slots/:doctorId', verifyToken, doctorScheduleController.getDoctorTimeSlotsWithBookings);
 
+// ============ PHÊ DUYỆT LỊCH LÀM VIỆC ============
+// Lấy danh sách lịch chờ phê duyệt
+router.get('/pending-schedules', verifyToken, adminDoctorScheduleController.getPendingSchedules);
+
+// Lấy lịch sử phê duyệt
+router.get('/approval-history', verifyToken, adminDoctorScheduleController.getApprovalHistory);
+
+// Phê duyệt lịch làm việc
+router.post('/schedules/:scheduleId/approve', verifyToken, adminDoctorScheduleController.approveSchedule);
+
+// Từ chối lịch làm việc
+router.post('/schedules/:scheduleId/reject', verifyToken, adminDoctorScheduleController.rejectSchedule);
+
 module.exports = router;

@@ -1,0 +1,577 @@
+.container {
+    padding: 24px;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.header {
+    margin-bottom: 32px;
+}
+
+.header h1 {
+    font-size: 32px;
+    color: #1a1a1a;
+    margin-bottom: 12px;
+}
+
+.doctorInfo {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 16px 20px;
+    border-radius: 12px;
+    color: white;
+    margin-top: 16px;
+}
+
+.doctorInfo p {
+    margin: 4px 0;
+    font-size: 16px;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+/* ===== FORM SECTION ===== */
+.formSection {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.formSection h2 {
+    font-size: 24px;
+    margin-bottom: 24px;
+    color: #333;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.stepSection {
+    border: 2px dashed #e0e0e0;
+    border-radius: 12px;
+    padding: 24px;
+    background: #fafafa;
+}
+
+.stepSection h3 {
+    font-size: 20px;
+    color: #667eea;
+    margin: 0 0 20px 0;
+    font-weight: 700;
+}
+
+/* === CHỌN NGÀY === */
+.daySelection {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.selectAllWrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.selectAllBtn {
+    padding: 10px 20px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.selectAllBtn:hover {
+    background: #5568d3;
+    transform: translateY(-2px);
+}
+
+.selectedCount {
+    color: #666;
+    font-size: 15px;
+}
+
+.selectedCount strong {
+    color: #667eea;
+    font-size: 18px;
+}
+
+.dayGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 12px;
+}
+
+.dayCheckbox {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.dayCheckbox input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.dayLabel {
+    color: #555;
+    transition: color 0.3s;
+}
+
+.checkIcon {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    background: #e0e0e0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: transparent;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.dayCheckbox:hover {
+    border-color: #667eea;
+    background: #f5f7ff;
+}
+
+.dayCheckbox.checked {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.dayCheckbox.checked .dayLabel {
+    color: white;
+}
+
+.dayCheckbox.checked .checkIcon {
+    background: white;
+    color: #667eea;
+}
+
+/* === CHỌN CA === */
+.shiftSelection {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.shiftCard {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px;
+    border: 3px solid #e0e0e0;
+    border-radius: 16px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s;
+    min-height: 180px;
+}
+
+.shiftCard input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.shiftIcon {
+    font-size: 48px;
+    margin-bottom: 12px;
+}
+
+.shiftLabel {
+    font-size: 18px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.shiftTime {
+    font-size: 16px;
+    color: #667eea;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.shiftBreak {
+    font-size: 13px;
+    color: #999;
+    font-style: italic;
+}
+
+.shiftCard:hover {
+    border-color: #667eea;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+}
+
+.shiftCard.selected {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #f5f7ff 0%, #e8ebff 100%);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+}
+
+.shiftCard.selected .shiftLabel {
+    color: #667eea;
+}
+
+/* === PHÒNG KHÁM === */
+.roomSelect {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+    background: white;
+    cursor: pointer;
+}
+
+.roomSelect:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.roomNote {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: #e8f5e9;
+    border-left: 3px solid #4caf50;
+    border-radius: 6px;
+    color: #2e7d32;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* === ACTIONS === */
+.formActions {
+    margin-top: 8px;
+}
+
+.submitBtn {
+    width: 100%;
+    padding: 16px 32px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.submitBtn:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+}
+
+.submitBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.noteBox {
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-top: 16px;
+}
+
+.noteBox p {
+    margin: 0 0 8px 0;
+    color: #856404;
+    font-weight: 600;
+}
+
+.noteBox ul {
+    margin: 0;
+    padding-left: 20px;
+    color: #856404;
+}
+
+.noteBox li {
+    margin: 4px 0;
+    line-height: 1.6;
+}
+
+/* ===== SCHEDULE SECTION ===== */
+.scheduleSection {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.scheduleSection h2 {
+    font-size: 24px;
+    margin-bottom: 24px;
+    color: #333;
+}
+
+.loading {
+    text-align: center;
+    padding: 60px;
+    color: #999;
+    font-size: 18px;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 60px 20px;
+    background: #f9f9f9;
+    border-radius: 12px;
+    color: #666;
+}
+
+.emptyState p {
+    margin: 8px 0;
+    font-size: 16px;
+}
+
+/* === SCHEDULE GRID (7 CỘT) === */
+.scheduleGrid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 16px;
+}
+
+.dayColumn {
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fafafa;
+}
+
+.dayHeader {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.emptyDay {
+    padding: 40px 12px;
+    text-align: center;
+    color: #999;
+    font-size: 14px;
+}
+
+.emptyDay p {
+    margin: 0;
+}
+
+.daySchedules {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+}
+
+.scheduleCard {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 12px;
+    transition: all 0.3s;
+}
+
+.scheduleCard:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.cardBadges {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 10px;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.badgePending {
+    background: #ffc107;
+    color: #000;
+}
+
+.badgeApproved {
+    background: #4caf50;
+    color: white;
+}
+
+.badgeRejected {
+    background: #f44336;
+    color: white;
+}
+
+.badgeActive {
+    background: #4caf50;
+    color: white;
+}
+
+.badgeInactive {
+    background: #ff9800;
+    color: white;
+}
+
+.cardBody {
+    margin-bottom: 10px;
+}
+
+.shiftInfo {
+    font-size: 14px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 6px;
+}
+
+.roomInfo {
+    font-size: 13px;
+    color: #666;
+}
+
+.rejectionInfo {
+    background: #ffebee;
+    padding: 8px;
+    border-radius: 6px;
+    border-left: 3px solid #f44336;
+    color: #d32f2f;
+    font-size: 12px;
+    line-height: 1.5;
+    margin-top: 8px;
+}
+
+.rejectionInfo strong {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.cardActions {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+    padding-top: 8px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.toggleBtn,
+.deleteBtn {
+    padding: 6px 10px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s;
+}
+
+.toggleBtn {
+    background: #ff9800;
+}
+
+.toggleBtn:hover {
+    background: #f57c00;
+    transform: scale(1.1);
+}
+
+.deleteBtn {
+    background: #f44336;
+}
+
+.deleteBtn:hover {
+    background: #d32f2f;
+    transform: scale(1.1);
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 1400px) {
+    .scheduleGrid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 992px) {
+    .scheduleGrid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .dayGrid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 16px;
+    }
+
+    .header h1 {
+        font-size: 24px;
+    }
+
+    .formSection,
+    .scheduleSection {
+        padding: 20px;
+    }
+
+    .scheduleGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dayGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .shiftSelection {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .scheduleGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .dayGrid {
+        grid-template-columns: 1fr;
+    }
+}

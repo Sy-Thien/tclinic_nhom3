@@ -230,3 +230,194 @@ exports.bulkCreateSchedules = async (req, res) => {
         res.status(500).json({ message: 'Lỗi bulk create schedules', error: error.message });
     }
 };
+
+// ============ PHẦN PHÊ DUYỆT LỊCH LÀM VIỆC ============
+
+// Lấy danh sách lịch chờ phê duyệt
+exports.getPendingSchedules = async (req, res) => {
+    try {
+        const pendingSchedules = await DoctorSchedule.findAll({
+            where: { approval_status: 'pending' },
+            include: [
+                {
+                    model: Doctor,
+                    as: 'doctor',
+                    attributes: ['id', 'full_name', 'email', 'phone'],
+                    include: [{ model: Specialty, as: 'specialty', attributes: ['id', 'name'] }]
+                }
+            ],
+            order: [['createdAt', 'DESC']]
+        });
+
+        res.json({
+            success: true,
+            count: pendingSchedules.length,
+            schedules: pendingSchedules
+        });
+    } catch (error) {
+        console.error('❌ Error fetching pending schedules:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi lấy danh sách lịch chờ duyệt',
+            error: error.message
+        });
+    }
+};
+
+// Phê duyệt lịch làm việc
+exports.approveSchedule = async (req, res) => {
+    try {
+        const { scheduleId } = req.params;
+        const adminId = req.user.id; // Admin đang đăng nhập
+
+        const schedule = await DoctorSchedule.findByPk(scheduleId, {
+            include: [
+                {
+                    model: Doctor,
+                    as: 'doctor',
+                    attributes: ['id', 'full_name']
+                }
+            ]
+        });
+
+        if (!schedule) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy lịch làm việc'
+            });
+        }
+
+        if (schedule.approval_status !== 'pending') {
+            return res.status(400).json({
+                success: false,
+                message: `Lịch này đã được ${schedule.approval_status === 'approved' ? 'phê duyệt' : 'từ chối'} trước đó`
+            });
+        }
+
+        // Cập nhật trạng thái
+        await schedule.update({
+            approval_status: 'approved',
+            approved_by: adminId,
+            approved_at: new Date(),
+            rejection_reason: null
+        });
+
+        console.log(`✅ Admin ${adminId} approved schedule ${scheduleId} for doctor ${schedule.doctor_id}`);
+
+        res.json({
+            success: true,
+            message: `Đã phê duyệt lịch làm việc ${schedule.day_of_week} cho BS. ${schedule.doctor?.full_name}`,
+            schedule
+        });
+    } catch (error) {
+        console.error('❌ Error approving schedule:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi phê duyệt lịch làm việc',
+            error: error.message
+        });
+    }
+};
+
+// Từ chối lịch làm việc
+exports.rejectSchedule = async (req, res) => {
+    try {
+        const { scheduleId } = req.params;
+        const { rejection_reason } = req.body;
+        const adminId = req.user.id;
+
+        if (!rejection_reason || rejection_reason.trim() === '') {
+            return res.status(400).json({
+                success: false,
+                message: 'Vui lòng cung cấp lý do từ chối'
+            });
+        }
+
+        const schedule = await DoctorSchedule.findByPk(scheduleId, {
+            include: [
+                {
+                    model: Doctor,
+                    as: 'doctor',
+                    attributes: ['id', 'full_name']
+                }
+            ]
+        });
+
+        if (!schedule) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy lịch làm việc'
+            });
+        }
+
+        if (schedule.approval_status !== 'pending') {
+            return res.status(400).json({
+                success: false,
+                message: `Lịch này đã được ${schedule.approval_status === 'approved' ? 'phê duyệt' : 'từ chối'} trước đó`
+            });
+        }
+
+        // Cập nhật trạng thái
+        await schedule.update({
+            approval_status: 'rejected',
+            approved_by: adminId,
+            approved_at: new Date(),
+            rejection_reason: rejection_reason.trim()
+        });
+
+        console.log(`❌ Admin ${adminId} rejected schedule ${scheduleId} for doctor ${schedule.doctor_id}`);
+
+        res.json({
+            success: true,
+            message: `Đã từ chối lịch làm việc ${schedule.day_of_week} của BS. ${schedule.doctor?.full_name}`,
+            schedule
+        });
+    } catch (error) {
+        console.error('❌ Error rejecting schedule:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi từ chối lịch làm việc',
+            error: error.message
+        });
+    }
+};
+
+// Lấy lịch sử phê duyệt (tất cả lịch đã duyệt/từ chối)
+exports.getApprovalHistory = async (req, res) => {
+    try {
+        const { status } = req.query; // 'approved' hoặc 'rejected'
+
+        const whereClause = {};
+        if (status === 'approved' || status === 'rejected') {
+            whereClause.approval_status = status;
+        } else {
+            whereClause.approval_status = ['approved', 'rejected'];
+        }
+
+        const schedules = await DoctorSchedule.findAll({
+            where: whereClause,
+            include: [
+                {
+                    model: Doctor,
+                    as: 'doctor',
+                    attributes: ['id', 'full_name', 'email'],
+                    include: [{ model: Specialty, as: 'specialty', attributes: ['id', 'name'] }]
+                }
+            ],
+            order: [['approved_at', 'DESC']]
+        });
+
+        res.json({
+            success: true,
+            count: schedules.length,
+            schedules
+        });
+    } catch (error) {
+        console.error('❌ Error fetching approval history:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi lấy lịch sử phê duyệt',
+            error: error.message
+        });
+    }
+};

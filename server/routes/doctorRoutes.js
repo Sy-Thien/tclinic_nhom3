@@ -7,6 +7,7 @@ const doctorScheduleViewController = require('../controllers/doctorScheduleViewC
 const doctorReviewController = require('../controllers/doctorReviewController');
 const doctorAppointmentController = require('../controllers/doctorAppointmentController');
 const doctorWalkInController = require('../controllers/doctorWalkInController');
+const doctorSelfScheduleController = require('../controllers/doctorSelfScheduleController');
 
 // Middleware kiểm tra role doctor
 const checkDoctorRole = (req, res, next) => {
@@ -18,6 +19,29 @@ const checkDoctorRole = (req, res, next) => {
 
 // GET - Lịch làm việc định kỳ (DoctorSchedule)
 router.get('/work-schedule', verifyToken, checkDoctorRole, doctorAppointmentController.getWorkSchedule);
+
+// ============ QUẢN LÝ LỊCH LÀM VIỆC CỦA BÁC SĨ (TỰ ĐĂNG KÝ) ============
+// GET - Lấy danh sách phòng khám available
+router.get('/rooms', verifyToken, checkDoctorRole, doctorSelfScheduleController.getRooms);
+
+// GET - Lấy tất cả lịch làm việc của bác sĩ đang đăng nhập
+router.get('/my-schedules', verifyToken, checkDoctorRole, doctorSelfScheduleController.getMySchedules);
+
+// GET - Lấy thông tin profile bác sĩ
+router.get('/my-profile', verifyToken, checkDoctorRole, doctorSelfScheduleController.getMyProfile);
+
+// POST - Tạo lịch làm việc mới
+router.post('/my-schedules', verifyToken, checkDoctorRole, doctorSelfScheduleController.createMySchedule);
+
+// PUT - Cập nhật lịch làm việc
+router.put('/my-schedules/:scheduleId', verifyToken, checkDoctorRole, doctorSelfScheduleController.updateMySchedule);
+
+// DELETE - Xóa lịch làm việc
+router.delete('/my-schedules/:scheduleId', verifyToken, checkDoctorRole, doctorSelfScheduleController.deleteMySchedule);
+
+// PATCH - Toggle trạng thái hoạt động
+router.patch('/my-schedules/:scheduleId/toggle', verifyToken, checkDoctorRole, doctorSelfScheduleController.toggleScheduleActive);
+// ===================================================================
 
 // GET - Danh sách lịch hẹn của bác sĩ
 router.get('/appointments', verifyToken, checkDoctorRole, async (req, res) => {

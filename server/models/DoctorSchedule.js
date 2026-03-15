@@ -60,7 +60,7 @@ module.exports = (sequelize, DataTypes) => {
             comment: 'Lý do từ chối (nếu rejected)'
         }
     }, {
-        tableName: 'doctor_schedules',
+        tableName: 'tn_doctor_schedules',
         timestamps: false  // ✅ FIX: Bảng không có created_at/updated_at
     });
 

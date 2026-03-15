@@ -1,4 +1,4 @@
-const { Doctor, Specialty, DoctorSchedule, TimeSlot } = require('../models');
+const { Doctor, Specialty, DoctorSchedule, TimeSlot, Booking, Review, Prescription, PrescriptionDetail, MedicalHistory, Invoice, InvoiceItem, ConsultationRequest } = require('../models');
 const bcrypt = require('bcrypt');
 const { Op } = require('sequelize');
 
@@ -296,14 +296,48 @@ exports.deleteDoctor = async (req, res) => {
             return res.status(404).json({ message: 'Không tìm thấy bác sĩ' });
         }
 
-        // ✅ Xóa dữ liệu liên quan theo thứ tự FK
-        // 1. Xóa TimeSlots trước
+        // ✅ Xóa dữ liệu liên quan theo thứ tự FK (con trước, cha sau)
+        // 1. Xóa đánh giá
+        await Review.destroy({ where: { doctor_id: id } });
+
+        // 2. Xóa chi tiết đơn thuốc → đơn thuốc
+        const prescriptions = await Prescription.findAll({ where: { doctor_id: id }, attributes: ['id'] });
+        const prescriptionIds = prescriptions.map(p => p.id);
+        if (prescriptionIds.length > 0) {
+            await PrescriptionDetail.destroy({ where: { prescription_id: prescriptionIds } });
+        }
+        await Prescription.destroy({ where: { doctor_id: id } });
+
+        // 3. Xóa lịch sử y tế
+        await MedicalHistory.destroy({ where: { doctor_id: id } });
+
+        // 4. Xóa hóa đơn (items trước, invoice sau)
+        const invoices = await Invoice.findAll({ where: { doctor_id: id }, attributes: ['id'] });
+        const invoiceIds = invoices.map(i => i.id);
+        if (invoiceIds.length > 0) {
+            await InvoiceItem.destroy({ where: { invoice_id: invoiceIds } });
+        }
+        await Invoice.destroy({ where: { doctor_id: id } });
+
+        // 5. Gỡ bác sĩ khỏi yêu cầu tư vấn (set null)
+        await ConsultationRequest.update(
+            { assigned_doctor_id: null },
+            { where: { assigned_doctor_id: id } }
+        );
+
+        // 6. Gỡ bác sĩ khỏi booking (set null, giữ lại lịch sử đặt)
+        await Booking.update(
+            { doctor_id: null },
+            { where: { doctor_id: id } }
+        );
+
+        // 7. Xóa TimeSlots
         await TimeSlot.destroy({ where: { doctor_id: id } });
 
-        // 2. Xóa DoctorSchedule
+        // 8. Xóa DoctorSchedule
         await DoctorSchedule.destroy({ where: { doctor_id: id } });
 
-        // 3. Xóa bác sĩ
+        // 9. Xóa bác sĩ
         await doctor.destroy();
 
         console.log('✅ Doctor deleted:', id);

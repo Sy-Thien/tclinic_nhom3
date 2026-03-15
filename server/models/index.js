@@ -339,6 +339,16 @@ try {
         as: 'assignedConsultations'
     });
 
+    // ✅ Treatment <-> Booking
+    Treatment.belongsTo(Booking, {
+        foreignKey: 'booking_id',
+        as: 'booking'
+    });
+    Booking.hasMany(Treatment, {
+        foreignKey: 'booking_id',
+        as: 'treatments'
+    });
+
     // ✅ Invoice <-> Booking
     Invoice.belongsTo(Booking, {
         foreignKey: 'booking_id',

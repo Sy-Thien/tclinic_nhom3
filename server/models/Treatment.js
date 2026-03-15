@@ -7,11 +7,11 @@ const Treatment = sequelize.define('Treatment', {
         primaryKey: true,
         autoIncrement: true
     },
-    appointment_id: {
+    booking_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: 'tn_appointments',
+            model: 'tn_booking',
             key: 'id'
         }
     },

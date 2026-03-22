@@ -1,8 +1,14 @@
 const express = require('express');
 const cors = require('cors');
+const http = require('http');
 require('dotenv').config();
 
 const app = express();
+const httpServer = http.createServer(app);
+
+// ✅ Init Socket.io
+const { initSocket } = require('./services/socketService');
+initSocket(httpServer);
 
 // Middleware
 app.use(cors());
@@ -104,7 +110,7 @@ app.get('/health', (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
     console.log(`🚀 Server đang chạy trên port ${PORT}`);
 
     // ✅ Start appointment reminder scheduler (only in production/development, not in CI)

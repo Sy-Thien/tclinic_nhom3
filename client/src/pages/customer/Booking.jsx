@@ -573,12 +573,9 @@ export default function Booking() {
         setLoading(true);
 
         try {
-            const token = localStorage.getItem('token');
             const response = await api.post('/api/bookings/create', {
                 ...formData,
                 booking_type: bookingType
-            }, {
-                headers: token ? { Authorization: `Bearer ${token}` } : {}
             });
 
             alert('✅ ' + response.data.message + '\nMã đặt lịch: ' + response.data.booking.booking_code);
@@ -595,6 +592,7 @@ export default function Booking() {
                 appointment_date: '',
                 appointment_time: '',
                 doctor_id: null,
+                service_id: null,
                 symptoms: '',
                 note: ''
             });

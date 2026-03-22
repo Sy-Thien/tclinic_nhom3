@@ -44,7 +44,7 @@ router.get('/my-appointments', verifyToken, checkPatientRole, async (req, res) =
             ],
             order: [
                 ['appointment_date', 'DESC'],
-                ['appointment_hour', 'DESC']
+                ['appointment_time', 'DESC']
             ]
         });
 

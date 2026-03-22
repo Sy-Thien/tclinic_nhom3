@@ -8,7 +8,7 @@ exports.getDoctorsBySpecialty = async (req, res) => {
         const { specialtyId } = req.query;
 
         const doctors = await Doctor.findAll({
-            where: { specialty_id: specialtyId },
+            where: { specialty_id: specialtyId, is_active: true },
             attributes: ['id', 'full_name', 'phone', 'email', 'specialty_id'],
             include: [
                 {
@@ -97,7 +97,7 @@ exports.getAvailableSlots = async (req, res) => {
             where: {
                 doctor_id: doctorId,
                 appointment_date: date,
-                status: { [Op.in]: ['pending', 'confirmed', 'in_progress'] }
+                status: { [Op.notIn]: ['cancelled', 'doctor_rejected'] }
             },
             attributes: ['appointment_time', 'status', 'patient_name']
         });
@@ -197,7 +197,7 @@ exports.getAvailableDoctors = async (req, res) => {
                 where: {
                     doctor_id: schedule.doctor_id,
                     appointment_date: date,
-                    status: ['pending', 'confirmed']
+                    status: { [Op.notIn]: ['cancelled', 'doctor_rejected'] }
                 },
                 attributes: ['appointment_time']
             });

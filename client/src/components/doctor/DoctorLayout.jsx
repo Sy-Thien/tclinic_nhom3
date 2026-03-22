@@ -1,6 +1,7 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import styles from './DoctorLayout.module.css';
+import NotificationBell from '../common/NotificationBell';
 
 export default function DoctorLayout() {
     const [doctor, setDoctor] = useState(null);
@@ -194,6 +195,11 @@ export default function DoctorLayout() {
 
             {/* Main Content */}
             <main className={styles.main}>
+                <div className={styles.topbar}>
+                    <div className={styles.topbarRight}>
+                        <NotificationBell />
+                    </div>
+                </div>
                 <Outlet />
             </main>
         </div>

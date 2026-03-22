@@ -1,6 +1,7 @@
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import styles from './AdminLayout.module.css';
+import NotificationBell from '../common/NotificationBell';
 
 export default function AdminLayout() {
     const [admin, setAdmin] = useState(null);
@@ -274,6 +275,11 @@ export default function AdminLayout() {
 
             {/* Main Content */}
             <main className={styles.main}>
+                <div className={styles.topbar}>
+                    <div className={styles.topbarRight}>
+                        <NotificationBell />
+                    </div>
+                </div>
                 <Outlet />
             </main>
         </div>

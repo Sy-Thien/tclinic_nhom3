@@ -1,4 +1,4 @@
-const { Booking, Patient, Doctor, Specialty, Prescription, PrescriptionDetail, Drug } = require('../models');
+const { Booking, Patient, Doctor, Specialty, Service, Prescription, PrescriptionDetail, Drug } = require('../models');
 const { Op } = require('sequelize');
 
 // Patient - Lấy lịch sử khám bệnh của mình
@@ -37,6 +37,11 @@ exports.getMyMedicalHistory = async (req, res) => {
                     model: Specialty,
                     as: 'specialty',
                     attributes: ['id', 'name']
+                },
+                {
+                    model: Service,
+                    as: 'service',
+                    attributes: ['id', 'name', 'price']
                 },
                 {
                     model: Prescription,
@@ -111,6 +116,11 @@ exports.getMedicalRecordDetail = async (req, res) => {
                     model: Specialty,
                     as: 'specialty',
                     attributes: ['id', 'name']
+                },
+                {
+                    model: Service,
+                    as: 'service',
+                    attributes: ['id', 'name', 'price']
                 },
                 {
                     model: Prescription,

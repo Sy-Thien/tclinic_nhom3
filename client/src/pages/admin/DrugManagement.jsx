@@ -95,7 +95,17 @@ export default function DrugManagement() {
     };
 
     const handleEditDrug = (drug) => {
-        setFormData(drug);
+        setFormData({
+            name: drug.name || '',
+            ingredient: drug.ingredient || '',
+            quantity: drug.quantity ?? 0,
+            unit: drug.unit || 'viên',
+            expiry_date: drug.expiry_date || '',
+            warning_level: drug.warning_level ?? 10,
+            price: drug.price ?? 0,
+            usage_guide: drug.usage_guide || '',
+            note: drug.note || ''
+        });
         setEditingId(drug.id);
         setShowForm(true);
     };

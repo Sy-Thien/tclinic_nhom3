@@ -44,8 +44,11 @@ export default function AdminDoctorManagement() {
 
     useEffect(() => {
         fetchDoctors();
-        fetchSpecialties();
     }, [filters]);
+
+    useEffect(() => {
+        fetchSpecialties();
+    }, []);
 
     const fetchDoctors = async () => {
         try {
@@ -294,7 +297,12 @@ export default function AdminDoctorManagement() {
         try {
             setLoading(true);
             await api.put(`/api/admin/doctor-schedules/${schedule.id}`, {
-                ...schedule,
+                day_of_week: schedule.day_of_week,
+                start_time: schedule.start_time?.substring(0, 5),
+                end_time: schedule.end_time?.substring(0, 5),
+                break_start: schedule.break_start?.substring(0, 5),
+                break_end: schedule.break_end?.substring(0, 5),
+                room: schedule.room,
                 is_active: !schedule.is_active
             });
             alert(`${schedule.is_active ? 'Đã tắt' : 'Đã bật'} lịch làm việc ${schedule.day_of_week}!`);

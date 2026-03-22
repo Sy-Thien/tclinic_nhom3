@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../utils/api';
 import { useStorageSync } from '../../hooks/useStorageSync';
 import styles from './PatientProfile.module.css';
 
@@ -50,10 +50,7 @@ export default function PatientProfile() {
     const fetchPatientProfile = async () => {
         try {
             setLoading(true);
-            const token = localStorage.getItem('token');
-            const response = await axios.get('/api/patient-profile/profile', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.get('/api/patient-profile/profile');
 
             if (response.data.success) {
                 const data = response.data.data;
@@ -97,10 +94,7 @@ export default function PatientProfile() {
         try {
             setLoading(true);
             setError('');
-            const token = localStorage.getItem('token');
-            const response = await axios.put('/api/patient-profile/profile', profileForm, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.put('/api/patient-profile/profile', profileForm);
 
             if (response.data.success) {
                 setSuccessMessage(response.data.message);
@@ -135,10 +129,7 @@ export default function PatientProfile() {
         try {
             setLoading(true);
             setError('');
-            const token = localStorage.getItem('token');
-            const response = await axios.put('/api/patient-profile/change-password', passwordForm, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.put('/api/patient-profile/change-password', passwordForm);
 
             if (response.data.success) {
                 setSuccessMessage(response.data.message);

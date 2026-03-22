@@ -39,7 +39,7 @@ export default function BookingSuccess() {
                 </div>
 
                 <div className={styles.contact}>
-                    <p>Cần hỗ trợ? Gọi ngay: <strong>1900 xxxx</strong></p>
+                    <p>Cần hỗ trợ? Gọi ngay: <strong>1900 1234</strong></p>
                 </div>
             </div>
         </div>

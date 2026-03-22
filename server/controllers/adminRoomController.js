@@ -311,6 +311,14 @@ exports.deleteRoom = async (req, res) => {
             return res.status(404).json({ message: 'Không tìm thấy phòng khám' });
         }
 
+        // ✅ Kiểm tra xem phòng có TimeSlot nào đang được sử dụng không
+        const timeSlotsCount = await TimeSlot.count({ where: { room_id: id } });
+        if (timeSlotsCount > 0) {
+            return res.status(400).json({
+                message: `Không thể xóa phòng này vì đang có ${timeSlotsCount} lịch khám liên kết. Vui lòng xóa lịch khám trước hoặc chuyển sang phòng khác.`
+            });
+        }
+
         // Xóa phòng khám
         await room.destroy();
 

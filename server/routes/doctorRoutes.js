@@ -255,7 +255,7 @@ router.put('/appointments/:id/complete', verifyToken, checkDoctorRole, async (re
 
         await appointment.update({
             status: 'completed',
-            update_at: new Date()
+            updated_at: new Date()
         });
 
         console.log(`✅ Appointment ${id} completed`);
@@ -277,7 +277,7 @@ router.put('/appointments/:id/complete', verifyToken, checkDoctorRole, async (re
 router.put('/appointments/:id/reject', verifyToken, checkDoctorRole, async (req, res) => {
     try {
         const { id } = req.params;
-        const { reason } = req.body;
+        const { reason, reject_reason } = req.body;
 
         const appointment = await Booking.findByPk(id);
 
@@ -287,7 +287,8 @@ router.put('/appointments/:id/reject', verifyToken, checkDoctorRole, async (req,
 
         await appointment.update({
             status: 'doctor_rejected',
-            reject_reason: reason,
+            reject_reason: reject_reason || reason,
+
             updated_at: new Date()
         });
 

@@ -129,14 +129,26 @@ const MedicalHistory = () => {
                             </div>
 
                             <div className={styles.recordBody}>
+                                {record.booking_code && (
+                                    <div className={styles.infoRow}>
+                                        <span className={styles.label}>Mã phiếu:</span>
+                                        <span className={styles.value}>{record.booking_code}</span>
+                                    </div>
+                                )}
                                 <div className={styles.infoRow}>
                                     <span className={styles.label}>Bác sĩ:</span>
                                     <span className={styles.value}>{record.doctor?.full_name || 'N/A'}</span>
                                 </div>
                                 <div className={styles.infoRow}>
                                     <span className={styles.label}>Chuyên khoa:</span>
-                                    <span className={styles.value}>{record.doctor?.specialty?.name || 'N/A'}</span>
+                                    <span className={styles.value}>{record.doctor?.specialty?.name || record.specialty?.name || 'N/A'}</span>
                                 </div>
+                                {record.service && (
+                                    <div className={styles.infoRow}>
+                                        <span className={styles.label}>Dịch vụ:</span>
+                                        <span className={styles.value}>{record.service.name}</span>
+                                    </div>
+                                )}
                                 <div className={styles.infoRow}>
                                     <span className={styles.label}>Triệu chứng:</span>
                                     <span className={styles.value}>{record.symptoms || 'Không có'}</span>
@@ -145,6 +157,12 @@ const MedicalHistory = () => {
                                     <div className={styles.infoRow}>
                                         <span className={styles.label}>Chẩn đoán:</span>
                                         <span className={styles.value}>{record.diagnosis}</span>
+                                    </div>
+                                )}
+                                {record.prescription && (
+                                    <div className={styles.infoRow}>
+                                        <span className={styles.label}>Đơn thuốc:</span>
+                                        <span className={styles.value} style={{ color: '#27ae60', fontWeight: 600 }}>✓ Có đơn thuốc</span>
                                     </div>
                                 )}
                             </div>
@@ -188,6 +206,12 @@ const MedicalHistory = () => {
                             <div className={styles.section}>
                                 <h3>Thông tin khám</h3>
                                 <div className={styles.detailInfo}>
+                                    {selectedRecord.booking_code && (
+                                        <div className={styles.detailRow}>
+                                            <span className={styles.detailLabel}>Mã phiếu khám:</span>
+                                            <span>{selectedRecord.booking_code}</span>
+                                        </div>
+                                    )}
                                     <div className={styles.detailRow}>
                                         <span className={styles.detailLabel}>Ngày khám:</span>
                                         <span>{formatDate(selectedRecord.appointment_date, selectedRecord.appointment_time)}</span>
@@ -200,6 +224,12 @@ const MedicalHistory = () => {
                                         <span className={styles.detailLabel}>Chuyên khoa:</span>
                                         <span>{selectedRecord.doctor?.specialty?.name || selectedRecord.specialty?.name}</span>
                                     </div>
+                                    {selectedRecord.service && (
+                                        <div className={styles.detailRow}>
+                                            <span className={styles.detailLabel}>Dịch vụ:</span>
+                                            <span>{selectedRecord.service.name}</span>
+                                        </div>
+                                    )}
                                     <div className={styles.detailRow}>
                                         <span className={styles.detailLabel}>Triệu chứng:</span>
                                         <span>{selectedRecord.symptoms || 'Không có'}</span>
@@ -220,6 +250,15 @@ const MedicalHistory = () => {
                                     {selectedRecord.conclusion || 'Chưa có kết luận'}
                                 </div>
                             </div>
+
+                            {selectedRecord.note && (
+                                <div className={styles.section}>
+                                    <h3>📝 Ghi chú của bác sĩ</h3>
+                                    <div className={styles.textContent}>
+                                        {selectedRecord.note}
+                                    </div>
+                                </div>
+                            )}
 
                             {selectedRecord.prescription && (
                                 <div className={styles.section}>

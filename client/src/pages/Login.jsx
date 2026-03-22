@@ -103,7 +103,7 @@ export default function Login() {
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} autoComplete="off">
                     <div className={styles.formGroup}>
                         <label>Email / Tên đăng nhập</label>
                         <input
@@ -113,6 +113,7 @@ export default function Login() {
                             onChange={handleChange}
                             required
                             placeholder="Nhập email hoặc tên đăng nhập"
+                            autoComplete="off"
                             autoFocus
                         />
                     </div>
@@ -127,6 +128,7 @@ export default function Login() {
                                 onChange={handleChange}
                                 required
                                 placeholder="Nhập mật khẩu"
+                                autoComplete="new-password"
                             />
                             <button
                                 type="button"

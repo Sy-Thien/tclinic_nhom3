@@ -136,8 +136,8 @@ exports.createBooking = async (req, res) => {
             // Option 1: Đặt luôn (không chọn bác sĩ) → Chờ admin gán bác sĩ
             status = 'waiting_doctor_assignment';
         } else {
-            // Option 2: Đặt bác sĩ cụ thể → Chờ bác sĩ xác nhận
-            status = 'waiting_doctor_confirmation';
+            // Option 2: Đặt bác sĩ cụ thể → Xác nhận ngay (đặt thẳng)
+            status = 'confirmed';
 
             // ✅ Kiểm tra conflict: Cùng bác sĩ, cùng ngày, cùng giờ
             if (appointment_time) {
@@ -195,7 +195,26 @@ exports.createBooking = async (req, res) => {
 
         console.log('✅ Booking created:', booking.id, 'Status:', status);
 
-        // Gửi email xác nhận đặt lịch
+        // 🔔 Socket: Thông báo admin có lịch kám mới
+        const { emitToRole, emitToUser: emitToUserSocket } = require('../services/socketService');
+        emitToRole('admin', 'new_booking', {
+            type: 'new_booking',
+            title: '📅 Lịch hẹn mới',
+            message: `${patient_name} vừa đặt lịch khám`,
+            bookingId: booking.id,
+            bookingCode: booking.booking_code
+        });
+
+        // Nếu có bác sĩ được chỉ định, thông báo cho bác sĩ
+        if (doctor_id) {
+            emitToUserSocket('doctor', doctor_id, 'new_appointment', {
+                type: 'new_appointment',
+                title: '🗓️ Lịch hẹn mới',
+                message: `Bệnh nhân ${patient_name} đã đặt lịch khám`,
+                bookingId: booking.id,
+                bookingCode: booking.booking_code
+            });
+        }
         if (patient_email) {
             const emailService = require('../services/emailService');
             const specialty = await Specialty.findByPk(specialty_id);
@@ -214,7 +233,7 @@ exports.createBooking = async (req, res) => {
 
         res.status(201).json({
             message: doctor_id
-                ? 'Đặt lịch thành công! Vui lòng đợi bác sĩ xác nhận.'
+                ? 'Đặt lịch thành công! Lịch hẹn của bạn đã được xác nhận.'
                 : 'Đặt lịch thành công! Chúng tôi sẽ sắp xếp bác sĩ phù hợp cho bạn.',
             booking: {
                 id: booking.id,
@@ -313,7 +332,7 @@ exports.getDoctorAvailableSlots = async (req, res) => {
             where: {
                 doctor_id,
                 appointment_date: date,
-                status: { [Op.notIn]: ['cancelled'] }
+                status: { [Op.notIn]: ['cancelled', 'doctor_rejected'] }
             },
             attributes: ['appointment_time']
         });

@@ -84,17 +84,16 @@ export default function DoctorDashboardNew() {
             // Get upcoming appointments (today + future, not completed)
             const upcoming = allAppts
                 .filter(a => {
-                    const aptDate = new Date(a.appointment_date);
-                    const todayDate = new Date(today);
-                    return aptDate >= todayDate &&
+                    return a.appointment_date >= today &&
                         a.status !== 'completed' &&
                         a.status !== 'cancelled' &&
                         a.status !== 'doctor_rejected';
                 })
                 .sort((a, b) => {
-                    const dateCompare = new Date(a.appointment_date) - new Date(b.appointment_date);
-                    if (dateCompare !== 0) return dateCompare;
-                    return a.appointment_time.localeCompare(b.appointment_time);
+                    if (a.appointment_date !== b.appointment_date) {
+                        return a.appointment_date.localeCompare(b.appointment_date);
+                    }
+                    return (a.appointment_time || '').localeCompare(b.appointment_time || '');
                 })
                 .slice(0, 5);
             setUpcomingAppointments(upcoming);
@@ -103,9 +102,10 @@ export default function DoctorDashboardNew() {
             const recent = allAppts
                 .filter(a => a.status === 'completed')
                 .sort((a, b) => {
-                    const dateCompare = new Date(b.appointment_date) - new Date(a.appointment_date);
-                    if (dateCompare !== 0) return dateCompare;
-                    return b.appointment_time.localeCompare(a.appointment_time);
+                    if (a.appointment_date !== b.appointment_date) {
+                        return b.appointment_date.localeCompare(a.appointment_date);
+                    }
+                    return (b.appointment_time || '').localeCompare(a.appointment_time || '');
                 })
                 .slice(0, 5);
             setRecentPatients(recent);

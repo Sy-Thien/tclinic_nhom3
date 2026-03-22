@@ -149,6 +149,25 @@ exports.getDoctorTimeSlotsWithBookings = async (req, res) => {
         const breakStart = schedule.break_start ? schedule.break_start : null;
         const breakEnd = schedule.break_end ? schedule.break_end : null;
 
+        // Lấy tất cả bookings của bác sĩ trong ngày 1 lần (tránh N+1 query)
+        const dayBookings = await Booking.findAll({
+            where: {
+                doctor_id: doctorId,
+                appointment_date: date,
+                status: {
+                    [Op.notIn]: ['cancelled', 'doctor_rejected']
+                }
+            },
+            attributes: ['appointment_time']
+        });
+
+        // Đếm số booking theo từng giờ
+        const bookingCountMap = {};
+        for (const b of dayBookings) {
+            const time = b.appointment_time;
+            bookingCountMap[time] = (bookingCountMap[time] || 0) + 1;
+        }
+
         let currentHour = startHour;
         let currentMin = startMin;
 
@@ -176,18 +195,7 @@ exports.getDoctorTimeSlotsWithBookings = async (req, res) => {
                 }
             }
 
-            // Đếm số booking trong time slot này
-            // Chỉ đếm những booking có appointment_time = slotStartTime
-            const bookingCount = await Booking.count({
-                where: {
-                    doctor_id: doctorId,
-                    appointment_date: date,
-                    appointment_time: slotStartTime,
-                    status: {
-                        [Op.notIn]: ['cancelled', 'doctor_rejected']
-                    }
-                }
-            });
+            const bookingCount = bookingCountMap[slotStartTime] || 0;
 
             slots.push({
                 time: `${slotStartTime}-${slotEndTime}`,

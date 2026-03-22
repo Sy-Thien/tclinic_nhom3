@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import SessionChecker from './components/SessionChecker'; // ✅ NEW: Single session checker
@@ -61,6 +62,17 @@ import VNPayReturn from './pages/payment/VNPayReturn';  // ✅ NEW: VNPay paymen
 import ChangePassword from './pages/common/ChangePassword';  // ✅ NEW: Change password for all roles
 
 export default function App() {
+    useEffect(() => {
+        // Start each new browser tab as guest to avoid auto-login from old localStorage session.
+        const sessionInitialized = sessionStorage.getItem('session_initialized');
+
+        if (!sessionInitialized) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            sessionStorage.setItem('session_initialized', 'true');
+        }
+    }, []);
+
     return (
         <Router>
             <SessionChecker /> {/* ✅ Kiểm tra session định kỳ */}

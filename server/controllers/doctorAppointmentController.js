@@ -94,7 +94,11 @@ exports.getWorkSchedule = async (req, res) => {
         }
 
         const schedules = await DoctorSchedule.findAll({
-            where: { doctor_id },
+            where: {
+                doctor_id,
+                approval_status: 'approved',  // Chỉ lấy lịch đã được duyệt
+                is_active: true               // Và đang hoạt động
+            },
             order: [
                 ['day_of_week', 'ASC']
             ]
@@ -388,6 +392,17 @@ exports.confirmBooking = async (req, res) => {
             ]
         });
 
+        // 🔔 Socket: Thông báo cho bệnh nhân
+        if (booking.patient_id) {
+            const { emitToUser } = require('../services/socketService');
+            emitToUser('patient', booking.patient_id, 'booking_confirmed', {
+                type: 'booking_confirmed',
+                title: '✅ Lịch hẹn được xác nhận',
+                message: `Lịch khám ${booking.appointment_date} ${booking.appointment_time || ''} đã được bác sĩ xác nhận`,
+                bookingId: booking.id
+            });
+        }
+
         console.log('✅ Doctor confirmed booking:', id);
         res.json({ message: 'Xác nhận lịch khám thành công!', booking: updatedBooking });
 
@@ -433,6 +448,17 @@ exports.rejectBooking = async (req, res) => {
                 { model: Patient, as: 'patient', attributes: ['id', 'full_name', 'phone'], required: false }
             ]
         });
+
+        // 🔔 Socket: Thông báo cho bệnh nhân
+        if (booking.patient_id) {
+            const { emitToUser } = require('../services/socketService');
+            emitToUser('patient', booking.patient_id, 'booking_rejected', {
+                type: 'booking_rejected',
+                title: '❌ Lịch hẹn bị từ chối',
+                message: `Lịch khám ${booking.appointment_date} bị từ chối. Lý do: ${reject_reason}`,
+                bookingId: booking.id
+            });
+        }
 
         console.log('❌ Doctor rejected booking:', id, 'Reason:', reject_reason);
         res.json({ message: 'Đã từ chối lịch khám', booking: updatedBooking });

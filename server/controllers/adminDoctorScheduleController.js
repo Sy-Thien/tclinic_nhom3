@@ -304,6 +304,15 @@ exports.approveSchedule = async (req, res) => {
 
         console.log(`✅ Admin ${adminId} approved schedule ${scheduleId} for doctor ${schedule.doctor_id}`);
 
+        // 🔔 Socket: Thông báo cho bác sĩ
+        const { emitToUser } = require('../services/socketService');
+        emitToUser('doctor', schedule.doctor_id, 'schedule_approved', {
+            type: 'schedule_approved',
+            title: '✅ Lịch làm việc được phê duyệt',
+            message: `Lịch ${schedule.day_of_week} (${schedule.start_time?.substring(0, 5)} - ${schedule.end_time?.substring(0, 5)}) đã được phê duyệt`,
+            scheduleId: schedule.id
+        });
+
         res.json({
             success: true,
             message: `Đã phê duyệt lịch làm việc ${schedule.day_of_week} cho BS. ${schedule.doctor?.full_name}`,
@@ -366,6 +375,15 @@ exports.rejectSchedule = async (req, res) => {
         });
 
         console.log(`❌ Admin ${adminId} rejected schedule ${scheduleId} for doctor ${schedule.doctor_id}`);
+
+        // 🔔 Socket: Thông báo cho bác sĩ
+        const { emitToUser } = require('../services/socketService');
+        emitToUser('doctor', schedule.doctor_id, 'schedule_rejected', {
+            type: 'schedule_rejected',
+            title: '❌ Lịch làm việc bị từ chối',
+            message: `Lịch ${schedule.day_of_week} bị từ chối. Lý do: ${rejection_reason.trim()}`,
+            scheduleId: schedule.id
+        });
 
         res.json({
             success: true,

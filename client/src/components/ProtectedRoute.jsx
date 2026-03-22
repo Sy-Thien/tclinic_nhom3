@@ -53,20 +53,10 @@ export default function ProtectedRoute({ children, requiredRole = 'public' }) {
         requiredRole
     });
 
-    // ✅ Case 1: Trang public - ai cũng vào được NHƯNG nếu đã đăng nhập thì redirect về trang của role đó
+    // ✅ Case 1: Trang public - ai cũng vào được (kể cả đã đăng nhập)
     if (requiredRole === 'public') {
-        // Nếu đã đăng nhập và là admin/doctor → redirect về trang của họ
-        if (token && user) {
-            if (userRole === 'admin') {
-                console.log('🔄 Admin accessing public page - redirect to /admin');
-                return <Navigate to="/admin" replace />;
-            }
-            if (userRole === 'doctor') {
-                console.log('🔄 Doctor accessing public page - redirect to /doctor-portal');
-                return <Navigate to="/doctor-portal" replace />;
-            }
-            // Patient hoặc guest → cho phép ở trang customer
-        }
+        // Giữ trải nghiệm "xem trang chủ trước" cho mọi người dùng.
+        // Khi truy cập /admin hoặc /doctor-portal vẫn bị chặn theo role ở các case bên dưới.
         return children;
     }
 

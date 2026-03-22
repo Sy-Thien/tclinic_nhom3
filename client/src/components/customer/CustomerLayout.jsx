@@ -1,7 +1,8 @@
-import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import api from '../../utils/api';
 import styles from './CustomerLayout.module.css';
+import NotificationBell from '../common/NotificationBell';
 
 export default function CustomerLayout() {
     const [user, setUser] = useState(null);
@@ -68,8 +69,8 @@ export default function CustomerLayout() {
                     </div>
 
                     <nav className={styles.nav}>
-                        <Link to="/">Trang chủ</Link>
-                        <Link to="/booking">Đặt lịch</Link>
+                        <NavLink to="/" end className={({ isActive }) => isActive ? styles.activeLink : ''}>Trang chủ</NavLink>
+                        <NavLink to="/booking" className={({ isActive }) => isActive ? styles.activeLink : ''}>Đặt lịch</NavLink>
 
                         {/* ✅ Dropdown "Của tôi" - chỉ hiện khi đăng nhập */}
                         {user && (
@@ -99,11 +100,11 @@ export default function CustomerLayout() {
                             </div>
                         )}
 
-                        <Link to="/services">Dịch vụ</Link>
-                        <Link to="/doctors">Bác sĩ</Link>
-                        <Link to="/news">Tin tức</Link>
-                        <Link to="/about">Giới thiệu</Link>
-                        <Link to="/contact">Liên hệ</Link>
+                        <NavLink to="/services" className={({ isActive }) => isActive ? styles.activeLink : ''}>Dịch vụ</NavLink>
+                        <NavLink to="/doctors" className={({ isActive }) => isActive ? styles.activeLink : ''}>Bác sĩ</NavLink>
+                        <NavLink to="/news" className={({ isActive }) => isActive ? styles.activeLink : ''}>Tin tức</NavLink>
+                        <NavLink to="/about" className={({ isActive }) => isActive ? styles.activeLink : ''}>Giới thiệu</NavLink>
+                        <NavLink to="/contact" className={({ isActive }) => isActive ? styles.activeLink : ''}>Liên hệ</NavLink>
                     </nav>
 
                     <div className={styles.actions}>
@@ -133,6 +134,7 @@ export default function CustomerLayout() {
                                 )}
                             </>
                         )}
+                        {user && <NotificationBell />}
                     </div>
                 </div>
             </header>

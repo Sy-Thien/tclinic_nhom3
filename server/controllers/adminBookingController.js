@@ -64,6 +64,7 @@ exports.createBooking = async (req, res) => {
             patient_dob,
             patient_address,
             specialty_id,
+            service_id,
             doctor_id,
             appointment_date,
             appointment_time,
@@ -97,7 +98,7 @@ exports.createBooking = async (req, res) => {
             patient_dob,
             patient_address,
             specialty_id,
-            service_id: 1,
+            service_id: service_id || null,
             doctor_id: doctor_id || null,
             appointment_date,
             appointment_time,
@@ -182,6 +183,13 @@ exports.assignDoctor = async (req, res) => {
             return res.status(404).json({ message: 'Không tìm thấy bác sĩ' });
         }
 
+        // ✅ Kiểm tra bác sĩ có đang hoạt động không
+        if (!doctor.is_active) {
+            return res.status(400).json({
+                message: 'Bác sĩ này hiện không hoạt động. Vui lòng chọn bác sĩ khác.'
+            });
+        }
+
         // Validate: bác sĩ phải có cùng chuyên khoa với booking
         if (doctor.specialty_id !== booking.specialty_id) {
             return res.status(400).json({
@@ -195,6 +203,23 @@ exports.assignDoctor = async (req, res) => {
         });
 
         console.log('✅ Admin assigned doctor to booking:', booking.id, 'Doctor:', doctor_id);
+
+        // 🔔 Socket: Thông báo cho bệnh nhân và bác sĩ
+        const { emitToUser } = require('../services/socketService');
+        if (booking.patient_id) {
+            emitToUser('patient', booking.patient_id, 'booking_confirmed', {
+                type: 'booking_confirmed',
+                title: '✅ Lịch hẹn đã được xác nhận',
+                message: `Lịch khám ${booking.appointment_date} đã được xác nhận với BS. ${doctor.full_name}`,
+                bookingId: booking.id
+            });
+        }
+        emitToUser('doctor', doctor_id, 'new_appointment', {
+            type: 'new_appointment',
+            title: '🗓️ Lịch hẹn mới được giao',
+            message: `Bạn có lịch hẹn mới: BN ${booking.patient_name} vào ${booking.appointment_date}`,
+            bookingId: booking.id
+        });
 
         res.json({
             message: 'Gán bác sĩ thành công',
@@ -270,6 +295,19 @@ exports.cancelBooking = async (req, res) => {
 
         if (!booking) {
             return res.status(404).json({ message: 'Không tìm thấy lịch hẹn' });
+        }
+
+        // ✅ Kiểm tra trạng thái booking trước khi hủy
+        if (booking.status === 'cancelled') {
+            return res.status(400).json({
+                message: 'Lịch hẹn này đã bị hủy trước đó rồi.'
+            });
+        }
+
+        if (booking.status === 'completed') {
+            return res.status(400).json({
+                message: 'Không thể hủy lịch khám đã hoàn thành.'
+            });
         }
 
         await booking.update({

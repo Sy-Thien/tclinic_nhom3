@@ -18,9 +18,30 @@ const Reviews = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        fetchMyReviews();
-        fetchCompletedBookings();
+        loadData();
     }, []);
+
+    const loadData = async () => {
+        try {
+            // Fetch reviews first, then filter bookings using fresh data
+            const reviewsRes = await api.get('/api/reviews/my-reviews');
+            const reviews = reviewsRes.data.data || [];
+            setMyReviews(reviews);
+
+            const bookingsRes = await api.get('/api/customer/appointments');
+            const bookings = (bookingsRes.data.bookings || []).filter(b => b.status === 'completed');
+
+            // Lọc những booking chưa review (dùng reviews vừa fetch, không dùng state cũ)
+            const bookingsWithoutReview = bookings.filter(booking => {
+                return !reviews.find(review => review.booking_id === booking.id);
+            });
+            setCompletedBookings(bookingsWithoutReview);
+        } catch (error) {
+            console.error('Error loading data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const fetchMyReviews = async () => {
         try {
@@ -28,24 +49,6 @@ const Reviews = () => {
             setMyReviews(response.data.data || []);
         } catch (error) {
             console.error('Error fetching reviews:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchCompletedBookings = async () => {
-        try {
-            const response = await api.get('/api/bookings/my-appointments?status=completed');
-            const bookings = response.data.data || response.data.appointments || [];
-
-            // Lọc những booking chưa review
-            const bookingsWithoutReview = bookings.filter(booking => {
-                return !myReviews.find(review => review.booking_id === booking.id);
-            });
-
-            setCompletedBookings(bookingsWithoutReview);
-        } catch (error) {
-            console.error('Error fetching bookings:', error);
         }
     };
 
@@ -76,8 +79,7 @@ const Reviews = () => {
             await api.post('/api/reviews/create', formData);
             alert('✅ Đánh giá thành công! Cảm ơn phản hồi của bạn');
             handleCloseModal();
-            fetchMyReviews();
-            fetchCompletedBookings();
+            loadData();
         } catch (error) {
             console.error('Error creating review:', error);
             alert(error.response?.data?.message || 'Không thể gửi đánh giá');
@@ -90,7 +92,7 @@ const Reviews = () => {
         try {
             await api.delete(`/api/reviews/${id}`);
             alert('✅ Đã xóa đánh giá');
-            fetchMyReviews();
+            loadData();
         } catch (error) {
             console.error('Error deleting review:', error);
             alert('Không thể xóa đánh giá');

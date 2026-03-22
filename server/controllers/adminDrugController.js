@@ -71,7 +71,7 @@ exports.getDrugById = async (req, res) => {
 // ✅ POST - Thêm thuốc mới
 exports.createDrug = async (req, res) => {
     try {
-        const { name, ingredient, quantity, unit, expiry_date, warning_level, price } = req.body;
+        const { name, ingredient, quantity, unit, expiry_date, warning_level, price, usage_guide, note } = req.body;
         console.log('📝 POST /api/admin/drugs', { name, quantity, unit });
 
         if (!name || quantity === undefined) {
@@ -88,7 +88,9 @@ exports.createDrug = async (req, res) => {
             unit: unit || 'viên',
             expiry_date: expiry_date || null,
             warning_level: warning_level || 10,
-            price: price || 0
+            price: price || 0,
+            usage_guide: usage_guide || null,
+            note: note || null
         });
 
         console.log(`✅ Drug created: ${drug.name} (ID: ${drug.id})`);
@@ -117,7 +119,7 @@ exports.createDrug = async (req, res) => {
 exports.updateDrug = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, ingredient, quantity, unit, expiry_date, warning_level, price } = req.body;
+        const { name, ingredient, quantity, unit, expiry_date, warning_level, price, usage_guide, note } = req.body;
         console.log(`📝 PUT /api/admin/drugs/${id}`, { name, quantity });
 
         const drug = await Drug.findByPk(id);
@@ -136,6 +138,8 @@ exports.updateDrug = async (req, res) => {
             expiry_date: expiry_date !== undefined ? expiry_date : drug.expiry_date,
             warning_level: warning_level !== undefined ? warning_level : drug.warning_level,
             price: price !== undefined ? price : drug.price,
+            usage_guide: usage_guide !== undefined ? usage_guide : drug.usage_guide,
+            note: note !== undefined ? note : drug.note,
             updated_at: new Date()
         });
 

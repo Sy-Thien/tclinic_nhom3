@@ -111,6 +111,15 @@
     width: 100%;
 }
 
+.nav a.activeLink {
+    color: #45c3d2;
+    font-weight: 700;
+}
+
+.nav a.activeLink::after {
+    width: 100%;
+}
+
 /* ===== DROPDOWN ===== */
 .dropdown {
     position: relative;

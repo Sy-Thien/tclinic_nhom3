@@ -110,9 +110,9 @@ exports.sendAppointmentReminder = async (appointment) => {
                             </div>
                             
                             <p>Nếu có bất kỳ thắc mắc nào, vui lòng liên hệ:</p>
-                            <p>📞 Hotline: 1900-xxxx<br>
+                            <p>📞 Hotline: 1900-1234<br>
                             📧 Email: support@tclinic.com<br>
-                            🏥 Địa chỉ: 123 Đường ABC, Quận XYZ, TP.HCM</p>
+                            🏥 Địa chỉ: 123 Nguyễn Văn Cừ, Quận 5, TP.HCM</p>
                         </div>
                         
                         <div class="footer">

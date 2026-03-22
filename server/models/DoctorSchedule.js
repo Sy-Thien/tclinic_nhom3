@@ -61,7 +61,7 @@ module.exports = (sequelize, DataTypes) => {
         }
     }, {
         tableName: 'tn_doctor_schedules',
-        timestamps: false  // ✅ FIX: Bảng không có created_at/updated_at
+        timestamps: true  // Bảng có createdAt/updatedAt từ migration gốc
     });
 
     DoctorSchedule.associate = (models) => {

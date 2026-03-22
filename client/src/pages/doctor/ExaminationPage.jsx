@@ -424,6 +424,13 @@ export default function ExaminationPage() {
                     onPaymentComplete={async () => {
                         console.log('✅ Payment completed');
 
+                        // Lưu thông tin khám trước (đảm bảo diagnosis/conclusion/note đã được cập nhật)
+                        try {
+                            await api.put(`/api/doctor/appointments/${appointment.id}/exam`, formData);
+                        } catch (examError) {
+                            console.warn('⚠️ Could not save exam data:', examError.message);
+                        }
+
                         // Lưu lịch sử bệnh án nếu có patient_id
                         if (appointment.patient_id) {
                             try {

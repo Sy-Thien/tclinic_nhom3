@@ -1,171 +1,208 @@
-import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom';
-import { useState, useEffect, useRef } from 'react';
-import api from '../../utils/api';
+import React, { Component } from 'react';
+import { Outlet, Link, NavLink } from 'react-router-dom';
 import styles from './CustomerLayout.module.css';
 import NotificationBell from '../common/NotificationBell';
+import withRouter from '../../utils/withRouter';
 
-export default function CustomerLayout() {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [showMyDropdown, setShowMyDropdown] = useState(false);
-    const dropdownRef = useRef(null);
-    const navigate = useNavigate();
+class CustomerLayout extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            user: null,
+            loading: true,
+            showMobileMenu: false,
+            showUserMenu: false
+        };
+        this.userMenuRef = React.createRef();
+    }
 
-    useEffect(() => {
-        // ✅ Đọc user từ localStorage ngay lập tức (không cần chờ API)
+    componentDidMount() {
         const token = localStorage.getItem('token');
         const userData = localStorage.getItem('user');
 
         if (token && userData) {
             try {
                 const parsedUser = JSON.parse(userData);
-                setUser(parsedUser);
-                console.log('✅ User loaded from localStorage:', parsedUser.name);
+                this.setState({ user: parsedUser });
             } catch (error) {
-                console.error('❌ Parse user error:', error);
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
             }
         }
-        setLoading(false);
-    }, []);
+        this.setState({ loading: false });
+        document.addEventListener('mousedown', this.handleClickOutside);
+    }
 
-    // ✅ Đóng dropdown khi click ra ngoài
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setShowMyDropdown(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
+    componentWillUnmount() {
+        document.removeEventListener('mousedown', this.handleClickOutside);
+    }
 
-    const handleLogout = () => {
-        // Clear all auth data
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        localStorage.clear(); // Clear any other potential data
-        setUser(null);
-        // Force reload để đảm bảo clean state
+    handleClickOutside = (event) => {
+        if (this.userMenuRef.current && !this.userMenuRef.current.contains(event.target)) {
+            this.setState({ showUserMenu: false });
+        }
+    };
+
+    handleLogout = () => {
+        localStorage.clear();
+        this.setState({ user: null });
         window.location.href = '/';
     };
 
-    return (
-        <div className={styles.layout}>
-            {/* Header */}
-            <header className={styles.header}>
-                <div className={styles.container}>
-                    <div className={styles.logo}>
-                        <Link to="/">
+    render() {
+        const { user, loading, showMobileMenu, showUserMenu } = this.state;
+
+        return (
+            <div className={styles.layout}>
+                {/* Header */}
+                <header className={styles.header}>
+                    <div className={styles.headerInner}>
+                        {/* Logo */}
+                        <Link to="/" className={styles.logo}>
                             <div className={styles.logoIcon}>
-                                <img src="/logo.png" alt="TClinic Logo" />
+                                <img src="/logo.png" alt="TClinic" onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerHTML = '🏥'; }} />
+                            </div>
+                            <span className={styles.logoText}>TClinic</span>
+                        </Link>
+
+                        {/* Desktop Navigation */}
+                        <nav className={styles.nav}>
+                            <NavLink to="/" end className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink}>
+                                Trang chủ
+                            </NavLink>
+                            <NavLink to="/booking" className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink}>
+                                Đặt lịch
+                            </NavLink>
+                            <NavLink to="/doctors" className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink}>
+                                Bác sĩ
+                            </NavLink>
+                            <NavLink to="/services" className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink}>
+                                Dịch vụ
+                            </NavLink>
+                            <NavLink to="/news" className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink}>
+                                Tin tức
+                            </NavLink>
+                            <NavLink to="/contact" className={({ isActive }) => isActive ? `${styles.navLink} ${styles.active}` : styles.navLink}>
+                                Liên hệ
+                            </NavLink>
+                        </nav>
+
+                        {/* Actions */}
+                        <div className={styles.actions}>
+                            {!loading && (
+                                <>
+                                    {user ? (
+                                        <>
+                                            {user.role === 'patient' && <NotificationBell />}
+                                            <div className={styles.userMenu} ref={this.userMenuRef}>
+                                                <button
+                                                    className={styles.userBtn}
+                                                    onClick={() => this.setState({ showUserMenu: !showUserMenu })}
+                                                >
+                                                    <div className={styles.avatar}>
+                                                        {user.name?.charAt(0) || 'U'}
+                                                    </div>
+                                                    <span className={styles.userName}>{user.name || 'Người dùng'}</span>
+                                                    <svg className={styles.chevron} width="12" height="12" viewBox="0 0 12 12">
+                                                        <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" fill="none" />
+                                                    </svg>
+                                                </button>
+                                                {showUserMenu && (
+                                                    <div className={styles.userDropdown}>
+                                                        <Link to="/profile" onClick={() => this.setState({ showUserMenu: false })}>
+                                                            <i>👤</i> Hồ sơ cá nhân
+                                                        </Link>
+                                                        <Link to="/my-appointments" onClick={() => this.setState({ showUserMenu: false })}>
+                                                            <i>📅</i> Lịch hẹn của tôi
+                                                        </Link>
+                                                        <Link to="/medical-history" onClick={() => this.setState({ showUserMenu: false })}>
+                                                            <i>📋</i> Lịch sử khám
+                                                        </Link>
+                                                        <Link to="/reviews" onClick={() => this.setState({ showUserMenu: false })}>
+                                                            <i>⭐</i> Đánh giá
+                                                        </Link>
+                                                        <div className={styles.divider}></div>
+                                                        <button onClick={this.handleLogout} className={styles.logoutBtn}>
+                                                            <i>🚪</i> Đăng xuất
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className={styles.authBtns}>
+                                            <Link to="/login" className={styles.loginBtn}>Đăng nhập</Link>
+                                            <Link to="/register" className={styles.registerBtn}>Đăng ký</Link>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+
+                            {/* Mobile menu button */}
+                            <button
+                                className={styles.mobileMenuBtn}
+                                onClick={() => this.setState({ showMobileMenu: !showMobileMenu })}
+                            >
+                                {showMobileMenu ? '✕' : '☰'}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Mobile Navigation */}
+                    {showMobileMenu && (
+                        <nav className={styles.mobileNav}>
+                            <NavLink to="/" end onClick={() => this.setState({ showMobileMenu: false })}>Trang chủ</NavLink>
+                            <NavLink to="/booking" onClick={() => this.setState({ showMobileMenu: false })}>Đặt lịch</NavLink>
+                            <NavLink to="/doctors" onClick={() => this.setState({ showMobileMenu: false })}>Bác sĩ</NavLink>
+                            <NavLink to="/services" onClick={() => this.setState({ showMobileMenu: false })}>Dịch vụ</NavLink>
+                            <NavLink to="/news" onClick={() => this.setState({ showMobileMenu: false })}>Tin tức</NavLink>
+                            <NavLink to="/contact" onClick={() => this.setState({ showMobileMenu: false })}>Liên hệ</NavLink>
+                            {user && (
+                                <>
+                                    <div className={styles.mobileDivider}></div>
+                                    <NavLink to="/my-appointments" onClick={() => this.setState({ showMobileMenu: false })}>Lịch hẹn</NavLink>
+                                    <NavLink to="/medical-history" onClick={() => this.setState({ showMobileMenu: false })}>Lịch sử khám</NavLink>
+                                    <NavLink to="/profile" onClick={() => this.setState({ showMobileMenu: false })}>Hồ sơ</NavLink>
+                                </>
+                            )}
+                        </nav>
+                    )}
+                </header>
+
+                {/* Main Content */}
+                <main className={styles.main}>
+                    <Outlet />
+                </main>
+
+                {/* Footer */}
+                <footer className={styles.footer}>
+                    <div className={styles.footerInner}>
+                        <div className={styles.footerBrand}>
+                            <div className={styles.footerLogo}>🏥 TClinic</div>
+                            <p>Chăm sóc sức khỏe toàn diện</p>
+                        </div>
+                        <div className={styles.footerLinks}>
+                            <div>
+                                <h4>Liên hệ</h4>
+                                <p>📍 123 Đường ABC, Quận 1, TP.HCM</p>
+                                <p>📞 (028) 1234 5678</p>
+                                <p>✉️ contact@tclinic.vn</p>
                             </div>
                             <div>
-                                <div className={styles.logoText}>Phòng Khám Tclinic</div>
-                                <div className={styles.logoSubtext}>Chăm sóc sức khỏe toàn diện</div>
+                                <h4>Giờ làm việc</h4>
+                                <p>Thứ 2 - Thứ 6: 7:00 - 20:00</p>
+                                <p>Thứ 7: 7:00 - 17:00</p>
+                                <p>Chủ nhật: Nghỉ</p>
                             </div>
-                        </Link>
-                    </div>
-
-                    <nav className={styles.nav}>
-                        <NavLink to="/" end className={({ isActive }) => isActive ? styles.activeLink : ''}>Trang chủ</NavLink>
-                        <NavLink to="/booking" className={({ isActive }) => isActive ? styles.activeLink : ''}>Đặt lịch</NavLink>
-
-                        {/* ✅ Dropdown "Của tôi" - chỉ hiện khi đăng nhập */}
-                        {user && (
-                            <div className={styles.dropdown} ref={dropdownRef}>
-                                <button
-                                    className={styles.dropdownToggle}
-                                    onClick={() => setShowMyDropdown(!showMyDropdown)}
-                                >
-                                    Lịch của tôi <span className={styles.arrow}>▼</span>
-                                </button>
-                                {showMyDropdown && (
-                                    <div className={styles.dropdownMenu}>
-                                        <Link to="/my-appointments" onClick={() => setShowMyDropdown(false)}>
-                                            Lịch hẹn
-                                        </Link>
-                                        <Link to="/my-consultations" onClick={() => setShowMyDropdown(false)}>
-                                            Lịch sử tư vấn
-                                        </Link>
-                                        <Link to="/medical-history" onClick={() => setShowMyDropdown(false)}>
-                                            Lịch sử khám
-                                        </Link>
-                                        <Link to="/reviews" onClick={() => setShowMyDropdown(false)}>
-                                            Đánh giá của tôi
-                                        </Link>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        <NavLink to="/services" className={({ isActive }) => isActive ? styles.activeLink : ''}>Dịch vụ</NavLink>
-                        <NavLink to="/doctors" className={({ isActive }) => isActive ? styles.activeLink : ''}>Bác sĩ</NavLink>
-                        <NavLink to="/news" className={({ isActive }) => isActive ? styles.activeLink : ''}>Tin tức</NavLink>
-                        <NavLink to="/about" className={({ isActive }) => isActive ? styles.activeLink : ''}>Giới thiệu</NavLink>
-                        <NavLink to="/contact" className={({ isActive }) => isActive ? styles.activeLink : ''}>Liên hệ</NavLink>
-                    </nav>
-
-                    <div className={styles.actions}>
-                        {!loading && (
-                            <>
-                                {user ? (
-                                    // ✅ Đã đăng nhập
-                                    <>
-                                        <div className={styles.userInfo}>
-                                            <span className={styles.userName}>{user.name || user.username}</span>
-                                            <span className={styles.userRole}>
-                                                {user.role === 'patient' ? 'Bệnh nhân' : 'Người dùng'}
-                                            </span>
-                                        </div>
-                                        <Link to="/profile" className={styles.btnProfile} title="Xem thông tin cá nhân">
-                                            👤
-                                        </Link>
-                                        <button onClick={handleLogout} className={styles.btnLogout}>
-                                            Đăng xuất
-                                        </button>
-                                    </>
-                                ) : (
-                                    // ✅ Chưa đăng nhập
-                                    <Link to="/login" className={styles.btnLogin}>
-                                        Đăng nhập
-                                    </Link>
-                                )}
-                            </>
-                        )}
-                        {user && <NotificationBell />}
-                    </div>
-                </div>
-            </header>
-
-            {/* Main Content */}
-            <main className={styles.main}>
-                <Outlet />
-            </main>
-
-            {/* Footer */}
-            <footer className={styles.footer}>
-                <div className={styles.container}>
-                    <div className={styles.footerGrid}>
-                        <div>
-                            <h3>Phòng Khám Tclinic</h3>
-                            <p>Địa chỉ: 123 Đường ABC, Quận 1, TP.HCM</p>
-                            <p>Điện thoại: (028) 1234 5678</p>
-                        </div>
-                        <div>
-                            <h3>Giờ làm việc</h3>
-                            <p>Thứ 2 - Thứ 6: 7:00 - 20:00</p>
-                            <p>Thứ 7: 7:00 - 17:00</p>
-                        </div>
-                        <div>
-                            <h3>Liên kết</h3>
-                            <p>Chính sách bảo mật</p>
-                            <p>Điều khoản sử dụng</p>
                         </div>
                     </div>
-                </div>
-            </footer>
-        </div>
-    );
+                    <div className={styles.footerBottom}>
+                        © 2026 TClinic. All rights reserved.
+                    </div>
+                </footer>
+            </div>
+        );
+    }
 }
+
+export default withRouter(CustomerLayout);

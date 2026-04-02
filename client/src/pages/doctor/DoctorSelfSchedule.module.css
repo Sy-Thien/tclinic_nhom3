@@ -4,6 +4,210 @@
     margin: 0 auto;
 }
 
+/* ===== SCHEDULE MATRIX ===== */
+.matrixWrapper {
+    overflow-x: auto;
+}
+
+.scheduleMatrixTable {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 500px;
+}
+
+.scheduleMatrixTable th,
+.scheduleMatrixTable td {
+    border: 2px solid #e0e0e0;
+    padding: 0;
+}
+
+.matrixCorner {
+    background: #f3f4f6;
+    vertical-align: middle;
+    text-align: center;
+    min-width: 90px;
+}
+
+.matrixSelectAllBtn {
+    width: 100%;
+    height: 100%;
+    padding: 12px 8px;
+    background: transparent;
+    border: none;
+    font-weight: 700;
+    font-size: 13px;
+    color: #667eea;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.matrixSelectAllBtn:hover {
+    background: #e8ebff;
+}
+
+.matrixShiftHeader {
+    background: #f3f4f6;
+    text-align: center;
+    min-width: 150px;
+}
+
+.matrixColBtn {
+    width: 100%;
+    padding: 14px 10px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    transition: background 0.2s;
+}
+
+.matrixColBtn:hover {
+    background: #e8ebff;
+}
+
+.matrixColBtnActive {
+    background: linear-gradient(135deg, #f5f7ff 0%, #e8ebff 100%);
+}
+
+.matrixShiftIcon {
+    font-size: 24px;
+}
+
+.matrixShiftName {
+    font-size: 14px;
+    font-weight: 700;
+    color: #333;
+}
+
+.matrixShiftTime {
+    font-size: 12px;
+    color: #667eea;
+    font-weight: 600;
+}
+
+.matrixShiftBreak {
+    font-size: 11px;
+    color: #999;
+}
+
+.matrixDayCell {
+    background: #f3f4f6;
+    text-align: center;
+    padding: 0;
+}
+
+.matrixRowBtn {
+    width: 100%;
+    padding: 18px 12px;
+    background: transparent;
+    border: none;
+    font-weight: 700;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.matrixDayName {
+    font-size: 14px;
+    font-weight: 700;
+    color: #333;
+}
+
+.matrixDayDate {
+    font-size: 11px;
+    font-weight: 600;
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.matrixRowBtn:hover {
+    background: #e8ebff;
+    color: #667eea;
+}
+
+.matrixRowBtnActive {
+    background: linear-gradient(135deg, #f5f7ff 0%, #e8ebff 100%);
+    color: #667eea;
+}
+
+.matrixCell {
+    text-align: center;
+    padding: 8px;
+    background: white;
+}
+
+.matrixCheckCell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin: 0 auto;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    background: #fafafa;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 22px;
+    font-weight: 700;
+    color: transparent;
+}
+
+.matrixCheckCell input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    pointer-events: none;
+}
+
+.matrixCheckCell:hover {
+    border-color: #667eea;
+    background: #f5f7ff;
+}
+
+.matrixCheckCellActive {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.matrixCheckMark {
+    line-height: 1;
+    user-select: none;
+}
+
+.matrixSummary {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: #e8f5e9;
+    border-left: 4px solid #4caf50;
+    border-radius: 6px;
+    color: #2e7d32;
+    font-size: 14px;
+}
+
+.matrixSummary strong {
+    font-size: 18px;
+    color: #1b5e20;
+}
+
+.matrixSummaryDetail {
+    color: #388e3c;
+    font-style: italic;
+    font-size: 13px;
+}
+
 .header {
     margin-bottom: 32px;
 }
@@ -324,6 +528,67 @@
     line-height: 1.6;
 }
 
+/* ===== REGISTRATION WINDOW BANNER ===== */
+.windowBannerOpen,
+.windowBannerClosed {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 20px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 4px;
+}
+
+.windowBannerOpen {
+    background: #ecfdf5;
+    border: 1.5px solid #6ee7b7;
+    color: #065f46;
+}
+
+.windowBannerClosed {
+    background: #fef2f2;
+    border: 1.5px solid #fca5a5;
+    color: #7f1d1d;
+}
+
+.windowBannerIcon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.windowBannerNote {
+    color: inherit;
+    opacity: 0.85;
+}
+
+.windowBannerSub {
+    margin-top: 4px;
+    font-size: 0.82rem;
+    opacity: 0.8;
+}
+
+/* ===== DISABLED FORM STATE ===== */
+.stepSectionDisabled {
+    opacity: 0.55;
+    pointer-events: none;
+    filter: grayscale(0.3);
+}
+
+.matrixCheckCellDisabled {
+    cursor: not-allowed !important;
+}
+
+.submitClosedNote {
+    display: inline-block;
+    margin-left: 12px;
+    font-size: 0.82rem;
+    color: #ef4444;
+    font-style: italic;
+}
+
 /* ===== SCHEDULE SECTION ===== */
 .scheduleSection {
     background: white;
@@ -358,220 +623,285 @@
     font-size: 16px;
 }
 
-/* === SCHEDULE GRID (7 CỘT) === */
-.scheduleGrid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 16px;
+/* ===== SCHEDULE SECTION ===== */
+.scheduleSection {
+    background: white;
+    border-radius: 16px;
+    padding: 28px 32px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
 
-.dayColumn {
-    border: 2px solid #e0e0e0;
-    border-radius: 12px;
-    overflow: hidden;
-    background: #fafafa;
+.scheduleSectionHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
 }
 
-.dayHeader {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 12px;
+.scheduleSectionHeader h2 {
     margin: 0;
-    font-size: 16px;
-    font-weight: 700;
-    text-align: center;
+    font-size: 22px;
+    color: #333;
 }
 
-.emptyDay {
-    padding: 40px 12px;
-    text-align: center;
-    color: #999;
+.scheduleSummaryChips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.chipPending {
+    padding: 5px 12px;
+    background: #fff3cd;
+    color: #856404;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.chipApproved {
+    padding: 5px 12px;
+    background: #d1e7dd;
+    color: #0f5132;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.chipRejected {
+    padding: 5px 12px;
+    background: #f8d7da;
+    color: #842029;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* ===== SCHEDULE TABLE ===== */
+.tableWrapper {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+}
+
+.scheduleTable {
+    width: 100%;
+    border-collapse: collapse;
     font-size: 14px;
 }
 
-.emptyDay p {
-    margin: 0;
+.scheduleTable thead tr {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
-.daySchedules {
+.scheduleTable thead th {
+    padding: 13px 16px;
+    color: white;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.scheduleTable tbody tr {
+    border-bottom: 1px solid #f0f0f0;
+    transition: background 0.15s;
+}
+
+.scheduleTable tbody tr:hover {
+    background: #f9f7ff;
+}
+
+.scheduleTable tbody tr:last-child {
+    border-bottom: none;
+}
+
+.scheduleTable tbody td {
+    padding: 12px 16px;
+    vertical-align: top;
+    color: #333;
+}
+
+.rowRejected {
+    opacity: 0.75;
+    background: #fff8f8;
+}
+
+.tdDay {
+    font-weight: 700;
+    min-width: 90px;
+    vertical-align: middle !important;
+}
+
+.dayColumn {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 12px;
+    align-items: center;
+    gap: 6px;
 }
 
-.scheduleCard {
-    background: white;
-    border: 2px solid #e0e0e0;
+.dayBadge {
+    display: inline-block;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.dayDateSmall {
+    font-size: 11px;
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+    padding: 2px 8px;
     border-radius: 10px;
-    padding: 12px;
-    transition: all 0.3s;
+    font-weight: 600;
 }
 
-.scheduleCard:hover {
-    border-color: #667eea;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+.tdTime {
+    font-weight: 600;
+    color: #1a1a2e;
+    white-space: nowrap;
 }
 
-.cardBadges {
+.breakNote {
+    font-size: 11px;
+    color: #888;
+    margin-top: 3px;
+}
+
+.noRoom {
+    color: #bbb;
+}
+
+.statusGroup {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    margin-bottom: 10px;
 }
 
-.badge {
+.statusBadge {
     display: inline-block;
-    padding: 4px 10px;
+    padding: 3px 10px;
     border-radius: 12px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
-    text-align: center;
 }
 
-.badgePending {
+.statusPending {
     background: #ffc107;
     color: #000;
 }
 
-.badgeApproved {
+.statusApproved {
     background: #4caf50;
     color: white;
 }
 
-.badgeRejected {
+.statusRejected {
     background: #f44336;
     color: white;
 }
 
-.badgeActive {
-    background: #4caf50;
-    color: white;
+.statusActive {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #4caf50;
 }
 
-.badgeInactive {
-    background: #ff9800;
-    color: white;
+.statusInactive {
+    background: #fff3e0;
+    color: #e65100;
+    border: 1px solid #ff9800;
 }
 
-.cardBody {
-    margin-bottom: 10px;
-}
-
-.shiftInfo {
-    font-size: 14px;
-    font-weight: 700;
-    color: #333;
-    margin-bottom: 6px;
-}
-
-.roomInfo {
-    font-size: 13px;
-    color: #666;
-}
-
-.rejectionInfo {
-    background: #ffebee;
-    padding: 8px;
-    border-radius: 6px;
-    border-left: 3px solid #f44336;
-    color: #d32f2f;
+.rejectionNote {
+    margin-top: 5px;
     font-size: 12px;
-    line-height: 1.5;
-    margin-top: 8px;
+    color: #c62828;
+    background: #ffebee;
+    padding: 5px 8px;
+    border-radius: 5px;
+    border-left: 3px solid #f44336;
 }
 
-.rejectionInfo strong {
-    display: block;
-    margin-bottom: 4px;
+.tdActions {
+    white-space: nowrap;
+    min-width: 120px;
 }
 
-.cardActions {
-    display: flex;
-    gap: 6px;
-    justify-content: flex-end;
-    padding-top: 8px;
-    border-top: 1px solid #e0e0e0;
-}
-
-.toggleBtn,
-.deleteBtn {
-    padding: 6px 10px;
+.btnToggle,
+.btnDelete {
+    padding: 5px 10px;
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-right: 5px;
     transition: all 0.2s;
 }
 
-.toggleBtn {
-    background: #ff9800;
+.btnToggle {
+    background: #fff3e0;
+    color: #e65100;
+    border: 1px solid #ffcc80;
 }
 
-.toggleBtn:hover {
-    background: #f57c00;
-    transform: scale(1.1);
+.btnToggle:hover {
+    background: #ffe0b2;
+    transform: translateY(-1px);
 }
 
-.deleteBtn {
-    background: #f44336;
+.btnDelete {
+    background: #ffebee;
+    color: #c62828;
+    border: 1px solid #ef9a9a;
 }
 
-.deleteBtn:hover {
-    background: #d32f2f;
-    transform: scale(1.1);
+.btnDelete:hover {
+    background: #ffcdd2;
+    transform: translateY(-1px);
+}
+
+.emptyState {
+    text-align: center;
+    padding: 60px 20px;
+    background: #f9f9f9;
+    border-radius: 12px;
+    color: #666;
+}
+
+.emptyState p {
+    margin: 8px 0;
+    font-size: 16px;
 }
 
 /* === RESPONSIVE === */
-@media (max-width: 1400px) {
-    .scheduleGrid {
-        grid-template-columns: repeat(4, 1fr);
-    }
-}
-
-@media (max-width: 992px) {
-    .scheduleGrid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-
-    .dayGrid {
-        grid-template-columns: repeat(4, 1fr);
-    }
-}
-
 @media (max-width: 768px) {
     .container {
         padding: 16px;
     }
 
-    .header h1 {
-        font-size: 24px;
-    }
-
     .formSection,
     .scheduleSection {
-        padding: 20px;
+        padding: 16px 20px;
     }
 
-    .scheduleGrid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .dayGrid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .shiftSelection {
-        grid-template-columns: 1fr;
+    .scheduleSectionHeader {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }
 
 @media (max-width: 480px) {
-    .scheduleGrid {
-        grid-template-columns: 1fr;
-    }
 
-    .dayGrid {
-        grid-template-columns: 1fr;
+    .scheduleTable thead th:nth-child(4),
+    .scheduleTable tbody td:nth-child(4) {
+        display: none;
     }
 }

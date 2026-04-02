@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React, { Component } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import SessionChecker from './components/SessionChecker'; // ✅ NEW: Single session checker
@@ -61,8 +61,8 @@ import WalkInRegistration from './pages/doctor/WalkInRegistration';  // ✅ NEW:
 import VNPayReturn from './pages/payment/VNPayReturn';  // ✅ NEW: VNPay payment callback
 import ChangePassword from './pages/common/ChangePassword';  // ✅ NEW: Change password for all roles
 
-export default function App() {
-    useEffect(() => {
+export default class App extends Component {
+    componentDidMount() {
         // Start each new browser tab as guest to avoid auto-login from old localStorage session.
         const sessionInitialized = sessionStorage.getItem('session_initialized');
 
@@ -71,117 +71,119 @@ export default function App() {
             localStorage.removeItem('user');
             sessionStorage.setItem('session_initialized', 'true');
         }
-    }, []);
+    }
 
-    return (
-        <Router>
-            <SessionChecker /> {/* ✅ Kiểm tra session định kỳ */}
-            <Routes>
-                {/* ✅ Customer Routes - CHỈ Patient hoặc Guest */}
-                <Route path="/" element={
-                    <ProtectedRoute requiredRole="public">
-                        <CustomerLayout />
-                    </ProtectedRoute>
-                }>
-                    <Route index element={<HomePage />} />
-                    <Route path="dashboard" element={<Dashboard />} />
-                    <Route path="booking" element={<Booking />} />
-                    <Route path="my-appointments" element={<MyAppointments />} />
-                    <Route path="services" element={<PublicServiceList />} />
-                    <Route path="services/:id" element={<PublicServiceDetail />} />
-                    <Route path="booking-success" element={<BookingSuccess />} />
-                    <Route path="doctors" element={<PublicDoctorList />} />
-                    <Route path="doctors/:id" element={<PublicDoctorDetail />} />
-                    <Route path="profile" element={<PatientProfile />} />
-                    <Route path="change-password" element={<ChangePassword />} />
-                    <Route path="medical-history" element={<MedicalHistory />} />
-                    <Route path="reviews" element={<Reviews />} />
-                    <Route path="news" element={<News />} />
-                    <Route path="news/:slug" element={<NewsDetail />} />
-                    <Route path="about" element={<About />} />
-                    <Route path="contact" element={<Contact />} />
-                    <Route path="my-consultations" element={<MyConsultations />} />
-                </Route>
+    render() {
+        return (
+            <Router>
+                <SessionChecker /> {/* ✅ Kiểm tra session định kỳ */}
+                <Routes>
+                    {/* ✅ Customer Routes - CHỈ Patient hoặc Guest */}
+                    <Route path="/" element={
+                        <ProtectedRoute requiredRole="public">
+                            <CustomerLayout />
+                        </ProtectedRoute>
+                    }>
+                        <Route index element={<HomePage />} />
+                        <Route path="dashboard" element={<Dashboard />} />
+                        <Route path="booking" element={<Booking />} />
+                        <Route path="my-appointments" element={<MyAppointments />} />
+                        <Route path="services" element={<PublicServiceList />} />
+                        <Route path="services/:id" element={<PublicServiceDetail />} />
+                        <Route path="booking-success" element={<BookingSuccess />} />
+                        <Route path="doctors" element={<PublicDoctorList />} />
+                        <Route path="doctors/:id" element={<PublicDoctorDetail />} />
+                        <Route path="profile" element={<PatientProfile />} />
+                        <Route path="change-password" element={<ChangePassword />} />
+                        <Route path="medical-history" element={<MedicalHistory />} />
+                        <Route path="reviews" element={<Reviews />} />
+                        <Route path="news" element={<News />} />
+                        <Route path="news/:slug" element={<NewsDetail />} />
+                        <Route path="about" element={<About />} />
+                        <Route path="contact" element={<Contact />} />
+                        <Route path="my-consultations" element={<MyConsultations />} />
+                    </Route>
 
-                {/* ✅ Doctor Routes - CHỈ DOCTOR */}
-                <Route path="/doctor-portal" element={
-                    <ProtectedRoute requiredRole="doctor">
-                        <DoctorLayout />
-                    </ProtectedRoute>
-                }>
-                    <Route index element={<DoctorDashboardNew />} />
-                    <Route path="appointments" element={<AppointmentsList />} />
-                    <Route path="examination" element={<ExaminationPage />} />
-                    <Route path="schedule" element={<DoctorScheduleView />} />
-                    <Route path="manage-schedule" element={<DoctorSelfSchedule />} />
-                    <Route path="profile" element={<DoctorProfile />} />
-                    <Route path="change-password" element={<ChangePassword />} />
-                    <Route path="patients" element={<DoctorPatients />} />
-                    <Route path="patient-history/:patientId" element={<PatientMedicalHistory />} />
-                    <Route path="consultations" element={<DoctorConsultations />} />
-                    <Route path="reviews" element={<DoctorReviews />} />
-                    <Route path="walk-in" element={<WalkInRegistration />} />
-                </Route>
+                    {/* ✅ Doctor Routes - CHỈ DOCTOR */}
+                    <Route path="/doctor-portal" element={
+                        <ProtectedRoute requiredRole="doctor">
+                            <DoctorLayout />
+                        </ProtectedRoute>
+                    }>
+                        <Route index element={<DoctorDashboardNew />} />
+                        <Route path="appointments" element={<AppointmentsList />} />
+                        <Route path="examination" element={<ExaminationPage />} />
+                        <Route path="schedule" element={<DoctorScheduleView />} />
+                        <Route path="manage-schedule" element={<DoctorSelfSchedule />} />
+                        <Route path="profile" element={<DoctorProfile />} />
+                        <Route path="change-password" element={<ChangePassword />} />
+                        <Route path="patients" element={<DoctorPatients />} />
+                        <Route path="patient-history/:patientId" element={<PatientMedicalHistory />} />
+                        <Route path="consultations" element={<DoctorConsultations />} />
+                        <Route path="reviews" element={<DoctorReviews />} />
+                        <Route path="walk-in" element={<WalkInRegistration />} />
+                    </Route>
 
-                {/* ✅ Admin Routes - CHỈ ADMIN */}
-                <Route path="/admin" element={
-                    <ProtectedRoute requiredRole="admin">
-                        <AdminLayout />
-                    </ProtectedRoute>
-                }>
-                    <Route index element={<AdminDashboard />} />
-                    <Route path="appointments" element={<AdminAppointments />} />
-                    <Route path="doctors" element={<AdminDoctorManagement />} />
-                    <Route path="doctor-schedules" element={<AdminDoctorSchedule />} />
-                    <Route path="schedule-approval" element={<ScheduleApproval />} />
-                    <Route path="time-slots" element={<AdminTimeSlots />} />
-                    <Route path="patients" element={<AdminPatientsManagement />} />
-                    <Route path="specialties" element={<AdminSpecialties />} />
-                    <Route path="rooms" element={<AdminRooms />} />
-                    <Route path="services" element={<AdminServices />} />
-                    <Route path="reports" element={<AdminReports />} />
-                    <Route path="accounts" element={<AccountManagement />} />
-                    <Route path="change-password" element={<ChangePassword />} />
-                    <Route path="drugs" element={<DrugManagement />} />
-                    <Route path="consultations" element={<ConsultationRequests />} />
-                    <Route path="news" element={<AdminNews />} />
-                    <Route path="revenue" element={<RevenueManagement />} />
-                </Route>
+                    {/* ✅ Admin Routes - CHỈ ADMIN */}
+                    <Route path="/admin" element={
+                        <ProtectedRoute requiredRole="admin">
+                            <AdminLayout />
+                        </ProtectedRoute>
+                    }>
+                        <Route index element={<AdminDashboard />} />
+                        <Route path="appointments" element={<AdminAppointments />} />
+                        <Route path="doctors" element={<AdminDoctorManagement />} />
+                        <Route path="doctor-schedules" element={<AdminDoctorSchedule />} />
+                        <Route path="schedule-approval" element={<ScheduleApproval />} />
+                        <Route path="time-slots" element={<AdminTimeSlots />} />
+                        <Route path="patients" element={<AdminPatientsManagement />} />
+                        <Route path="specialties" element={<AdminSpecialties />} />
+                        <Route path="rooms" element={<AdminRooms />} />
+                        <Route path="services" element={<AdminServices />} />
+                        <Route path="reports" element={<AdminReports />} />
+                        <Route path="accounts" element={<AccountManagement />} />
+                        <Route path="change-password" element={<ChangePassword />} />
+                        <Route path="drugs" element={<DrugManagement />} />
+                        <Route path="consultations" element={<ConsultationRequests />} />
+                        <Route path="news" element={<AdminNews />} />
+                        <Route path="revenue" element={<RevenueManagement />} />
+                    </Route>
 
-                {/* Auth Routes - Guest only */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
+                    {/* Auth Routes - Guest only */}
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
 
-                {/* VNPay Payment Return - không cần auth */}
-                <Route path="/payment/vnpay-return" element={<VNPayReturn />} />
+                    {/* VNPay Payment Return - không cần auth */}
+                    <Route path="/payment/vnpay-return" element={<VNPayReturn />} />
 
-                {/* 404 Page */}
-                <Route path="*" element={
-                    <div style={{
-                        minHeight: '100vh',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexDirection: 'column',
-                        background: '#f5f7fa'
-                    }}>
-                        <h1 style={{ fontSize: '4rem', color: '#45c3d2' }}>404</h1>
-                        <p style={{ fontSize: '1.5rem', color: '#4a5568', marginBottom: '2rem' }}>
-                            Trang không tồn tại
-                        </p>
-                        <a href="/" style={{
-                            padding: '1rem 2rem',
-                            background: 'linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%)',
-                            color: 'white',
-                            borderRadius: '8px',
-                            textDecoration: 'none',
-                            fontWeight: 600
+                    {/* 404 Page */}
+                    <Route path="*" element={
+                        <div style={{
+                            minHeight: '100vh',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexDirection: 'column',
+                            background: '#f5f7fa'
                         }}>
-                            Về trang chủ
-                        </a>
-                    </div>
-                } />
-            </Routes>
-        </Router>
-    );
+                            <h1 style={{ fontSize: '4rem', color: '#45c3d2' }}>404</h1>
+                            <p style={{ fontSize: '1.5rem', color: '#4a5568', marginBottom: '2rem' }}>
+                                Trang không tồn tại
+                            </p>
+                            <a href="/" style={{
+                                padding: '1rem 2rem',
+                                background: 'linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%)',
+                                color: 'white',
+                                borderRadius: '8px',
+                                textDecoration: 'none',
+                                fontWeight: 600
+                            }}>
+                                Về trang chủ
+                            </a>
+                        </div>
+                    } />
+                </Routes>
+            </Router>
+        );
+    }
 }

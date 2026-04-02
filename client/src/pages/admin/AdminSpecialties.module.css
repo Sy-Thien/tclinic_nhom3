@@ -133,6 +133,25 @@
     font-weight: 600;
 }
 
+.countBadgeLink {
+    display: inline-block;
+    padding: 4px 10px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.countBadgeLink:hover {
+    background: #dbeafe;
+    border-color: #93c5fd;
+}
+
 .noData {
     text-align: center;
     padding: 48px !important;
@@ -144,31 +163,52 @@
 .actionButtons {
     display: flex;
     gap: 8px;
+    justify-content: center;
 }
 
 .actionButtons button {
-    padding: 8px 12px;
+    padding: 8px 16px;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 14px;
+    font-weight: 600;
     transition: all 0.2s;
-    background: #f1f5f9;
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btnView {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
 }
 
 .btnView:hover {
-    background: #3b82f6;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.btnEdit {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
 }
 
 .btnEdit:hover {
-    background: #f59e0b;
+    background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
+
+.btnDelete {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
 }
 
 .btnDelete:hover {
-    background: #ef4444;
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
 }
 
 /* Modal */
@@ -241,20 +281,17 @@
     background: rgba(255, 255, 255, 0.2);
     border: none;
     color: white;
-    font-size: 24px;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
+    font-size: 16px;
+    padding: 10px 20px;
+    border-radius: 8px;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    font-weight: 600;
     transition: all 0.2s;
 }
 
 .closeBtn:hover {
     background: rgba(255, 255, 255, 0.3);
-    transform: rotate(90deg);
+    transform: translateY(-1px);
 }
 
 /* Form */
@@ -385,6 +422,34 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+}
+
+.detailSectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.detailSectionHeader h3 {
+    margin: 0;
+}
+
+.btnViewRooms {
+    padding: 6px 14px;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btnViewRooms:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(59, 130, 246, 0.35);
 }
 
 .listItem {

@@ -16,7 +16,7 @@
 }
 
 .breadcrumb a {
-    color: #45c3d2;
+    color: #0ea5e9;
     text-decoration: none;
     transition: color 0.2s;
 }
@@ -64,7 +64,7 @@
 
 .filterSelect:focus {
     outline: none;
-    border-color: #45c3d2;
+    border-color: #0ea5e9;
     box-shadow: 0 0 0 3px rgba(69, 195, 210, 0.1);
 }
 
@@ -89,7 +89,7 @@
 .specialtyCard:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 25px rgba(69, 195, 210, 0.15);
-    border-color: #45c3d2;
+    border-color: #0ea5e9;
 }
 
 .specialtyIcon {
@@ -155,16 +155,17 @@
 }
 
 .serviceName {
-    font-size: 1.1rem;
+    font-size: 1.25rem;
     font-weight: 700;
     color: #1a202c;
     margin: 0;
+    line-height: 1.3;
 }
 
 .serviceDesc {
-    font-size: 0.9rem;
-    color: #718096;
-    line-height: 1.5;
+    font-size: 0.875rem;
+    color: #64748b;
+    line-height: 1.6;
     margin: 0;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -199,7 +200,7 @@
 
 .btnBook {
     padding: 0.625rem 1.5rem;
-    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
     color: white;
     border: none;
     border-radius: 8px;
@@ -218,7 +219,7 @@
 .infoBanner {
     max-width: 1200px;
     margin: 3rem auto 0;
-    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
     border-radius: 16px;
     padding: 2rem;
     box-shadow: 0 8px 25px rgba(69, 195, 210, 0.3);
@@ -255,7 +256,7 @@
     margin-left: auto;
     padding: 0.875rem 2rem;
     background: white;
-    color: #45c3d2;
+    color: #0ea5e9;
     border: none;
     border-radius: 8px;
     font-weight: 700;
@@ -303,7 +304,7 @@
     height: 50px;
     margin: 0 auto 1rem;
     border: 4px solid #e2e8f0;
-    border-top-color: #45c3d2;
+    border-top-color: #0ea5e9;
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -410,6 +411,17 @@
     border-radius: 16px;
     padding: 1.5rem 2rem;
     animation: slideDown 0.3s ease-out;
+    position: sticky;
+    top: 64px;
+    z-index: 50;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+    .selectedServiceBanner {
+        position: relative;
+        top: 0;
+    }
 }
 
 @keyframes slideDown {

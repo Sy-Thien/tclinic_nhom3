@@ -152,34 +152,66 @@
 /* Actions */
 .actions {
     display: flex;
-    gap: 0.5rem;
+    gap: 8px;
+    justify-content: center;
 }
 
 .btnEdit,
 .btnToggle,
-.btnDelete {
-    padding: 0.5rem;
-    background: none;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
+.btnDelete,
+.btnView {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 14px;
+    font-weight: 600;
     transition: all 0.2s;
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btnView {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.btnView:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.btnEdit {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
 }
 
 .btnEdit:hover {
-    background: #fff5f5;
-    border-color: #ed8936;
+    background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
+
+.btnToggle {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
 }
 
 .btnToggle:hover {
-    background: #f0f4ff;
-    border-color: #3b82f6;
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
+.btnDelete {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
 }
 
 .btnDelete:hover {
-    background: #fff5f5;
-    border-color: #f56565;
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
 }
 
 /* Modals */

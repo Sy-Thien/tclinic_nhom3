@@ -1,458 +1,464 @@
-/* ===== Container & Header ===== */
+/* ===== Container ===== */
 .container {
-    max-width: 1400px;
+    max-width: 1600px;
     margin: 0 auto;
-    padding: 20px;
-    background: #f8f9fa;
+    padding: 20px 24px;
+    background: #f0f2f5;
     min-height: 100vh;
+    font-family: inherit;
 }
 
-.header {
-    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
-    color: white;
-    padding: 30px;
-    border-radius: 15px;
-    margin-bottom: 25px;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-}
-
-.header h1 {
-    margin: 0 0 8px 0;
-    font-size: 28px;
-    font-weight: 700;
-}
-
-.header p {
-    margin: 0;
-    opacity: 0.95;
-    font-size: 15px;
-}
-
-/* ===== Stats Grid ===== */
-.statsGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 20px;
-    margin-bottom: 25px;
-}
-
-.statCard {
+/* ===== Top Bar ===== */
+.topBar {
     background: white;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    display: flex;
-    gap: 15px;
-    align-items: center;
-    transition: all 0.3s ease;
-}
-
-.statCard:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.statIcon {
-    width: 55px;
-    height: 55px;
-    border-radius: 12px;
+    border-radius: 16px;
+    padding: 16px 24px;
+    margin-bottom: 18px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-size: 26px;
-    flex-shrink: 0;
-}
-
-.statValue {
-    font-size: 28px;
-    font-weight: 700;
-    color: #2c3e50;
-    line-height: 1;
-    margin-bottom: 5px;
-}
-
-.statLabel {
-    font-size: 13px;
-    color: #7f8c8d;
-    font-weight: 500;
-}
-
-/* ===== Controls ===== */
-.controls {
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    margin-bottom: 25px;
-    display: flex;
     justify-content: space-between;
-    align-items: center;
+    gap: 16px;
     flex-wrap: wrap;
-    gap: 15px;
 }
 
+.topBarLeft {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.pageTitle {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.weekLabel {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2aa6b7;
+    background: #e8fafb;
+    border: 1px solid #b2ebf2;
+    padding: 4px 14px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+.topBarRight {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+/* ===== Stat Chips ===== */
+.statsRow {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.statChip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 6px 14px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    min-width: 64px;
+    cursor: default;
+}
+
+.statNum {
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+.statTxt {
+    font-size: 10px;
+    font-weight: 600;
+    opacity: 0.75;
+    white-space: nowrap;
+}
+
+/* ===== Navigation ===== */
 .weekNav {
     display: flex;
-    gap: 10px;
+    gap: 6px;
+    align-items: center;
 }
 
-.navBtn,
-.todayBtn {
-    padding: 10px 18px;
-    border: 1px solid #ddd;
+.navBtn {
+    padding: 8px 16px;
+    border: 1.5px solid #e0e0e0;
     background: white;
     border-radius: 8px;
     cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.2s ease;
+    font-size: 13px;
+    font-weight: 600;
+    color: #444;
+    transition: all 0.15s;
+    white-space: nowrap;
 }
 
 .navBtn:hover {
-    background: #f8f9fa;
-    border-color: #45c3d2;
-    color: #45c3d2;
+    border-color: #2aa6b7;
+    color: #2aa6b7;
+    background: #f0fdfe;
 }
 
 .todayBtn {
-    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #45c3d2, #2196f3);
     color: white;
     border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
+    transition: all 0.15s;
+    box-shadow: 0 2px 6px rgba(33,150,243,0.3);
+    white-space: nowrap;
 }
 
 .todayBtn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(33,150,243,0.4);
 }
 
-.weekRange {
-    font-size: 16px;
-    font-weight: 600;
-    color: #2c3e50;
-}
-
-/* ===== Week Calendar ===== */
+/* ===== Week Calendar Grid ===== */
 .weekCalendar {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 15px;
+    gap: 12px;
+    align-items: start;
 }
 
+/* ===== Day Column ===== */
 .dayColumn {
     background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border-radius: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    min-height: 450px;
-    transition: all 0.3s ease;
+    min-height: 400px;
+    border: 2px solid transparent;
+    transition: box-shadow 0.2s, transform 0.15s;
 }
 
 .dayColumn:hover {
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 18px rgba(0,0,0,0.11);
+    transform: translateY(-1px);
 }
 
 .dayColumn.today {
-    border: 2px solid #f5576c;
-    box-shadow: 0 4px 15px rgba(245, 87, 108, 0.25);
+    border-color: #ef5350;
+    box-shadow: 0 0 0 2px rgba(239,83,80,0.15), 0 4px 16px rgba(239,83,80,0.12);
 }
 
 .dayColumn.dayOff {
-    background: white;
+    opacity: 0.6;
+    filter: grayscale(0.3);
 }
 
+/* ===== Day Header ===== */
 .dayHeader {
-    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
+    background: linear-gradient(160deg, #45c3d2 0%, #1e88e5 100%);
     color: white;
-    padding: 15px;
+    padding: 14px 10px 11px;
     text-align: center;
+    position: relative;
 }
 
 .dayColumn.today .dayHeader {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    background: linear-gradient(160deg, #ef5350 0%, #e91e63 100%);
 }
 
 .dayColumn.dayOff .dayHeader {
-    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
+    background: linear-gradient(160deg, #78909c 0%, #546e7a 100%);
 }
 
 .dayName {
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 5px;
+    font-size: 10px;
+    font-weight: 700;
+    opacity: 0.8;
+    margin-bottom: 3px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .dayDate {
-    font-size: 20px;
-    font-weight: 700;
+    font-size: 26px;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 2px;
 }
 
-/* ===== Work Schedule Info ===== */
-.workTime {
-    background: #e8f5e9;
-    padding: 12px;
-    border-left: 4px solid #4caf50;
-    margin: 10px;
+.todayTag {
+    font-size: 9px;
+    font-weight: 800;
+    background: rgba(255,255,255,0.25);
     border-radius: 8px;
+    padding: 2px 7px;
+    margin-top: 3px;
+    display: inline-block;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
 }
 
-.workLabel {
-    font-size: 12px;
-    font-weight: 600;
+.bookingCountBadge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(255,255,255,0.25);
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 10px;
+}
+
+/* ===== Work Info Bar ===== */
+.workInfoBar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 10px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #f0f0f0;
+    flex-wrap: wrap;
+    min-height: 34px;
+}
+
+.workHoursBadge {
+    font-size: 11px;
+    font-weight: 700;
     color: #2e7d32;
-    margin-bottom: 6px;
+    background: #e8f5e9;
+    border: 1px solid #c8e6c9;
+    padding: 2px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
 }
 
-.workHours {
-    font-size: 15px;
-    font-weight: 700;
-    color: #1b5e20;
-    margin-bottom: 4px;
-}
-
-.breakTime {
-    font-size: 12px;
-    color: #558b2f;
-    margin-top: 6px;
-}
-
-.roomInfo {
-    font-size: 12px;
-    color: #388e3c;
-    margin-top: 4px;
-    font-weight: 500;
-}
-
-.dayOffBadge {
-    background: #eceff1;
-    color: #607d8b;
-    padding: 15px;
-    text-align: center;
-    font-size: 16px;
+.roomBadge {
+    font-size: 11px;
     font-weight: 600;
-    margin: 10px;
-    border-radius: 8px;
+    color: #1565c0;
+    background: #e3f2fd;
+    border: 1px solid #bbdefb;
+    padding: 2px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+
+.dayOffLabel {
+    font-size: 12px;
+    color: #9e9e9e;
+    font-weight: 500;
 }
 
 /* ===== Bookings List ===== */
 .bookingsList {
     flex: 1;
-    padding: 10px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
     overflow-y: auto;
-    max-height: 280px;
+    max-height: 320px;
 }
 
-.bookingsHeader {
-    font-size: 13px;
-    font-weight: 700;
-    color: #2c3e50;
-    margin-bottom: 10px;
-    padding: 8px;
-    background: #f8f9fa;
-    border-radius: 6px;
+.bookingsList::-webkit-scrollbar {
+    width: 4px;
+}
+
+.bookingsList::-webkit-scrollbar-thumb {
+    background: #e0e0e0;
+    border-radius: 4px;
 }
 
 .noBookings {
-    text-align: center;
-    color: #95a5a6;
-    font-size: 13px;
-    padding: 20px;
-    font-style: italic;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 28px 8px;
+    color: #bdbdbd;
+    font-size: 12px;
+    flex: 1;
 }
 
-.bookingItem {
-    background: #f8f9fa;
-    border-left: 4px solid #45c3d2;
-    padding: 10px;
+.noBookingsIcon {
+    font-size: 22px;
+    opacity: 0.5;
+}
+
+/* ===== Booking Card ===== */
+.bookingCard {
+    border-left: 4px solid #90caf9;
     border-radius: 8px;
-    margin-bottom: 8px;
-    transition: all 0.2s ease;
+    padding: 9px 10px 8px;
+    background: #f9fbe7;
+    transition: all 0.15s;
+    cursor: default;
 }
 
-.bookingItem:hover {
-    background: #e8eaf6;
-    transform: translateX(3px);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+.bookingCard:hover {
+    filter: brightness(0.97);
+    transform: translateX(2px);
+}
+
+.bookingCardTop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    margin-bottom: 5px;
 }
 
 .bookingTime {
     font-size: 13px;
-    font-weight: 700;
-    color: #45c3d2;
-    margin-bottom: 5px;
+    font-weight: 800;
+    color: #1a237e;
+    white-space: nowrap;
 }
 
 .bookingPatient {
-    font-size: 14px;
-    font-weight: 600;
-    color: #2c3e50;
     margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.patientName {
+    font-size: 12px;
+    font-weight: 700;
+    color: #212121;
+    word-break: break-word;
+    line-height: 1.3;
+}
+
+.walkInTag {
+    font-size: 11px;
+    font-weight: 700;
+    color: #e65100;
+    background: #fff3e0;
+    border: 1px solid #ffcc80;
+    padding: 1px 7px;
+    border-radius: 6px;
 }
 
 .bookingService {
-    font-size: 12px;
-    color: #0056b3;
-    margin-bottom: 6px;
-    background: #e3f2fd;
-    padding: 4px 8px;
-    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #1565c0;
+    background: rgba(255,255,255,0.7);
+    border: 1px solid rgba(33,150,243,0.2);
+    padding: 2px 7px;
+    border-radius: 5px;
+    margin-bottom: 3px;
     display: inline-block;
-}
-
-.bookingService strong {
-    font-weight: 700;
-}
-
-.bookingSpecialty {
-    font-size: 12px;
-    color: #7f8c8d;
-    margin-bottom: 6px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .bookingSymptoms {
-    font-size: 11px;
-    color: #666;
+    font-size: 10px;
+    color: #7e57c2;
     font-style: italic;
-    margin-bottom: 6px;
-    padding: 4px 8px;
-    background: #fff8e1;
-    border-radius: 4px;
-    border-left: 3px solid #ff9800;
+    line-height: 1.4;
+    padding: 2px 0;
+    margin-top: 1px;
 }
 
 /* ===== Status Badges ===== */
 .badge {
     display: inline-block;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
+    padding: 2px 7px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 800;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .badge.waiting {
-    background: #fff3e0;
-    color: #e65100;
+    background: #fff8e1;
+    color: #f57f17;
+    border: 1px solid #ffe082;
 }
 
 .badge.confirmed {
     background: #e8f5e9;
     color: #2e7d32;
+    border: 1px solid #a5d6a7;
 }
 
 .badge.completed {
     background: #f3e5f5;
     color: #6a1b9a;
+    border: 1px solid #ce93d8;
 }
 
 .badge.cancelled {
     background: #ffebee;
     color: #c62828;
-}
-
-/* ===== Day Stats Summary ===== */
-.dayStatsSummary {
-    display: flex;
-    justify-content: space-around;
-    padding: 10px;
-    background: #f8f9fa;
-    border-top: 1px solid #e0e0e0;
-}
-
-.miniStat {
-    font-size: 12px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 4px;
+    border: 1px solid #ef9a9a;
 }
 
 /* ===== Loading ===== */
 .loading {
     background: white;
     padding: 60px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border-radius: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
     text-align: center;
 }
 
 .spinner {
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #45c3d2;
+    border: 3px solid #f0f0f0;
+    border-top: 3px solid #45c3d2;
     border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 20px;
+    width: 40px;
+    height: 40px;
+    animation: spin 0.7s linear infinite;
+    margin: 0 auto 14px;
 }
 
 @keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
-        transform: rotate(360deg);
-    }
+    to { transform: rotate(360deg); }
 }
 
 .loading p {
-    color: #7f8c8d;
-    font-size: 15px;
-    font-weight: 500;
+    color: #9e9e9e;
+    font-size: 14px;
+    margin: 0;
 }
 
 /* ===== Responsive ===== */
 @media (max-width: 1400px) {
-    .weekCalendar {
-        grid-template-columns: repeat(5, 1fr);
-    }
+    .weekCalendar { grid-template-columns: repeat(5, 1fr); }
 }
-
 @media (max-width: 1100px) {
-    .weekCalendar {
-        grid-template-columns: repeat(4, 1fr);
-    }
+    .weekCalendar { grid-template-columns: repeat(4, 1fr); }
 }
-
-@media (max-width: 900px) {
-    .weekCalendar {
-        grid-template-columns: repeat(3, 1fr);
-    }
+@media (max-width: 860px) {
+    .weekCalendar { grid-template-columns: repeat(3, 1fr); }
+    .statsRow { display: none; }
 }
-
-@media (max-width: 700px) {
-    .weekCalendar {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .statsGrid {
-        grid-template-columns: repeat(2, 1fr);
-    }
+@media (max-width: 600px) {
+    .weekCalendar { grid-template-columns: repeat(2, 1fr); }
+    .topBar { flex-direction: column; align-items: flex-start; }
+    .container { padding: 12px; }
 }
-
-@media (max-width: 500px) {
-    .weekCalendar {
-        grid-template-columns: 1fr;
-    }
-
-    .statsGrid {
-        grid-template-columns: 1fr;
-    }
-
-    .controls {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .weekNav {
-        flex-direction: column;
-    }
-
-    .navBtn,
-    .todayBtn {
-        width: 100%;
-    }
+@media (max-width: 360px) {
+    .weekCalendar { grid-template-columns: 1fr; }
 }

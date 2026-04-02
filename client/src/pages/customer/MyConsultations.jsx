@@ -1,30 +1,35 @@
-import { useState, useEffect } from 'react';
+import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../utils/api';
 import styles from './MyConsultations.module.css';
 
-export default function MyConsultations() {
-    const [requests, setRequests] = useState([]);
-    const [loading, setLoading] = useState(true);
+class MyConsultations extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            requests: [],
+            loading: true
+        };
+    }
 
-    useEffect(() => {
-        fetchMyRequests();
-    }, []);
+    componentDidMount() {
+        this.fetchMyRequests();
+    }
 
-    const fetchMyRequests = async () => {
+    fetchMyRequests = async () => {
         try {
-            setLoading(true);
-            const response = await api.get('/api/consultation-requests/my-requests');
-            setRequests(response.data.data);
+            this.setState({ loading: true });
+            const response = await api.get('/api/patient/consultations/my-requests');
+            this.setState({ requests: response.data.data });
         } catch (error) {
             console.error('Error fetching my requests:', error);
             alert('Lỗi khi tải lịch sử yêu cầu!');
         } finally {
-            setLoading(false);
+            this.setState({ loading: false });
         }
     };
 
-    const getStatusBadge = (status) => {
+    getStatusBadge = (status) => {
         const badges = {
             pending: { text: 'Chờ xử lý', color: '#ff9800' },
             assigned: { text: 'Đang xử lý', color: '#2196f3' },
@@ -48,7 +53,7 @@ export default function MyConsultations() {
         );
     };
 
-    const getCategoryText = (category) => {
+    getCategoryText = (category) => {
         const texts = {
             general: 'Tổng quát',
             medical_inquiry: 'Tư vấn y tế',
@@ -59,81 +64,87 @@ export default function MyConsultations() {
         return texts[category] || category;
     };
 
-    const formatDate = (dateString) => {
+    formatDate = (dateString) => {
         if (!dateString) return '';
         return new Date(dateString).toLocaleString('vi-VN');
     };
 
-    return (
-        <div className={styles.container}>
-            <div className={styles.header}>
-                <h1>Lịch sử Yêu cầu Tư vấn</h1>
-                <Link to="/contact" className={styles.btnNew}>
-                    ➕ Gửi yêu cầu mới
-                </Link>
-            </div>
+    render() {
+        const { requests, loading } = this.state;
 
-            {loading ? (
-                <div className={styles.loading}>⏳ Đang tải...</div>
-            ) : requests.length === 0 ? (
-                <div className={styles.empty}>
-                    <div className={styles.emptyIcon}>📭</div>
-                    <p>Bạn chưa có yêu cầu tư vấn nào</p>
-                    <Link to="/contact" className={styles.btnEmptyAction}>
-                        Gửi yêu cầu đầu tiên
+        return (
+            <div className={styles.container}>
+                <div className={styles.header}>
+                    <h1>Lịch sử Yêu cầu Tư vấn</h1>
+                    <Link to="/contact" className={styles.btnNew}>
+                        ➕ Gửi yêu cầu mới
                     </Link>
                 </div>
-            ) : (
-                <div className={styles.requestsList}>
-                    {requests.map(request => (
-                        <div key={request.id} className={styles.requestCard}>
-                            <div className={styles.cardHeader}>
-                                <div>
-                                    <h3>{request.subject}</h3>
-                                    <div className={styles.meta}>
-                                        <span className={styles.category}>{getCategoryText(request.category)}</span>
-                                        {request.specialty && (
-                                            <span className={styles.specialty}>🏥 {request.specialty.name}</span>
-                                        )}
+
+                {loading ? (
+                    <div className={styles.loading}>⏳ Đang tải...</div>
+                ) : requests.length === 0 ? (
+                    <div className={styles.empty}>
+                        <div className={styles.emptyIcon}>📭</div>
+                        <p>Bạn chưa có yêu cầu tư vấn nào</p>
+                        <Link to="/contact" className={styles.btnEmptyAction}>
+                            Gửi yêu cầu đầu tiên
+                        </Link>
+                    </div>
+                ) : (
+                    <div className={styles.requestsList}>
+                        {requests.map(request => (
+                            <div key={request.id} className={styles.requestCard}>
+                                <div className={styles.cardHeader}>
+                                    <div>
+                                        <h3>{request.subject}</h3>
+                                        <div className={styles.meta}>
+                                            <span className={styles.category}>{this.getCategoryText(request.category)}</span>
+                                            {request.specialty && (
+                                                <span className={styles.specialty}>🏥 {request.specialty.name}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    {this.getStatusBadge(request.status)}
+                                </div>
+
+                                <div className={styles.cardBody}>
+                                    <div className={styles.message}>
+                                        <strong>Nội dung yêu cầu:</strong>
+                                        <p>{request.message}</p>
+                                    </div>
+
+                                    {request.assignedDoctor && (
+                                        <div className={styles.doctorInfo}>
+                                            <strong>Bác sĩ phụ trách:</strong>
+                                            <p>{request.assignedDoctor.full_name}</p>
+                                            {request.assignedDoctor.email && (
+                                                <small>Email: {request.assignedDoctor.email}</small>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {request.doctor_response && (
+                                        <div className={styles.response}>
+                                            <strong>Phản hồi từ bác sĩ:</strong>
+                                            <p>{request.doctor_response}</p>
+                                            <small>Thời gian: {this.formatDate(request.responded_at)}</small>
+                                        </div>
+                                    )}
+
+                                    <div className={styles.timestamps}>
+                                        <small>Gửi lúc: {this.formatDate(request.created_at)}</small>
+                                        {request.assigned_at && <small>Giao lúc: {this.formatDate(request.assigned_at)}</small>}
+                                        {request.resolved_at && <small>Giải quyết: {this.formatDate(request.resolved_at)}</small>}
                                     </div>
                                 </div>
-                                {getStatusBadge(request.status)}
                             </div>
-
-                            <div className={styles.cardBody}>
-                                <div className={styles.message}>
-                                    <strong>Nội dung yêu cầu:</strong>
-                                    <p>{request.message}</p>
-                                </div>
-
-                                {request.assignedDoctor && (
-                                    <div className={styles.doctorInfo}>
-                                        <strong>Bác sĩ phụ trách:</strong>
-                                        <p>{request.assignedDoctor.full_name}</p>
-                                        {request.assignedDoctor.email && (
-                                            <small>Email: {request.assignedDoctor.email}</small>
-                                        )}
-                                    </div>
-                                )}
-
-                                {request.doctor_response && (
-                                    <div className={styles.response}>
-                                        <strong>Phản hồi từ bác sĩ:</strong>
-                                        <p>{request.doctor_response}</p>
-                                        <small>Thời gian: {formatDate(request.responded_at)}</small>
-                                    </div>
-                                )}
-
-                                <div className={styles.timestamps}>
-                                    <small>Gửi lúc: {formatDate(request.created_at)}</small>
-                                    {request.assigned_at && <small>Giao lúc: {formatDate(request.assigned_at)}</small>}
-                                    {request.resolved_at && <small>Giải quyết: {formatDate(request.resolved_at)}</small>}
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
-        </div>
-    );
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
+    }
 }
+
+export default MyConsultations;

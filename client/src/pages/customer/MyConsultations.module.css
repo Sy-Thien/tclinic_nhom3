@@ -22,7 +22,7 @@
 
 .btnNew {
     padding: 12px 24px;
-    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
     color: white;
     text-decoration: none;
     border-radius: 8px;
@@ -58,7 +58,7 @@
 
 .cardHeader {
     padding: 20px;
-    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
     color: white;
     display: flex;
     justify-content: space-between;
@@ -197,7 +197,7 @@
 .btnEmptyAction {
     display: inline-block;
     padding: 12px 32px;
-    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
     color: white;
     text-decoration: none;
     border-radius: 8px;

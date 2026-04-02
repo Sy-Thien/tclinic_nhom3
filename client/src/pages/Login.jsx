@@ -1,22 +1,28 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../utils/api';
 import styles from './Login.module.css';
+import withRouter from '../utils/withRouter';
 
-export default function Login() {
-    const [formData, setFormData] = useState({
-        username: '',
-        password: ''
-    });
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
-    const navigate = useNavigate();
+class Login extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            formData: {
+                username: '',
+                password: ''
+            },
+            loading: false,
+            error: '',
+            showPassword: false
+        };
+    }
 
     // ✅ Check nếu đã đăng nhập → redirect về trang phù hợp
-    useEffect(() => {
+    componentDidMount() {
         const token = localStorage.getItem('token');
         const userData = localStorage.getItem('user');
+        const { navigate } = this.props;
 
         if (token && userData) {
             try {
@@ -37,23 +43,24 @@ export default function Login() {
                 localStorage.clear();
             }
         }
-    }, [navigate]);
+    }
 
-    const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
+    handleChange = (e) => {
+        this.setState({
+            formData: {
+                ...this.state.formData,
+                [e.target.name]: e.target.value
+            },
+            error: ''
         });
-        setError('');
     };
 
-    const handleSubmit = async (e) => {
+    handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
-        setError('');
+        this.setState({ loading: true, error: '' });
 
         try {
-            const response = await api.post('/api/auth/login', formData);
+            const response = await api.post('/api/auth/login', this.state.formData);
 
             console.log('✅ Login success:', response.data);
 
@@ -62,6 +69,7 @@ export default function Login() {
 
             // ✅ Phân quyền redirect
             const role = response.data.user.role;
+            const { navigate } = this.props;
 
             if (role === 'admin') {
                 navigate('/admin');
@@ -75,87 +83,93 @@ export default function Login() {
 
         } catch (error) {
             console.error('❌ Login error:', error);
-            setError(error.response?.data?.message || 'Đăng nhập thất bại. Vui lòng thử lại!');
+            this.setState({ error: error.response?.data?.message || 'Đăng nhập thất bại. Vui lòng thử lại!' });
         } finally {
-            setLoading(false);
+            this.setState({ loading: false });
         }
     };
 
-    return (
-        <div className={styles.container}>
-            <div className={`${styles.loginBox} ${error ? styles.error : ''}`}>
-                <div className={styles.logo}>
-                    <img src="/logo.png" alt="TClinic Logo" />
-                </div>
+    render() {
+        const { formData, loading, error, showPassword } = this.state;
 
-                <h1>Đăng nhập</h1>
-                <p>Phòng Khám Tclinic</p>
-
-                {error && (
-                    <div className={styles.errorBox}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                            <path
-                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
-                                fill="currentColor"
-                            />
-                        </svg>
-                        {error}
-                    </div>
-                )}
-
-                <form onSubmit={handleSubmit} autoComplete="off">
-                    <div className={styles.formGroup}>
-                        <label>Email / Tên đăng nhập</label>
-                        <input
-                            type="text"
-                            name="username"
-                            value={formData.username}
-                            onChange={handleChange}
-                            required
-                            placeholder="Nhập email hoặc tên đăng nhập"
-                            autoComplete="off"
-                            autoFocus
-                        />
+        return (
+            <div className={styles.container}>
+                <div className={`${styles.loginBox} ${error ? styles.error : ''}`}>
+                    <div className={styles.logo}>
+                        <img src="/logo.png" alt="TClinic Logo" />
                     </div>
 
-                    <div className={styles.formGroup}>
-                        <label>Mật khẩu</label>
-                        <div className={styles.passwordWrapper}>
-                            <input
-                                type={showPassword ? 'text' : 'password'}
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                required
-                                placeholder="Nhập mật khẩu"
-                                autoComplete="new-password"
-                            />
-                            <button
-                                type="button"
-                                className={styles.togglePassword}
-                                onClick={() => setShowPassword(!showPassword)}
-                                tabIndex={-1}
-                            >
-                                {showPassword ? '👁️' : '👁️‍🗨️'}
-                            </button>
+                    <h1>Đăng nhập</h1>
+                    <p>Phòng Khám Tclinic</p>
+
+                    {error && (
+                        <div className={styles.errorBox}>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                <path
+                                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                                    fill="currentColor"
+                                />
+                            </svg>
+                            {error}
                         </div>
+                    )}
+
+                    <form onSubmit={this.handleSubmit} autoComplete="off">
+                        <div className={styles.formGroup}>
+                            <label>Email / Tên đăng nhập</label>
+                            <input
+                                type="text"
+                                name="username"
+                                value={formData.username}
+                                onChange={this.handleChange}
+                                required
+                                placeholder="Nhập email hoặc tên đăng nhập"
+                                autoComplete="off"
+                                autoFocus
+                            />
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label>Mật khẩu</label>
+                            <div className={styles.passwordWrapper}>
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={this.handleChange}
+                                    required
+                                    placeholder="Nhập mật khẩu"
+                                    autoComplete="new-password"
+                                />
+                                <button
+                                    type="button"
+                                    className={styles.togglePassword}
+                                    onClick={() => this.setState({ showPassword: !this.state.showPassword })}
+                                    tabIndex={-1}
+                                >
+                                    {showPassword ? '👁️' : '👁️‍🗨️'}
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit" disabled={loading}>
+                            {loading ? 'Đang xử lý...' : 'Đăng nhập'}
+                        </button>
+                    </form>
+
+                    <div className={styles.footer}>
+                        <p>
+                            Chưa có tài khoản?
+                            <Link to="/register">Đăng ký ngay</Link>
+                        </p>
+                        <p className={styles.note}>
+                            * Admin và Bác sĩ vui lòng liên hệ quản trị viên để được cấp tài khoản
+                        </p>
                     </div>
-
-                    <button type="submit" disabled={loading}>
-                        {loading ? 'Đang xử lý...' : 'Đăng nhập'}
-                    </button>
-                </form>
-
-                <div className={styles.footer}>
-                    <p>
-                        Chưa có tài khoản?
-                        <Link to="/register">Đăng ký ngay</Link>
-                    </p>
-                    <p className={styles.note}>
-                        * Admin và Bác sĩ vui lòng liên hệ quản trị viên để được cấp tài khoản
-                    </p>
                 </div>
             </div>
-        </div>
-    );
+        );
+    }
 }
+
+export default withRouter(Login);

@@ -1,6 +1,6 @@
-import { useEffect, useRef, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { Component } from 'react';
 import api from '../utils/api';
+import withRouter from '../utils/withRouter';
 
 /**
  * Component kiểm tra session định kỳ
@@ -10,39 +10,40 @@ import api from '../utils/api';
  */
 const ENABLE_SESSION_CHECK = false;
 
-export default function SessionChecker() {
-    const navigate = useNavigate();
-    const location = useLocation();
-    const intervalRef = useRef(null);
-    const isCheckingRef = useRef(false);
+class SessionChecker extends Component {
+    constructor(props) {
+        super(props);
+        this.intervalRef = null;
+        this.isCheckingRef = false;
+    }
 
-    const handleLogout = useCallback((message) => {
+    handleLogout = (message) => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
 
         // Chỉ redirect nếu không phải đang ở trang login/register
         const publicPaths = ['/login', '/register'];
-        if (!publicPaths.includes(location.pathname)) {
+        if (!publicPaths.includes(this.props.location.pathname)) {
             alert(message || 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
-            navigate('/login');
+            this.props.navigate('/login');
         }
-    }, [navigate, location.pathname]);
+    };
 
-    const checkSession = useCallback(async () => {
+    checkSession = async () => {
         // ✅ Tắt tính năng nếu không enable
         if (!ENABLE_SESSION_CHECK) return;
 
         // Tránh check trùng lặp
-        if (isCheckingRef.current) return;
+        if (this.isCheckingRef) return;
 
         const token = localStorage.getItem('token');
         if (!token) return;
 
         // Không check nếu đang ở trang public
         const publicPaths = ['/login', '/register'];
-        if (publicPaths.includes(location.pathname)) return;
+        if (publicPaths.includes(this.props.location.pathname)) return;
 
-        isCheckingRef.current = true;
+        this.isCheckingRef = true;
 
         try {
             const response = await api.get('/api/auth/verify-session');
@@ -52,9 +53,9 @@ export default function SessionChecker() {
 
                 // Chỉ logout khi session thực sự bị expired (đăng nhập từ nơi khác)
                 if (response.data.reason === 'session_expired') {
-                    handleLogout('Tài khoản đã đăng nhập từ thiết bị khác. Bạn đã bị đăng xuất.');
+                    this.handleLogout('Tài khoản đã đăng nhập từ thiết bị khác. Bạn đã bị đăng xuất.');
                 } else if (response.data.reason === 'user_not_found') {
-                    handleLogout('Tài khoản không tồn tại.');
+                    this.handleLogout('Tài khoản không tồn tại.');
                 }
                 // Bỏ qua 'no_session_token' - token cũ vẫn valid
                 // Bỏ qua 'error' - lỗi tạm thời
@@ -65,11 +66,11 @@ export default function SessionChecker() {
                 console.error('Session check error:', error.message);
             }
         } finally {
-            isCheckingRef.current = false;
+            this.isCheckingRef = false;
         }
-    }, [handleLogout, location.pathname]);
+    };
 
-    useEffect(() => {
+    componentDidMount() {
         // ✅ Tắt tính năng nếu không enable
         if (!ENABLE_SESSION_CHECK) return;
 
@@ -77,34 +78,42 @@ export default function SessionChecker() {
         if (!token) return;
 
         // Check ngay khi có token
-        checkSession();
+        this.checkSession();
 
         // Check định kỳ mỗi 30 giây
-        intervalRef.current = setInterval(checkSession, 30000);
+        this.intervalRef = setInterval(this.checkSession, 30000);
 
         // Check khi tab được focus lại (user quay lại tab)
-        const handleFocus = () => {
-            checkSession();
+        this.handleFocus = () => {
+            this.checkSession();
         };
-        window.addEventListener('focus', handleFocus);
+        window.addEventListener('focus', this.handleFocus);
 
         // Check khi visibility change (tab active)
-        const handleVisibility = () => {
+        this.handleVisibility = () => {
             if (document.visibilityState === 'visible') {
-                checkSession();
+                this.checkSession();
             }
         };
-        document.addEventListener('visibilitychange', handleVisibility);
+        document.addEventListener('visibilitychange', this.handleVisibility);
+    }
 
-        return () => {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-            }
-            window.removeEventListener('focus', handleFocus);
-            document.removeEventListener('visibilitychange', handleVisibility);
-        };
-    }, [checkSession]);
+    componentWillUnmount() {
+        if (this.intervalRef) {
+            clearInterval(this.intervalRef);
+        }
+        if (this.handleFocus) {
+            window.removeEventListener('focus', this.handleFocus);
+        }
+        if (this.handleVisibility) {
+            document.removeEventListener('visibilitychange', this.handleVisibility);
+        }
+    }
 
     // Component không render gì cả
-    return null;
+    render() {
+        return null;
+    }
 }
+
+export default withRouter(SessionChecker);

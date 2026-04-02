@@ -86,6 +86,73 @@
     background: #e5e7eb;
 }
 
+.btnToday {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    align-self: flex-end;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btnToday:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+
+/* PAGINATION */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.5rem 0;
+    flex-wrap: wrap;
+}
+
+.btnPage {
+    padding: 0.5rem 0.875rem;
+    border: 2px solid #e2e8f0;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    min-width: 40px;
+}
+
+.btnPage:hover:not(:disabled) {
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+
+.btnPage:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.btnPageActive {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+.btnPageActive:hover {
+    background: #2563eb !important;
+    border-color: #2563eb !important;
+    color: white !important;
+}
+
+.pageEllipsis {
+    padding: 0.5rem 0.25rem;
+    color: #9ca3af;
+    user-select: none;
+}
+
 /* TABLE */
 .tableContainer {
     background: white;
@@ -171,64 +238,75 @@
 /* ACTIONS */
 .actions {
     display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
 }
 
 .btnConfirm,
 .btnCancel,
 .btnAssign {
-    padding: 0.5rem 1rem;
+    padding: 8px 16px;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     font-weight: 600;
-    font-size: 0.875rem;
+    font-size: 14px;
     cursor: pointer;
     transition: all 0.2s;
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .btnConfirm {
-    background: #10b981;
-    color: white;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
 }
 
 .btnConfirm:hover {
-    background: #059669;
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
 }
 
 .btnCancel {
-    background: #ef4444;
-    color: white;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
 }
 
 .btnCancel:hover {
-    background: #dc2626;
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
 }
 
 .btnAssign {
-    background: #3b82f6;
-    color: white;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
 }
 
 .btnAssign:hover {
-    background: #2563eb;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 
 .btnAssignPrimary {
-    background: #ec4899;
+    background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
     color: white;
-    padding: 0.5rem 1rem;
+    padding: 8px 16px;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: background 0.2s;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s;
     animation: pulse 2s infinite;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .btnAssignPrimary:hover {
-    background: #db2777;
+    background: linear-gradient(135deg, #db2777 0%, #be185d 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.4);
 }
 
 @keyframes pulse {

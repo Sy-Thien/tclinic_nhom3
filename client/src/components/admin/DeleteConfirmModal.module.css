@@ -1,0 +1,266 @@
+/* ===== Overlay ===== */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 20px;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* ===== Modal ===== */
+.modal {
+    background: white;
+    border-radius: 20px;
+    max-width: 480px;
+    width: 100%;
+    padding: 40px 32px;
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.25),
+        0 0 0 1px rgba(0, 0, 0, 0.05);
+    animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ===== Warning Icon ===== */
+.iconWrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.warningIcon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    animation: pulse 2s ease-in-out infinite;
+    box-shadow:
+        0 10px 30px rgba(255, 107, 107, 0.3),
+        0 0 0 8px rgba(255, 107, 107, 0.1);
+}
+
+.warningIcon svg {
+    width: 48px;
+    height: 48px;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* ===== Title ===== */
+.title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #1a1a1a;
+    text-align: center;
+    margin: 0 0 24px 0;
+}
+
+/* ===== Content ===== */
+.content {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.question {
+    font-size: 16px;
+    color: #4a5568;
+    margin: 0 0 12px 0;
+    line-height: 1.5;
+}
+
+.itemName {
+    font-size: 20px;
+    font-weight: 700;
+    color: #ff6b6b;
+    margin: 0 0 20px 0;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
+    border-radius: 12px;
+    border: 2px solid #ffcccb;
+}
+
+.warningBox {
+    background: linear-gradient(135deg, #fff8dc 0%, #ffeaa7 100%);
+    border: 2px solid #ffd93d;
+    border-radius: 12px;
+    padding: 16px;
+    margin: 16px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    text-align: left;
+}
+
+.warningIconSmall {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.warningText {
+    color: #8b5e00;
+    font-size: 14px;
+    line-height: 1.6;
+    font-weight: 500;
+}
+
+.note {
+    font-size: 13px;
+    color: #e74c3c;
+    font-weight: 600;
+    margin: 16px 0 0 0;
+    padding: 10px;
+    background: rgba(231, 76, 60, 0.08);
+    border-radius: 8px;
+}
+
+/* ===== Actions ===== */
+.actions {
+    display: flex;
+    gap: 12px;
+}
+
+.btnCancel,
+.btnDelete {
+    flex: 1;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btnCancel {
+    background: #f7fafc;
+    color: #4a5568;
+    border: 2px solid #e2e8f0;
+}
+
+.btnCancel:hover:not(:disabled) {
+    background: #edf2f7;
+    border-color: #cbd5e0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btnDelete {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+.btnDelete:hover:not(:disabled) {
+    background: linear-gradient(135deg, #ff5252 0%, #e53935 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(255, 107, 107, 0.4);
+}
+
+.btnCancel:disabled,
+.btnDelete:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.deleteIcon {
+    font-size: 18px;
+}
+
+.spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 640px) {
+    .modal {
+        padding: 32px 24px;
+        max-width: 100%;
+    }
+
+    .warningIcon {
+        width: 64px;
+        height: 64px;
+    }
+
+    .warningIcon svg {
+        width: 36px;
+        height: 36px;
+    }
+
+    .title {
+        font-size: 22px;
+    }
+
+    .itemName {
+        font-size: 18px;
+    }
+
+    .actions {
+        flex-direction: column;
+    }
+
+    .btnCancel,
+    .btnDelete {
+        width: 100%;
+    }
+}

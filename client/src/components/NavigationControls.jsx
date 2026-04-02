@@ -1,56 +1,58 @@
-import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { Component } from 'react';
 import styles from './NavigationControls.module.css';
+import withRouter from '../utils/withRouter';
 
-const NavigationControls = ({ showRestart = true, restartPath = '/' }) => {
-    const navigate = useNavigate();
-    const location = useLocation();
-
-    const handleBack = () => {
-        navigate(-1); // Quay lại trang trước
+class NavigationControls extends Component {
+    handleBack = () => {
+        this.props.navigate(-1); // Quay lại trang trước
     };
 
-    const handleForward = () => {
-        navigate(1); // Tiến tới trang sau
+    handleForward = () => {
+        this.props.navigate(1); // Tiến tới trang sau
     };
 
-    const handleRestart = () => {
-        navigate(restartPath); // Về trang chủ hoặc trang khởi đầu
+    handleRestart = () => {
+        const restartPath = this.props.restartPath || '/';
+        this.props.navigate(restartPath); // Về trang chủ hoặc trang khởi đầu
         window.scrollTo(0, 0);
     };
 
-    return (
-        <div className={styles.navControls}>
-            <button
-                onClick={handleBack}
-                className={styles.navButton}
-                title="Quay lại trang trước"
-            >
-                <span className={styles.icon}>←</span>
-                <span className={styles.label}>Quay lại</span>
-            </button>
+    render() {
+        const { showRestart = true } = this.props;
 
-            <button
-                onClick={handleForward}
-                className={styles.navButton}
-                title="Tiến tới trang sau"
-            >
-                <span className={styles.icon}>→</span>
-                <span className={styles.label}>Tiếp theo</span>
-            </button>
-
-            {showRestart && (
+        return (
+            <div className={styles.navControls}>
                 <button
-                    onClick={handleRestart}
-                    className={`${styles.navButton} ${styles.restartButton}`}
-                    title="Về trang chủ"
+                    onClick={this.handleBack}
+                    className={styles.navButton}
+                    title="Quay lại trang trước"
                 >
-                    <span className={styles.icon}>🏠</span>
-                    <span className={styles.label}>Trang chủ</span>
+                    <span className={styles.icon}>←</span>
+                    <span className={styles.label}>Quay lại</span>
                 </button>
-            )}
-        </div>
-    );
-};
 
-export default NavigationControls;
+                <button
+                    onClick={this.handleForward}
+                    className={styles.navButton}
+                    title="Tiến tới trang sau"
+                >
+                    <span className={styles.icon}>→</span>
+                    <span className={styles.label}>Tiếp theo</span>
+                </button>
+
+                {showRestart && (
+                    <button
+                        onClick={this.handleRestart}
+                        className={`${styles.navButton} ${styles.restartButton}`}
+                        title="Về trang chủ"
+                    >
+                        <span className={styles.icon}>🏠</span>
+                        <span className={styles.label}>Trang chủ</span>
+                    </button>
+                )}
+            </div>
+        );
+    }
+}
+
+export default withRouter(NavigationControls);

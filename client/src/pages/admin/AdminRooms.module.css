@@ -38,6 +38,38 @@
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
+/* Specialty Breadcrumb Banner */
+.specialtyBreadcrumb {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 10px;
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: #1e40af;
+}
+
+.clearFilterBtn {
+    padding: 4px 12px;
+    background: white;
+    border: 1px solid #93c5fd;
+    border-radius: 6px;
+    color: #2563eb;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.clearFilterBtn:hover {
+    background: #dbeafe;
+}
+
 /* Stats Grid */
 .statsGrid {
     display: grid;
@@ -299,34 +331,44 @@
 
 .roomActions {
     display: flex;
-    gap: 0.5rem;
-    justify-content: flex-end;
+    gap: 8px;
+    justify-content: center;
 }
 
 .btnEdit,
 .btnDelete {
-    padding: 0.4rem 0.6rem;
+    padding: 8px 16px;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
     transition: all 0.2s;
-    font-size: 0.9rem;
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .btnEdit {
-    background: #e0f2fe;
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
 }
 
 .btnEdit:hover {
-    background: #7dd3fc;
+    background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
 }
 
 .btnDelete {
-    background: #fee2e2;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
 }
 
 .btnDelete:hover {
-    background: #fca5a5;
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
 }
 
 /* Badges */
@@ -430,28 +472,35 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid #e2e8f0;
+    padding: 24px 32px;
+    border-bottom: 2px solid #f0f0f0;
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    border-radius: 16px 16px 0 0;
 }
 
 .modalHeader h2 {
     margin: 0;
-    font-size: 1.25rem;
-    color: #1a1a2e;
+    font-size: 24px;
+    font-weight: 700;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .closeBtn {
-    background: none;
+    background: rgba(255, 255, 255, 0.2);
     border: none;
-    font-size: 1.5rem;
+    color: white;
+    font-size: 16px;
+    padding: 10px 20px;
+    border-radius: 8px;
     cursor: pointer;
-    color: #64748b;
-    padding: 0.25rem;
-    line-height: 1;
+    font-weight: 600;
+    transition: all 0.2s;
 }
 
 .closeBtn:hover {
-    color: #ef4444;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
 }
 
 /* Form */
@@ -573,18 +622,27 @@
 }
 
 .btnDeleteConfirm {
-    padding: 0.75rem 1.5rem;
-    background: #ef4444;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
     color: white;
     border: none;
     border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
-.btnDeleteConfirm:hover {
-    background: #dc2626;
+.btnDeleteConfirm:hover:not(:disabled) {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+}
+
+.btnDeleteConfirm:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
 }
 
 .loading {

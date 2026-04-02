@@ -1,51 +1,64 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
+import withRouter from '../../utils/withRouter';
 import api from '../../utils/api';
 import styles from './NewsDetail.module.css';
 
-const NewsDetail = () => {
-    const { slug } = useParams();
-    const navigate = useNavigate();
-    const [article, setArticle] = useState(null);
-    const [relatedArticles, setRelatedArticles] = useState([]);
-    const [popularArticles, setPopularArticles] = useState([]);
-    const [loading, setLoading] = useState(true);
+class NewsDetail extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            article: null,
+            relatedArticles: [],
+            popularArticles: [],
+            loading: true
+        };
+    }
 
-    useEffect(() => {
-        fetchArticleDetail();
-        fetchPopularArticles();
+    componentDidMount() {
+        this.fetchArticleDetail();
+        this.fetchPopularArticles();
         window.scrollTo(0, 0);
-    }, [slug]);
+    }
 
-    const fetchArticleDetail = async () => {
-        setLoading(true);
+    componentDidUpdate(prevProps) {
+        if (prevProps.params.slug !== this.props.params.slug) {
+            this.fetchArticleDetail();
+            this.fetchPopularArticles();
+            window.scrollTo(0, 0);
+        }
+    }
+
+    fetchArticleDetail = async () => {
+        const { slug } = this.props.params;
+        this.setState({ loading: true });
         try {
-            const response = await api.get(`/api/articles/${slug}`);
-            // API trả về { success: true, data: { article, relatedArticles } }
+            const response = await api.get(`/api/public/articles/${slug}`);
             const data = response.data.data || response.data;
-            setArticle(data.article || null);
-            setRelatedArticles(data.relatedArticles || []);
+            this.setState({
+                article: data.article || null,
+                relatedArticles: data.relatedArticles || []
+            });
         } catch (error) {
             console.error('❌ Error fetching article:', error);
             if (error.response?.status === 404) {
-                navigate('/news');
+                this.props.navigate('/news');
             }
         } finally {
-            setLoading(false);
+            this.setState({ loading: false });
         }
     };
 
-    const fetchPopularArticles = async () => {
+    fetchPopularArticles = async () => {
         try {
-            const response = await api.get('/api/articles/popular');
-            // API trả về { success: true, data: [...] }
-            setPopularArticles(response.data.data || response.data || []);
+            const response = await api.get('/api/public/articles/popular');
+            this.setState({ popularArticles: response.data.data || response.data || [] });
         } catch (error) {
             console.error('❌ Error fetching popular articles:', error);
         }
     };
 
-    const formatDate = (dateString) => {
+    formatDate = (dateString) => {
         return new Date(dateString).toLocaleDateString('vi-VN', {
             year: 'numeric',
             month: 'long',
@@ -55,14 +68,14 @@ const NewsDetail = () => {
         });
     };
 
-    const formatViews = (views) => {
+    formatViews = (views) => {
         if (views >= 1000) {
             return (views / 1000).toFixed(1) + 'k';
         }
         return views;
     };
 
-    const getCategoryColor = (slug) => {
+    getCategoryColor = (slug) => {
         const colors = {
             'suc-khoe-tong-quat': '#3498db',
             'dinh-duong': '#2ecc71',
@@ -72,11 +85,12 @@ const NewsDetail = () => {
         return colors[slug] || '#95a5a6';
     };
 
-    const handlePrint = () => {
+    handlePrint = () => {
         window.print();
     };
 
-    const handleShare = (platform) => {
+    handleShare = (platform) => {
+        const { article } = this.state;
         const url = window.location.href;
         const title = article?.title || '';
 
@@ -91,204 +105,197 @@ const NewsDetail = () => {
         }
     };
 
-    if (loading) {
+    render() {
+        const { article, relatedArticles, popularArticles, loading } = this.state;
+
+        if (loading) {
+            return (
+                <div className={styles.loading}>
+                    <div className={styles.spinner}></div>
+                    <p>Đang tải bài viết...</p>
+                </div>
+            );
+        }
+
+        if (!article) {
+            return (
+                <div className={styles.notFound}>
+                    <h2>Không tìm thấy bài viết</h2>
+                    <Link to="/news" className={styles.backButton}>← Quay lại danh sách</Link>
+                </div>
+            );
+        }
+
         return (
-            <div className={styles.loading}>
-                <div className={styles.spinner}></div>
-                <p>Đang tải bài viết...</p>
-            </div>
-        );
-    }
+            <div className={styles.newsDetailContainer}>
+                <div className={styles.breadcrumb}>
+                    <Link to="/">Trang chủ</Link>
+                    <span>/</span>
+                    <Link to="/news">Tin tức</Link>
+                    <span>/</span>
+                    <Link to={`/news?category=${article.category?.slug}`}>
+                        {article.category?.name}
+                    </Link>
+                    <span>/</span>
+                    <span>{article.title}</span>
+                </div>
 
-    if (!article) {
-        return (
-            <div className={styles.notFound}>
-                <h2>Không tìm thấy bài viết</h2>
-                <Link to="/news" className={styles.backButton}>← Quay lại danh sách</Link>
-            </div>
-        );
-    }
+                <div className={styles.contentWrapper}>
+                    <article className={styles.mainContent}>
+                        <header className={styles.articleHeader}>
+                            <span
+                                className={styles.categoryBadge}
+                                style={{ backgroundColor: this.getCategoryColor(article.category?.slug) }}
+                            >
+                                {article.category?.name}
+                            </span>
 
-    return (
-        <div className={styles.newsDetailContainer}>
-            {/* Breadcrumb */}
-            <div className={styles.breadcrumb}>
-                <Link to="/">Trang chủ</Link>
-                <span>/</span>
-                <Link to="/news">Tin tức</Link>
-                <span>/</span>
-                <Link to={`/news?category=${article.category?.slug}`}>
-                    {article.category?.name}
-                </Link>
-                <span>/</span>
-                <span>{article.title}</span>
-            </div>
+                            <h1 className={styles.articleTitle}>{article.title}</h1>
 
-            <div className={styles.contentWrapper}>
-                {/* Main Content */}
-                <article className={styles.mainContent}>
-                    {/* Article Header */}
-                    <header className={styles.articleHeader}>
-                        <span
-                            className={styles.categoryBadge}
-                            style={{ backgroundColor: getCategoryColor(article.category?.slug) }}
-                        >
-                            {article.category?.name}
-                        </span>
-
-                        <h1 className={styles.articleTitle}>{article.title}</h1>
-
-                        <div className={styles.articleMeta}>
-                            <div className={styles.metaLeft}>
-                                <span className={styles.metaItem}>
-                                    📅 {formatDate(article.published_at)}
-                                </span>
-                                <span className={styles.metaItem}>
-                                    👁️ {formatViews(article.views)} lượt xem
-                                </span>
-                                {article.author && (
+                            <div className={styles.articleMeta}>
+                                <div className={styles.metaLeft}>
                                     <span className={styles.metaItem}>
-                                        ✍️ {article.author.fullname || 'Admin'}
+                                        📅 {this.formatDate(article.published_at)}
                                     </span>
-                                )}
-                            </div>
+                                    <span className={styles.metaItem}>
+                                        👁️ {this.formatViews(article.views)} lượt xem
+                                    </span>
+                                    {article.author && (
+                                        <span className={styles.metaItem}>
+                                            ✍️ {article.author.fullname || 'Admin'}
+                                        </span>
+                                    )}
+                                </div>
 
-                            <div className={styles.socialShare}>
-                                <button
-                                    onClick={() => handleShare('facebook')}
-                                    className={styles.shareButton}
-                                    title="Chia sẻ lên Facebook"
-                                >
-                                    📘 Facebook
-                                </button>
-                                <button
-                                    onClick={() => handleShare('twitter')}
-                                    className={styles.shareButton}
-                                    title="Chia sẻ lên Twitter"
-                                >
-                                    🐦 Twitter
-                                </button>
-                                <button
-                                    onClick={handlePrint}
-                                    className={styles.shareButton}
-                                    title="In bài viết"
-                                >
-                                    🖨️ In
-                                </button>
-                            </div>
-                        </div>
-                    </header>
-
-                    {/* Featured Image */}
-                    {article.thumbnail && (
-                        <div className={styles.featuredImage}>
-                            <img src={article.thumbnail} alt={article.title} />
-                        </div>
-                    )}
-
-                    {/* Article Excerpt */}
-                    {article.excerpt && (
-                        <div className={styles.articleExcerpt}>
-                            <p>{article.excerpt}</p>
-                        </div>
-                    )}
-
-                    {/* Article Content */}
-                    <div
-                        className={styles.articleContent}
-                        dangerouslySetInnerHTML={{ __html: article.content }}
-                    />
-
-                    {/* Article Footer */}
-                    <footer className={styles.articleFooter}>
-                        <div className={styles.shareAgain}>
-                            <p>Chia sẻ bài viết này:</p>
-                            <div className={styles.socialShare}>
-                                <button onClick={() => handleShare('facebook')} className={styles.shareButton}>
-                                    📘 Facebook
-                                </button>
-                                <button onClick={() => handleShare('twitter')} className={styles.shareButton}>
-                                    🐦 Twitter
-                                </button>
-                                <button onClick={() => handleShare('linkedin')} className={styles.shareButton}>
-                                    💼 LinkedIn
-                                </button>
-                            </div>
-                        </div>
-                    </footer>
-
-                    {/* Related Articles */}
-                    {relatedArticles.length > 0 && (
-                        <section className={styles.relatedSection}>
-                            <h2>Bài viết liên quan</h2>
-                            <div className={styles.relatedGrid}>
-                                {relatedArticles.map(related => (
-                                    <Link
-                                        key={related.id}
-                                        to={`/news/${related.slug}`}
-                                        className={styles.relatedCard}
+                                <div className={styles.socialShare}>
+                                    <button
+                                        onClick={() => this.handleShare('facebook')}
+                                        className={styles.shareButton}
+                                        title="Chia sẻ lên Facebook"
                                     >
-                                        <img
-                                            src={related.thumbnail || 'https://via.placeholder.com/300x180'}
-                                            alt={related.title}
-                                        />
-                                        <div className={styles.relatedContent}>
-                                            <h3>{related.title}</h3>
-                                            <div className={styles.relatedMeta}>
-                                                <span>📅 {formatDate(related.published_at)}</span>
-                                                <span>👁️ {formatViews(related.views)}</span>
+                                        📘 Facebook
+                                    </button>
+                                    <button
+                                        onClick={() => this.handleShare('twitter')}
+                                        className={styles.shareButton}
+                                        title="Chia sẻ lên Twitter"
+                                    >
+                                        🐦 Twitter
+                                    </button>
+                                    <button
+                                        onClick={this.handlePrint}
+                                        className={styles.shareButton}
+                                        title="In bài viết"
+                                    >
+                                        🖨️ In
+                                    </button>
+                                </div>
+                            </div>
+                        </header>
+
+                        {article.thumbnail && (
+                            <div className={styles.featuredImage}>
+                                <img src={article.thumbnail} alt={article.title} />
+                            </div>
+                        )}
+
+                        {article.excerpt && (
+                            <div className={styles.articleExcerpt}>
+                                <p>{article.excerpt}</p>
+                            </div>
+                        )}
+
+                        <div
+                            className={styles.articleContent}
+                            dangerouslySetInnerHTML={{ __html: article.content }}
+                        />
+
+                        <footer className={styles.articleFooter}>
+                            <div className={styles.shareAgain}>
+                                <p>Chia sẻ bài viết này:</p>
+                                <div className={styles.socialShare}>
+                                    <button onClick={() => this.handleShare('facebook')} className={styles.shareButton}>
+                                        📘 Facebook
+                                    </button>
+                                    <button onClick={() => this.handleShare('twitter')} className={styles.shareButton}>
+                                        🐦 Twitter
+                                    </button>
+                                    <button onClick={() => this.handleShare('linkedin')} className={styles.shareButton}>
+                                        💼 LinkedIn
+                                    </button>
+                                </div>
+                            </div>
+                        </footer>
+
+                        {relatedArticles.length > 0 && (
+                            <section className={styles.relatedSection}>
+                                <h2>Bài viết liên quan</h2>
+                                <div className={styles.relatedGrid}>
+                                    {relatedArticles.map(related => (
+                                        <Link
+                                            key={related.id}
+                                            to={`/news/${related.slug}`}
+                                            className={styles.relatedCard}
+                                        >
+                                            <img
+                                                src={related.thumbnail || 'https://via.placeholder.com/300x180'}
+                                                alt={related.title}
+                                            />
+                                            <div className={styles.relatedContent}>
+                                                <h3>{related.title}</h3>
+                                                <div className={styles.relatedMeta}>
+                                                    <span>📅 {this.formatDate(related.published_at)}</span>
+                                                    <span>👁️ {this.formatViews(related.views)}</span>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </Link>
-                                ))}
-                            </div>
-                        </section>
-                    )}
-                </article>
+                                        </Link>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+                    </article>
 
-                {/* Sidebar */}
-                <aside className={styles.sidebar}>
-                    {/* Popular Articles */}
-                    {popularArticles.length > 0 && (
+                    <aside className={styles.sidebar}>
+                        {popularArticles.length > 0 && (
+                            <div className={styles.sidebarWidget}>
+                                <h3 className={styles.widgetTitle}>📊 Bài viết phổ biến</h3>
+                                <div className={styles.popularList}>
+                                    {popularArticles.slice(0, 5).map(popular => (
+                                        <Link
+                                            key={popular.id}
+                                            to={`/news/${popular.slug}`}
+                                            className={styles.popularItem}
+                                        >
+                                            <img
+                                                src={popular.thumbnail || 'https://via.placeholder.com/80x60'}
+                                                alt={popular.title}
+                                            />
+                                            <div className={styles.popularInfo}>
+                                                <h4>{popular.title}</h4>
+                                                <span className={styles.popularViews}>
+                                                    👁️ {this.formatViews(popular.views)} lượt xem
+                                                </span>
+                                            </div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
                         <div className={styles.sidebarWidget}>
-                            <h3 className={styles.widgetTitle}>📊 Bài viết phổ biến</h3>
-                            <div className={styles.popularList}>
-                                {popularArticles.slice(0, 5).map(popular => (
-                                    <Link
-                                        key={popular.id}
-                                        to={`/news/${popular.slug}`}
-                                        className={styles.popularItem}
-                                    >
-                                        <img
-                                            src={popular.thumbnail || 'https://via.placeholder.com/80x60'}
-                                            alt={popular.title}
-                                        />
-                                        <div className={styles.popularInfo}>
-                                            <h4>{popular.title}</h4>
-                                            <span className={styles.popularViews}>
-                                                👁️ {formatViews(popular.views)} lượt xem
-                                            </span>
-                                        </div>
-                                    </Link>
-                                ))}
+                            <div className={styles.ctaWidget}>
+                                <h3>💊 Đặt lịch khám ngay</h3>
+                                <p>Nhận tư vấn miễn phí từ bác sĩ chuyên khoa</p>
+                                <Link to="/dat-kham" className={styles.ctaButton}>
+                                    Đặt lịch ngay
+                                </Link>
                             </div>
                         </div>
-                    )}
-
-                    {/* CTA Widget */}
-                    <div className={styles.sidebarWidget}>
-                        <div className={styles.ctaWidget}>
-                            <h3>💊 Đặt lịch khám ngay</h3>
-                            <p>Nhận tư vấn miễn phí từ bác sĩ chuyên khoa</p>
-                            <Link to="/dat-kham" className={styles.ctaButton}>
-                                Đặt lịch ngay
-                            </Link>
-                        </div>
-                    </div>
-                </aside>
+                    </aside>
+                </div>
             </div>
-        </div>
-    );
-};
+        );
+    }
+}
 
-export default NewsDetail;
+export default withRouter(NewsDetail);

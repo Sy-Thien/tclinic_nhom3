@@ -1,23 +1,30 @@
-import { useState } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import api from '../../utils/api';
 import styles from './ReviewModal.module.css';
 
-export default function ReviewModal({ appointment, onClose, onSuccess }) {
-    const [rating, setRating] = useState(0);
-    const [hoverRating, setHoverRating] = useState(0);
-    const [comment, setComment] = useState('');
-    const [loading, setLoading] = useState(false);
+class ReviewModal extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            rating: 0,
+            hoverRating: 0,
+            comment: '',
+            loading: false
+        };
+    }
 
-    const handleSubmit = async (e) => {
+    handleSubmit = async (e) => {
         e.preventDefault();
+        const { appointment, onSuccess, onClose } = this.props;
+        const { rating, comment } = this.state;
 
         if (rating === 0) {
             alert('Vui lòng chọn số sao đánh giá!');
             return;
         }
 
-        setLoading(true);
+        this.setState({ loading: true });
         try {
             await api.post('/api/reviews/create', {
                 booking_id: appointment.id,
@@ -33,91 +40,96 @@ export default function ReviewModal({ appointment, onClose, onSuccess }) {
             console.error('Error submitting review:', error);
             alert(error.response?.data?.message || '❌ Không thể gửi đánh giá!');
         } finally {
-            setLoading(false);
+            this.setState({ loading: false });
         }
     };
 
-    return (
-        <div className={styles.modalOverlay} onClick={onClose}>
-            <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-                <div className={styles.modalHeader}>
-                    <h2>⭐ Đánh giá dịch vụ</h2>
-                    <button className={styles.btnClose} onClick={onClose}>×</button>
-                </div>
+    render() {
+        const { appointment, onClose } = this.props;
+        const { rating, hoverRating, comment, loading } = this.state;
 
-                <form onSubmit={handleSubmit}>
-                    <div className={styles.modalBody}>
-                        {/* Doctor Info */}
-                        <div className={styles.doctorInfo}>
-                            <p className={styles.label}>Bác sĩ:</p>
-                            <p className={styles.doctorName}>{appointment.doctor_name || 'Không xác định'}</p>
-                            <p className={styles.specialty}>{appointment.specialty_name}</p>
-                        </div>
+        return (
+            <div className={styles.modalOverlay} onClick={onClose}>
+                <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+                    <div className={styles.modalHeader}>
+                        <h2>⭐ Đánh giá dịch vụ</h2>
+                        <button className={styles.btnClose} onClick={onClose}>×</button>
+                    </div>
 
-                        {/* Rating Stars */}
-                        <div className={styles.ratingSection}>
-                            <label className={styles.label}>Đánh giá của bạn:</label>
-                            <div className={styles.stars}>
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                    <button
-                                        key={star}
-                                        type="button"
-                                        className={`${styles.star} ${star <= (hoverRating || rating) ? styles.starActive : ''
-                                            }`}
-                                        onMouseEnter={() => setHoverRating(star)}
-                                        onMouseLeave={() => setHoverRating(0)}
-                                        onClick={() => setRating(star)}
-                                    >
-                                        ★
-                                    </button>
-                                ))}
+                    <form onSubmit={this.handleSubmit}>
+                        <div className={styles.modalBody}>
+                            {/* Doctor Info */}
+                            <div className={styles.doctorInfo}>
+                                <p className={styles.label}>Bác sĩ:</p>
+                                <p className={styles.doctorName}>{appointment.doctor_name || 'Không xác định'}</p>
+                                <p className={styles.specialty}>{appointment.specialty_name}</p>
                             </div>
-                            <p className={styles.ratingText}>
-                                {rating === 0 && 'Chọn số sao'}
-                                {rating === 1 && '😞 Không hài lòng'}
-                                {rating === 2 && '😐 Tạm được'}
-                                {rating === 3 && '🙂 Bình thường'}
-                                {rating === 4 && '😊 Hài lòng'}
-                                {rating === 5 && '😍 Rất hài lòng'}
-                            </p>
+
+                            {/* Rating Stars */}
+                            <div className={styles.ratingSection}>
+                                <label className={styles.label}>Đánh giá của bạn:</label>
+                                <div className={styles.stars}>
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <button
+                                            key={star}
+                                            type="button"
+                                            className={`${styles.star} ${star <= (hoverRating || rating) ? styles.starActive : ''
+                                                }`}
+                                            onMouseEnter={() => this.setState({ hoverRating: star })}
+                                            onMouseLeave={() => this.setState({ hoverRating: 0 })}
+                                            onClick={() => this.setState({ rating: star })}
+                                        >
+                                            ★
+                                        </button>
+                                    ))}
+                                </div>
+                                <p className={styles.ratingText}>
+                                    {rating === 0 && 'Chọn số sao'}
+                                    {rating === 1 && '😞 Không hài lòng'}
+                                    {rating === 2 && '😐 Tạm được'}
+                                    {rating === 3 && '🙂 Bình thường'}
+                                    {rating === 4 && '😊 Hài lòng'}
+                                    {rating === 5 && '😍 Rất hài lòng'}
+                                </p>
+                            </div>
+
+                            {/* Comment */}
+                            <div className={styles.commentSection}>
+                                <label className={styles.label}>Nhận xét (tùy chọn):</label>
+                                <textarea
+                                    className={styles.textarea}
+                                    value={comment}
+                                    onChange={(e) => this.setState({ comment: e.target.value })}
+                                    placeholder="Chia sẻ trải nghiệm của bạn về dịch vụ khám chữa bệnh..."
+                                    rows={5}
+                                    maxLength={500}
+                                />
+                                <p className={styles.charCount}>{comment.length}/500 ký tự</p>
+                            </div>
                         </div>
 
-                        {/* Comment */}
-                        <div className={styles.commentSection}>
-                            <label className={styles.label}>Nhận xét (tùy chọn):</label>
-                            <textarea
-                                className={styles.textarea}
-                                value={comment}
-                                onChange={(e) => setComment(e.target.value)}
-                                placeholder="Chia sẻ trải nghiệm của bạn về dịch vụ khám chữa bệnh..."
-                                rows={5}
-                                maxLength={500}
-                            />
-                            <p className={styles.charCount}>{comment.length}/500 ký tự</p>
+                        <div className={styles.modalFooter}>
+                            <button
+                                type="button"
+                                className={styles.btnCancel}
+                                onClick={onClose}
+                                disabled={loading}
+                            >
+                                Hủy bỏ
+                            </button>
+                            <button
+                                type="submit"
+                                className={styles.btnSubmit}
+                                disabled={loading || rating === 0}
+                            >
+                                {loading ? 'Đang gửi...' : 'Gửi đánh giá'}
+                            </button>
                         </div>
-                    </div>
-
-                    <div className={styles.modalFooter}>
-                        <button
-                            type="button"
-                            className={styles.btnCancel}
-                            onClick={onClose}
-                            disabled={loading}
-                        >
-                            Hủy bỏ
-                        </button>
-                        <button
-                            type="submit"
-                            className={styles.btnSubmit}
-                            disabled={loading || rating === 0}
-                        >
-                            {loading ? 'Đang gửi...' : 'Gửi đánh giá'}
-                        </button>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
-        </div>
-    );
+        );
+    }
 }
 
 ReviewModal.propTypes = {
@@ -130,3 +142,5 @@ ReviewModal.propTypes = {
     onClose: PropTypes.func.isRequired,
     onSuccess: PropTypes.func
 };
+
+export default ReviewModal;

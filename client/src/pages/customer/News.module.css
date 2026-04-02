@@ -6,7 +6,7 @@
 
 /* Hero Section - Featured Articles */
 .heroSection {
-    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
     padding: 40px 20px;
     margin-bottom: 40px;
 }
@@ -184,7 +184,7 @@
 
 .searchInput:focus {
     outline: none;
-    border-color: #45c3d2;
+    border-color: #0ea5e9;
     box-shadow: 0 0 0 4px rgba(69, 195, 210, 0.1);
     background: white;
 }
@@ -207,7 +207,7 @@
 }
 
 .clearSearch:hover {
-    background: #45c3d2;
+    background: #0ea5e9;
     color: white;
 }
 
@@ -225,13 +225,13 @@
 
 .categorySelect:focus {
     outline: none;
-    border-color: #45c3d2;
+    border-color: #0ea5e9;
     box-shadow: 0 0 0 4px rgba(69, 195, 210, 0.1);
 }
 
 .searchButton {
     padding: 16px 35px;
-    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
     color: white;
     border: none;
     border-radius: 12px;
@@ -273,7 +273,7 @@
 }
 
 .categoryTab.active {
-    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
     color: white;
     border-color: transparent;
     box-shadow: 0 5px 15px rgba(69, 195, 210, 0.3);
@@ -287,7 +287,7 @@
     padding: 12px 18px;
     background: #f0f4ff;
     border-radius: 10px;
-    border-left: 4px solid #45c3d2;
+    border-left: 4px solid #0ea5e9;
 }
 
 .searchInfo span {
@@ -298,9 +298,9 @@
 .clearFilters {
     padding: 8px 16px;
     background: white;
-    border: 1px solid #45c3d2;
+    border: 1px solid #0ea5e9;
     border-radius: 8px;
-    color: #45c3d2;
+    color: #0ea5e9;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
@@ -308,7 +308,7 @@
 }
 
 .clearFilters:hover {
-    background: #45c3d2;
+    background: #0ea5e9;
     color: white;
 }
 
@@ -342,7 +342,7 @@
 }
 
 .categoryButton.active {
-    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
     color: white;
     border-color: transparent;
     box-shadow: 0 5px 15px rgba(69, 195, 210, 0.3);
@@ -464,7 +464,7 @@
 }
 
 .paginationButton:hover:not(:disabled) {
-    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
     color: white;
     border-color: transparent;
     transform: translateY(-2px);
@@ -494,11 +494,11 @@
 
 .pageNumber:hover {
     background: #f5f7fa;
-    border-color: #45c3d2;
+    border-color: #0ea5e9;
 }
 
 .pageNumber.active {
-    background: linear-gradient(135deg, #45c3d2 0%, #2aa6b7 100%);
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
     color: white;
     border-color: transparent;
     box-shadow: 0 5px 15px rgba(69, 195, 210, 0.3);
@@ -515,7 +515,7 @@
     height: 50px;
     margin: 0 auto 20px;
     border: 4px solid #e8eef5;
-    border-top-color: #45c3d2;
+    border-top-color: #0ea5e9;
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }

@@ -71,6 +71,139 @@
     transform: scale(1.1);
 }
 
+/* ===== Header Right with Mode Toggle ===== */
+.headerRight {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.modeToggle {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.modeToggle:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.modeToggle.modeActive {
+    background: rgba(255, 255, 255, 0.95);
+    color: #2aa6b7;
+    font-weight: 600;
+}
+
+/* ===== Header Actions ===== */
+.headerActions {
+    display: flex;
+    gap: 8px;
+}
+
+.quickAddBtn {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 600;
+}
+
+.quickAddBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
+
+/* ===== Quick Dosage Row ===== */
+.quickDosageRow {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+.quickDosageRow label {
+    display: block;
+    font-size: 0.85rem;
+    color: #92400e;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.quickDosageButtons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.quickDosageBtn {
+    background: white;
+    border: 2px solid #f59e0b;
+    color: #92400e;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.quickDosageBtn:hover {
+    background: #f59e0b;
+    color: white;
+}
+
+/* ===== Quick Add Info Banner ===== */
+.quickAddInfo {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    color: #92400e;
+    padding: 12px 16px;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #fcd34d;
+}
+
+.quickAddInfo strong {
+    color: #78350f;
+}
+
+/* ===== Quick Add Drug Button ===== */
+.drugOptionQuick {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.drugOptionMain {
+    flex: 1;
+}
+
+.quickAddDrugBtn {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 16px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 600;
+    margin-left: 12px;
+    flex-shrink: 0;
+}
+
+.quickAddDrugBtn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
 /* ===== Patient Bar ===== */
 .patientBar {
     background: white;

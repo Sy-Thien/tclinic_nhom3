@@ -125,8 +125,8 @@ class AdminDoctors extends Component {
         const { modalMode, selectedDoctor } = this.state;
         switch (modalMode) {
             case 'delete': return `${styles.modalHeader} ${styles.modalHeaderDanger}`;
-            case 'toggle': 
-                return selectedDoctor?.is_active 
+            case 'toggle':
+                return selectedDoctor?.is_active
                     ? `${styles.modalHeader} ${styles.modalHeaderWarning}`
                     : `${styles.modalHeader} ${styles.modalHeaderSuccess}`;
             default: return styles.modalHeader;
@@ -551,10 +551,10 @@ class AdminDoctors extends Component {
                                             <button type="button" className={styles.btnCancel} onClick={this.handleCloseModal}>
                                                 Hủy
                                             </button>
-                                            <button 
-                                                type="button" 
-                                                className={selectedDoctor.is_active ? styles.btnWarning : styles.btnSuccess} 
-                                                onClick={this.handleToggleStatus} 
+                                            <button
+                                                type="button"
+                                                className={selectedDoctor.is_active ? styles.btnWarning : styles.btnSuccess}
+                                                onClick={this.handleToggleStatus}
                                                 disabled={loading}
                                             >
                                                 {loading ? 'Đang xử lý...' : selectedDoctor.is_active ? 'Khóa tài khoản' : 'Mở khóa'}

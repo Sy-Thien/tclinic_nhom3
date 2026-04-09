@@ -252,31 +252,6 @@ class DoctorAppointmentController {
                 return res.status(404).json({ message: 'Không tìm thấy lịch hẹn' });
             }
 
-            // ✅ CHỐT CHẶN: Chỉ được cập nhật/khám khi tới gần giờ (trước 30 phút)
-            const today = new Date();
-            const todayMidnight = new Date();
-            todayMidnight.setHours(0, 0, 0, 0);
-
-            const appointmentDateStr = booking.appointment_date instanceof Date ? booking.appointment_date.toISOString().split('T')[0] : booking.appointment_date;
-            const appointmentDate = new Date(appointmentDateStr);
-            appointmentDate.setHours(0, 0, 0, 0);
-
-            if (appointmentDate > todayMidnight) {
-                return res.status(400).json({ message: 'Chưa đến ngày hẹn, không thể khám' });
-            }
-
-            if (appointmentDate.getTime() === todayMidnight.getTime() && booking.appointment_time) {
-                const [timeH, timeM] = booking.appointment_time.split(':').map(Number);
-                const appointmentMinutes = timeH * 60 + timeM;
-                const currentMinutes = today.getHours() * 60 + today.getMinutes();
-
-                if (currentMinutes < appointmentMinutes - 30) {
-                    const allowH = Math.floor((appointmentMinutes - 30) / 60);
-                    const allowM = String((appointmentMinutes - 30) % 60).padStart(2, '0');
-                    return res.status(400).json({ message: `Chưa tới giờ khám. Chỉ có thể khám trước 30 phút (từ ${allowH}:${allowM})` });
-                }
-            }
-
             // Update booking
             await booking.update({
                 status: status || booking.status,

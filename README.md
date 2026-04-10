@@ -11,18 +11,18 @@ TClinic là ứng dụng web quản lý phòng khám đa khoa, gồm 3 vai trò 
 Mục tiêu của dự án là số hóa quy trình đặt lịch, khám bệnh, kê đơn thuốc, quản lý bệnh nhân và vận hành phòng khám.
 
 ## 2) Công nghệ sử dụng
-- Frontend: React + Vite
-- Backend: Node.js + Express
-- Database: MySQL + Sequelize
+- Frontend: React 
+- Backend: Node.js, Express
+- Database: MySQL
 - Xác thực: JWT + phân quyền theo role
 - Vận hành: Docker Compose
 
-## 3) Dự án để làm gì?
+## 3) Chức năng chính
 - Quản lý lịch hẹn khám bệnh theo trạng thái
 - Quản lý tài khoản và quyền truy cập theo từng role
 - Hỗ trợ bác sĩ khám bệnh, cập nhật bệnh án, kê toa
 - Hỗ trợ admin quản lý doctor/patient/chuyên khoa/dịch vụ/phòng khám/thuốc
-- Hỗ trợ thống kê và nghiệp vụ hóa đơn
+- Thống kê cơ bản
 
 ## 4) Các service trong Docker
 - client: giao diện người dùng (React + Nginx)
@@ -65,7 +65,9 @@ Tôi là người tham gia phát triển và hoàn thiện dự án với vai tr
 - Tạo dữ liệu mẫu để test nghiệp vụ
 - Bổ sung script backup/restore để đảm bảo an toàn dữ liệu
 - Hoàn thiện tài liệu README và hướng dẫn deploy local
-
+## 8) Note
+Project này mình làm để học là chính nên vẫn còn thiếu nhiều thứ, chưa tối ưu và có thể còn bug.  
+Qua project này mình hiểu rõ hơn cách build backend và cách các thành phần trong hệ thống hoạt động.
 ## 8) Ghi chú
 - Dự án hiện ưu tiên môi trường local/development.
 - Khi deploy production, cần đổi các giá trị secret và thông tin kết nối trong file env.

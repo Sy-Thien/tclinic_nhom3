@@ -104,8 +104,9 @@ class ReminderService {
             };
 
         } catch (error) {
-            console.error('❌ Reminder service error:', error);
-            throw error;
+            console.error('❌ Reminder service error:', error.message);
+            // Không throw để tránh crash server - sẽ thử lại ở lần check tiếp theo
+            return { total: 0, success: 0, failed: 0, error: error.message };
         }
     };
 

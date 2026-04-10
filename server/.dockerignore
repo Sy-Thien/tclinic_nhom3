@@ -1,0 +1,10 @@
+# Bỏ qua node_modules - sẽ được install lại trong container
+node_modules
+
+# Bỏ qua file môi trường local (sẽ dùng biến từ docker-compose)
+.env
+
+# Bỏ qua các file không cần thiết
+.git
+.gitignore
+*.md

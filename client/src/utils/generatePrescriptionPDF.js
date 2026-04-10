@@ -1,20 +1,40 @@
-import pdfMake from 'pdfmake/build/pdfmake';
-import * as pdfFonts from 'pdfmake/build/vfs_fonts';
+let pdfMakeLoaderPromise;
 
-// Khởi tạo fonts cho pdfMake - hỗ trợ nhiều phiên bản
-try {
-    if (pdfFonts.pdfMake) {
-        pdfMake.vfs = pdfFonts.pdfMake.vfs;
-    } else if (pdfFonts.default?.pdfMake) {
-        pdfMake.vfs = pdfFonts.default.pdfMake.vfs;
-    } else if (pdfFonts.vfs) {
-        pdfMake.vfs = pdfFonts.vfs;
-    } else {
-        pdfMake.vfs = pdfFonts;
+const loadPdfMake = async () => {
+    if (pdfMakeLoaderPromise) {
+        return pdfMakeLoaderPromise;
     }
-} catch (e) {
-    console.error('Error initializing pdfMake fonts:', e);
-}
+
+    pdfMakeLoaderPromise = (async () => {
+        const pdfMakeModule = await import('pdfmake/build/pdfmake');
+        const pdfMake = pdfMakeModule.default || pdfMakeModule;
+
+        let detectedVfs = null;
+        try {
+            const pdfFontsModule = await import('pdfmake/build/vfs_fonts');
+            const candidate = pdfFontsModule.default || pdfFontsModule;
+            detectedVfs = candidate?.pdfMake?.vfs || candidate?.vfs || candidate;
+        } catch (error) {
+            console.error('Error loading pdfMake fonts:', error);
+        }
+
+        if (!pdfMake.vfs && detectedVfs) {
+            pdfMake.vfs = detectedVfs;
+        }
+
+        if (!pdfMake.vfs && typeof window !== 'undefined' && window.pdfMake?.vfs) {
+            pdfMake.vfs = window.pdfMake.vfs;
+        }
+
+        if (!pdfMake.vfs) {
+            throw new Error('Không thể khởi tạo font cho PDF');
+        }
+
+        return pdfMake;
+    })();
+
+    return pdfMakeLoaderPromise;
+};
 
 /**
  * Tạo PDF toa thuốc
@@ -22,7 +42,7 @@ try {
  * @param {Object} appointment - Thông tin lịch hẹn
  * @param {Object} doctor - Thông tin bác sĩ
  */
-export const generatePrescriptionPDF = (prescription, appointment, doctor) => {
+export const generatePrescriptionPDF = async (prescription, appointment, doctor) => {
     const currentDate = new Date().toLocaleDateString('vi-VN');
 
     // Tạo danh sách thuốc cho PDF - compact
@@ -193,6 +213,7 @@ export const generatePrescriptionPDF = (prescription, appointment, doctor) => {
 
     // Tạo và download PDF
     try {
+        const pdfMake = await loadPdfMake();
         const fileName = `DonThuoc_${prescription.prescription_code || 'RX'}_${new Date().getTime()}.pdf`;
         console.log('📄 Creating PDF:', fileName);
         pdfMake.createPdf(docDefinition).download(fileName);

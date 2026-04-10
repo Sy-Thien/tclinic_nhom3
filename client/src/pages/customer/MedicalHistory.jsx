@@ -43,7 +43,7 @@ class MedicalHistory extends Component {
         }
     };
 
-    handleDownloadPDF = (record) => {
+    handleDownloadPDF = async (record) => {
         if (!record || !record.prescription) {
             alert('Không có đơn thuốc để tải');
             return;
@@ -86,7 +86,7 @@ class MedicalHistory extends Component {
             };
 
             console.log('📄 Generating PDF with data:', { prescriptionData, appointmentData, doctorData });
-            generatePrescriptionPDF(prescriptionData, appointmentData, doctorData);
+            await generatePrescriptionPDF(prescriptionData, appointmentData, doctorData);
         } catch (error) {
             console.error('❌ Error generating PDF:', error);
             alert('Có lỗi xảy ra khi tải đơn thuốc. Vui lòng thử lại!');

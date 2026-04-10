@@ -1,4 +1,8 @@
 {
+  "scripts": {
+    "db:backup": "pwsh -ExecutionPolicy Bypass -File ./scripts/backup-db.ps1",
+    "db:restore": "pwsh -ExecutionPolicy Bypass -File ./scripts/restore-db.ps1"
+  },
   "dependencies": {
     "bcrypt": "^6.0.0"
   }

@@ -1,0 +1,138 @@
+# ============================================================
+# Docker Compose - Điều phối 3 container: MySQL, Backend, Frontend
+# ============================================================
+# Chạy lệnh: docker-compose up --build
+# Dừng lệnh: docker-compose down
+# Xóa sạch (kể cả database): docker-compose down -v
+
+services:
+  # ============================================================
+  # SERVICE 1: MySQL Database
+  # ============================================================
+  # Container này chạy MySQL 8.0 để lưu trữ dữ liệu
+  db:
+    image: mysql:8.0                  # Dùng image MySQL 8.0 từ Docker Hub
+    container_name: tclinic-db        # Đặt tên container dễ nhớ
+    restart: unless-stopped           # Tự khởi động lại nếu bị crash
+    environment:                      # Biến môi trường cấu hình MySQL
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-tclinic2025}   # Mật khẩu root
+      MYSQL_DATABASE: ${DB_NAME:-tn_clinic}                   # Tên database tự tạo
+      MYSQL_USER: ${DB_USER:-tclinic_user}                    # User cho ứng dụng
+      MYSQL_PASSWORD: ${DB_PASSWORD:-tclinic_pass}            # Mật khẩu user
+      TZ: Asia/Ho_Chi_Minh                                    # Timezone Việt Nam
+    ports:
+      - "3307:3306"                   # Map port 3307 máy host → 3306 container
+                                      # Dùng 3307 để tránh xung đột MySQL local
+    volumes:
+      - mysql_data:/var/lib/mysql                   # Lưu dữ liệu bền vững
+      - ./docker/init-db:/docker-entrypoint-initdb.d  # Script khởi tạo DB
+    command: >                        # Cấu hình MySQL
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --default-time-zone=+07:00
+    healthcheck:                      # Kiểm tra MySQL đã sẵn sàng chưa
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-tclinic2025}"]
+      interval: 10s                   # Kiểm tra mỗi 10 giây
+      timeout: 5s                     # Timeout sau 5 giây
+      retries: 5                      # Thử lại 5 lần
+      start_period: 30s               # Chờ 30 giây trước khi bắt đầu kiểm tra
+    networks:
+      - tclinic-network
+
+  # ============================================================
+  # SERVICE 2: Backend (Node.js + Express)
+  # ============================================================
+  server:
+    build:
+      context: ./server               # Build từ thư mục server/
+      dockerfile: Dockerfile          # Dùng Dockerfile trong thư mục đó
+    container_name: tclinic-server
+    restart: unless-stopped
+    environment:                      # Biến môi trường cho backend
+      NODE_ENV: production
+      PORT: 5000
+      DB_HOST: db                     # ⚡ "db" = tên service MySQL ở trên
+                                      # Docker tự resolve thành IP container MySQL
+      DB_USER: ${DB_USER:-tclinic_user}
+      DB_PASSWORD: ${DB_PASSWORD:-tclinic_pass}
+      DB_NAME: ${DB_NAME:-tn_clinic}
+      DB_DIALECT: mysql
+      JWT_SECRET: ${JWT_SECRET:-tclinic_secret_key_2025}
+      # Email
+      EMAIL_USER: ${EMAIL_USER:-}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD:-}
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      # Client URL
+      CLIENT_URL: ${CLIENT_URL:-http://localhost}
+      # VNPay
+      VNP_TMN_CODE: ${VNP_TMN_CODE:-}
+      VNP_HASH_SECRET: ${VNP_HASH_SECRET:-}
+      VNP_URL: ${VNP_URL:-https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}
+      VNP_RETURN_URL: ${VNP_RETURN_URL:-http://localhost/payment/vnpay-return}
+    ports:
+      - "5000:5000"                   # Map port 5000
+    volumes:
+      - server_uploads:/app/uploads   # Lưu file upload bền vững
+    depends_on:                       # Đợi MySQL khởi động xong
+      db:
+        condition: service_healthy    # Chỉ chạy khi MySQL healthy
+    networks:
+      - tclinic-network
+
+  # ============================================================
+  # SERVICE 3: Frontend (React + Nginx)
+  # ============================================================
+  client:
+    build:
+      context: ./client               # Build từ thư mục client/
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ""              # Rỗng = dùng relative URL (/api)
+                                      # Nginx sẽ proxy /api → backend
+    container_name: tclinic-client
+    restart: unless-stopped
+    ports:
+      - "80:80"                       # Map port 80 (HTTP)
+    depends_on:
+      - server                        # Đợi backend khởi động xong
+    networks:
+      - tclinic-network
+
+  # ============================================================
+  # SERVICE 4: phpMyAdmin (Quản lý MySQL qua web)
+  # ============================================================
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: tclinic-phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: ${DB_ROOT_PASSWORD:-tclinic2025}
+      UPLOAD_LIMIT: 64M
+    ports:
+      - "8081:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - tclinic-network
+
+# ============================================================
+# NETWORKS: Mạng nội bộ cho các container giao tiếp
+# ============================================================
+networks:
+  tclinic-network:
+    driver: bridge                    # Kiểu bridge = mạng ảo nội bộ
+
+# ============================================================
+# VOLUMES: Lưu trữ dữ liệu bền vững (không mất khi xóa container)
+# ============================================================
+volumes:
+  mysql_data:                         # Dữ liệu MySQL
+    driver: local
+  server_uploads:                     # File upload
+    driver: local

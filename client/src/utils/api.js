@@ -1,7 +1,10 @@
 import axios from 'axios';
 
+// Preserve empty string from VITE_API_URL (Docker uses "" to force relative URLs).
+const resolvedBaseURL = import.meta.env.VITE_API_URL ?? 'http://localhost:5000';
+
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000',
+    baseURL: resolvedBaseURL,
     headers: {
         'Content-Type': 'application/json'
     },

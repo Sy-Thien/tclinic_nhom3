@@ -65,12 +65,13 @@ Tôi là người tham gia phát triển và hoàn thiện dự án với vai tr
 - Tạo dữ liệu mẫu để test nghiệp vụ
 - Bổ sung script backup/restore để đảm bảo an toàn dữ liệu
 - Hoàn thiện tài liệu README và hướng dẫn deploy local
+
 ## 8) Note
-Project này mình làm để học là chính nên vẫn còn thiếu nhiều thứ, chưa tối ưu và có thể còn bug.  
-Qua project này mình hiểu rõ hơn cách build backend và cách các thành phần trong hệ thống hoạt động.
-## 8) Ghi chú
+- Project này mình làm để học là chính nên vẫn còn thiếu nhiều thứ, chưa tối ưu và có thể còn bug.  
+- Qua project này mình hiểu rõ hơn cách build backend và cách các thành phần trong hệ thống hoạt động.
+
+## 9) Ghi chú
 - Dự án hiện ưu tiên môi trường local/development.
 - Khi deploy production, cần đổi các giá trị secret và thông tin kết nối trong file env.
 
----
-Nếu bạn clone repo này về máy, chỉ cần chạy `docker compose up -d --build` là có thể sử dụng ngay.
+
